@@ -3,7 +3,12 @@ from .base import *
 
 DEBUG = False
 
-ALLOWED_HOSTS = os.environ['ALLOWED_HOSTS'].split(',')
+# Support both explicit ALLOWED_HOSTS env var and Render's auto hostname
+_allowed = os.environ.get('ALLOWED_HOSTS', '').split(',')
+_render_hostname = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if _render_hostname:
+    _allowed.append(_render_hostname)
+ALLOWED_HOSTS = [h for h in _allowed if h]
 
 # Whitenoise — insert after SecurityMiddleware
 MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
@@ -20,7 +25,11 @@ STORAGES = {
 # Persistent DB connections
 CONN_MAX_AGE = 60
 
-CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',')
+# Support Render's external hostname in CSRF trusted origins automatically
+_csrf = os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',')
+if _render_hostname:
+    _csrf.append(f'https://{_render_hostname}')
+CSRF_TRUSTED_ORIGINS = [h for h in _csrf if h]
 
 CACHES = {
     'default': {
@@ -39,4 +48,3 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
-

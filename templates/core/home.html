@@ -1,8 +1,16 @@
 {% extends 'base.html' %}
 
-{% block title %}Home{% endblock %}
-{% block meta_description %}Welcome to the site.{% endblock %}
+{% block title %}ARIA: The Lost Code{% endblock %}
+{% block meta_description %}Learn to code through an epic adventure. Fix bugs, solve challenges, and restore ARIA's world.{% endblock %}
 
 {% block content %}
-<h1>Welcome</h1>
+<div class="container py-5 text-center">
+    <h1 class="display-4 fw-bold">ARIA: The Lost Code</h1>
+    <p class="lead mt-3">A power surge has shattered ARIA's connection to the world.<br>Only you can restore it &mdash; one line of code at a time.</p>
+    <div class="mt-4 d-flex justify-content-center gap-3">
+        <a href="#" class="btn btn-primary btn-lg">Play</a>
+        <a href="#" class="btn btn-outline-secondary btn-lg">Learn</a>
+        <a href="#" class="btn btn-outline-secondary btn-lg">Practice</a>
+    </div>
+</div>
 {% endblock %}

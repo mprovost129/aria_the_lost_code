@@ -1,0 +1,44 @@
+services:
+  - type: web
+    name: aria-the-lost-code
+    runtime: python
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    startCommand: gunicorn config.wsgi:application
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: config.Settings.prod
+      - key: SECRET_KEY
+        generateValue: true
+      - key: RENDER_EXTERNAL_HOSTNAME
+        fromService:
+          type: web
+          name: aria-the-lost-code
+          property: host
+      - key: DB_NAME
+        fromDatabase:
+          name: aria-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: aria-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: aria-db
+          property: password
+      - key: DB_HOST
+        fromDatabase:
+          name: aria-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: aria-db
+          property: port
+      - key: ALLOWED_HOSTS
+        value: ""
+      - key: CSRF_TRUSTED_ORIGINS
+        value: ""
+
+databases:
+  - name: aria-db
+    plan: free
