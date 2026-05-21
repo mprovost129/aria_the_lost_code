@@ -18,4 +18,7 @@ RUN SECRET_KEY=build-placeholder DB_NAME=placeholder DB_USER=placeholder DB_PASS
 
 EXPOSE 8000
 
-CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "2"]
+# start.sh: migrate → ensure_superuser → gunicorn
+# Migrations run at container start (not during build) because the
+# database is not available at build time.
+CMD ["bash", "start.sh"]
