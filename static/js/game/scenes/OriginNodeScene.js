@@ -385,9 +385,18 @@ class OriginNodeScene extends Phaser.Scene {
     _listenToBus(AG) {
         const TILE = AG.TILE;
 
-        // Disable / re-enable movement while challenge panel is open
-        AG.events.on('challenge:open',  () => { this.inputLocked = true;  });
-        AG.events.on('challenge:close', () => { this.inputLocked = false; });
+        // Disable / re-enable movement while challenge panel is open.
+        // disableGlobalCapture() releases Phaser's key interception so that
+        // DOM key events reach the <textarea> editor inside the challenge panel.
+        // enableGlobalCapture() restores it when play resumes.
+        AG.events.on('challenge:open', () => {
+            this.inputLocked = true;
+            this.input.keyboard.disableGlobalCapture();
+        });
+        AG.events.on('challenge:close', () => {
+            this.inputLocked = false;
+            this.input.keyboard.enableGlobalCapture();
+        });
 
         // Open a gate tile (replace GATE with ROAD)
         AG.events.on('gate:open', ({ col, row }) => {

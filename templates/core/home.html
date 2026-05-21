@@ -1,16 +1,537 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}ARIA: The Lost Code{% endblock %}
-{% block meta_description %}Learn to code through an epic adventure. Fix bugs, solve challenges, and restore ARIA's world.{% endblock %}
+{% block meta_description %}Learn to code through an epic adventure. Fix bugs, solve challenges, and restore ARIA's world — one line of code at a time.{% endblock %}
+
+{% block extra_css %}
+<style>
+    html, body {
+        background: #07071a;
+        margin: 0;
+        padding: 0;
+    }
+
+    body > header {
+        background: rgba(7, 7, 26, 0.95);
+        border-bottom: 1px solid #1a1a3a;
+        backdrop-filter: blur(8px);
+        position: sticky;
+        top: 0;
+        z-index: 50;
+    }
+
+    body > header .navbar-brand {
+        font-family: 'Courier New', Courier, monospace;
+        color: #00ff88;
+        font-size: 1rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+    }
+
+    body > header .nav-link {
+        font-family: 'Courier New', Courier, monospace;
+        color: #4a4a8a;
+        font-size: 0.85rem;
+        letter-spacing: 0.06em;
+        transition: color 0.2s;
+    }
+
+    body > header .nav-link:hover { color: #00ff88; }
+
+    /* ── Scanline overlay ── */
+    body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background: repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 2px,
+            rgba(0, 255, 136, 0.012) 2px,
+            rgba(0, 255, 136, 0.012) 4px
+        );
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    /* ── Hero ── */
+    .hero {
+        position: relative;
+        min-height: 88vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4rem 1.5rem;
+        overflow: hidden;
+        z-index: 2;
+    }
+
+    /* Radial glow behind hero text */
+    .hero::after {
+        content: '';
+        position: absolute;
+        top: 40%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(0,255,136,0.06) 0%, transparent 70%);
+        pointer-events: none;
+    }
+
+    .hero-inner {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        max-width: 680px;
+    }
+
+    .hero-icon {
+        font-size: 3.5rem;
+        display: block;
+        margin-bottom: 1rem;
+        filter: drop-shadow(0 0 20px rgba(0,255,136,0.5));
+        animation: pulse 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { filter: drop-shadow(0 0 20px rgba(0,255,136,0.5)); }
+        50%       { filter: drop-shadow(0 0 32px rgba(0,255,136,0.85)); }
+    }
+
+    .hero-eyebrow {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.72rem;
+        color: #2a2a6a;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        margin-bottom: 0.75rem;
+    }
+
+    .hero-title {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: clamp(2rem, 6vw, 3.5rem);
+        font-weight: bold;
+        color: #e8e8ff;
+        line-height: 1.15;
+        letter-spacing: 0.04em;
+        margin-bottom: 0.5rem;
+    }
+
+    .hero-title span {
+        color: #00ff88;
+        text-shadow: 0 0 20px rgba(0,255,136,0.4);
+    }
+
+    .hero-subtitle {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 1rem;
+        color: #3a3a7a;
+        line-height: 1.7;
+        margin: 1.25rem 0 2rem;
+    }
+
+    /* ARIA dialogue box */
+    .hero-aria {
+        background: #0a0a1e;
+        border: 1px solid #1a1a4a;
+        border-left: 3px solid #00ff88;
+        border-radius: 0 8px 8px 0;
+        padding: 0.85rem 1.1rem;
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        text-align: left;
+    }
+
+    .hero-aria-avatar {
+        width: 32px;
+        height: 32px;
+        flex-shrink: 0;
+        border-radius: 50%;
+        background: #0d1e14;
+        border: 2px solid #00ff88;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        box-shadow: 0 0 8px rgba(0,255,136,0.4);
+    }
+
+    .hero-aria-text {
+        color: #00ff88;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.82rem;
+        line-height: 1.65;
+        font-style: italic;
+        padding-top: 0.1rem;
+    }
+
+    /* CTA buttons */
+    .hero-ctas {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn-aria-primary {
+        background: #0d2e1a;
+        color: #00ff88;
+        border: 1px solid #2a6a2a;
+        border-radius: 6px;
+        padding: 0.75rem 2rem;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.95rem;
+        letter-spacing: 0.08em;
+        text-decoration: none;
+        transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .btn-aria-primary:hover {
+        background: #133d22;
+        border-color: #00ff88;
+        color: #00ff88;
+        box-shadow: 0 0 16px rgba(0,255,136,0.3);
+        text-decoration: none;
+    }
+
+    .btn-aria-secondary {
+        background: transparent;
+        color: #4a4a8a;
+        border: 1px solid #2a2a5a;
+        border-radius: 6px;
+        padding: 0.75rem 2rem;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.95rem;
+        letter-spacing: 0.08em;
+        text-decoration: none;
+        transition: border-color 0.15s, color 0.15s;
+    }
+
+    .btn-aria-secondary:hover {
+        border-color: #6a6aaa;
+        color: #8888cc;
+        text-decoration: none;
+    }
+
+    /* ── World progression strip ── */
+    .progression-section {
+        position: relative;
+        z-index: 2;
+        padding: 4rem 1.5rem;
+        text-align: center;
+    }
+
+    .progression-label {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.68rem;
+        color: #2a2a5a;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        margin-bottom: 0.6rem;
+    }
+
+    .progression-title {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 1.3rem;
+        color: #c8c8ff;
+        margin-bottom: 0.5rem;
+        font-weight: bold;
+    }
+
+    .progression-sub {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.82rem;
+        color: #2a2a5a;
+        margin-bottom: 2.5rem;
+    }
+
+    /* The seven-region strip */
+    .region-strip {
+        display: flex;
+        gap: 0;
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid #1a1a3a;
+        max-width: 900px;
+        margin: 0 auto 1.5rem;
+        position: relative;
+    }
+
+    .region-tile {
+        flex: 1;
+        padding: 1.5rem 0.5rem 1rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.4rem;
+        position: relative;
+        transition: transform 0.2s;
+        cursor: default;
+    }
+
+    .region-tile:hover { transform: translateY(-3px); }
+
+    /* Each region gets progressively lighter */
+    .region-tile:nth-child(1) { background: #070714; }
+    .region-tile:nth-child(2) { background: #090d12; }
+    .region-tile:nth-child(3) { background: #0a0f14; }
+    .region-tile:nth-child(4) { background: #0c1018; }
+    .region-tile:nth-child(5) { background: #101820; }
+    .region-tile:nth-child(6) { background: #142030; }
+    .region-tile:nth-child(7) { background: linear-gradient(160deg, #1a3a4a, #2a4a6a, #3a6080); }
+
+    /* Divider line between tiles */
+    .region-tile + .region-tile {
+        border-left: 1px solid #1a1a3a;
+    }
+
+    .region-tile-num {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.58rem;
+        letter-spacing: 0.12em;
+        color: #2a2a5a;
+        text-transform: uppercase;
+    }
+
+    .region-tile:nth-child(7) .region-tile-num { color: #4a8aaa; }
+
+    .region-tile-icon {
+        font-size: 1.4rem;
+        filter: grayscale(0.9) brightness(0.5);
+        transition: filter 0.3s;
+    }
+
+    .region-tile:nth-child(6) .region-tile-icon { filter: grayscale(0.4) brightness(0.7); }
+    .region-tile:nth-child(7) .region-tile-icon { filter: grayscale(0) brightness(1); }
+
+    .region-tile:hover .region-tile-icon { filter: grayscale(0) brightness(1); }
+
+    .region-tile-name {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.6rem;
+        color: #2a2a5a;
+        text-align: center;
+        letter-spacing: 0.04em;
+        line-height: 1.3;
+    }
+
+    .region-tile:nth-child(6) .region-tile-name { color: #3a5a6a; }
+    .region-tile:nth-child(7) .region-tile-name { color: #6aaacc; }
+
+    /* Glow on last tile — the restored world */
+    .region-tile:nth-child(7)::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse at center, rgba(100,200,255,0.08) 0%, transparent 70%);
+        pointer-events: none;
+    }
+
+    /* Progress arrow */
+    .progression-arrow {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.72rem;
+        color: #1a1a4a;
+        letter-spacing: 0.15em;
+        margin-top: 0.5rem;
+    }
+
+    .progression-arrow span {
+        color: #00ff88;
+    }
+
+    /* ── Three pillars ── */
+    .pillars-section {
+        position: relative;
+        z-index: 2;
+        padding: 3rem 1.5rem 5rem;
+    }
+
+    .pillars-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 1rem;
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .pillar-card {
+        background: #080816;
+        border: 1px solid #1a1a3a;
+        border-radius: 10px;
+        padding: 1.75rem 1.5rem;
+        text-align: center;
+        transition: border-color 0.2s, transform 0.2s;
+        text-decoration: none;
+        display: block;
+    }
+
+    .pillar-card:hover {
+        border-color: #3a3a7a;
+        transform: translateY(-4px);
+        text-decoration: none;
+    }
+
+    .pillar-card.primary:hover { border-color: #00aa44; }
+
+    .pillar-icon {
+        font-size: 2rem;
+        display: block;
+        margin-bottom: 0.75rem;
+    }
+
+    .pillar-title {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 1rem;
+        font-weight: bold;
+        color: #c8c8ff;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 0.5rem;
+    }
+
+    .pillar-card.primary .pillar-title { color: #00ff88; }
+
+    .pillar-desc {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.78rem;
+        color: #3a3a6a;
+        line-height: 1.65;
+    }
+
+    /* Footer */
+    body > footer {
+        border-top: 1px solid #0d0d2a;
+        background: #07071a;
+    }
+
+    body > footer small {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.68rem;
+        color: #1a1a3a;
+        letter-spacing: 0.06em;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container py-5 text-center">
-    <h1 class="display-4 fw-bold">ARIA: The Lost Code</h1>
-    <p class="lead mt-3">A power surge has shattered ARIA's connection to the world.<br>Only you can restore it &mdash; one line of code at a time.</p>
-    <div class="mt-4 d-flex justify-content-center gap-3">
-        <a href="#" class="btn btn-primary btn-lg">Play</a>
-        <a href="#" class="btn btn-outline-secondary btn-lg">Learn</a>
-        <a href="#" class="btn btn-outline-secondary btn-lg">Practice</a>
+
+{# ── Hero ── #}
+<section class="hero">
+    <div class="hero-inner">
+
+        <span class="hero-icon">⚡</span>
+
+        <div class="hero-eyebrow">ARIA OS v1.0 &mdash; Signal Lost</div>
+
+        <h1 class="hero-title">
+            ARIA:<br><span>The Lost Code</span>
+        </h1>
+
+        <p class="hero-subtitle">
+            A power surge has shattered ARIA's connection to the world.<br>
+            Restore it &mdash; one line of code at a time.
+        </p>
+
+        <div class="hero-aria">
+            <div class="hero-aria-avatar">⚡</div>
+            <div class="hero-aria-text">
+                I can see the entire map. Seven regions. All of them dark.<br>
+                I cannot reach any of them without you. Will you help me?
+            </div>
+        </div>
+
+        <div class="hero-ctas">
+            <a href="{% url 'game:play' %}" class="btn-aria-primary">▶ Play</a>
+            <a href="#" class="btn-aria-secondary">Learn to Code</a>
+            <a href="#" class="btn-aria-secondary">Practice</a>
+        </div>
+
     </div>
-</div>
+</section>
+
+{# ── World Progression Strip ── #}
+<section class="progression-section">
+    <div class="progression-label">The World of ARIA</div>
+    <h2 class="progression-title">Seven Regions. One Journey.</h2>
+    <p class="progression-sub">The world starts dark. Every challenge you solve brings it back to life.</p>
+
+    <div class="region-strip">
+        <div class="region-tile">
+            <div class="region-tile-num">Region 1</div>
+            <div class="region-tile-icon">🖥️</div>
+            <div class="region-tile-name">Origin<br>Node</div>
+        </div>
+        <div class="region-tile">
+            <div class="region-tile-num">Region 2</div>
+            <div class="region-tile-icon">🌾</div>
+            <div class="region-tile-name">Logic<br>Fields</div>
+        </div>
+        <div class="region-tile">
+            <div class="region-tile-num">Region 3</div>
+            <div class="region-tile-icon">🕳️</div>
+            <div class="region-tile-name">Loop<br>Caverns</div>
+        </div>
+        <div class="region-tile">
+            <div class="region-tile-num">Region 4</div>
+            <div class="region-tile-icon">🏰</div>
+            <div class="region-tile-name">Function<br>Fortress</div>
+        </div>
+        <div class="region-tile">
+            <div class="region-tile-num">Region 5</div>
+            <div class="region-tile-icon">🌿</div>
+            <div class="region-tile-name">Data<br>Wilds</div>
+        </div>
+        <div class="region-tile">
+            <div class="region-tile-num">Region 6</div>
+            <div class="region-tile-icon">🏙️</div>
+            <div class="region-tile-name">Object<br>City</div>
+        </div>
+        <div class="region-tile">
+            <div class="region-tile-num">Region 7</div>
+            <div class="region-tile-icon">✨</div>
+            <div class="region-tile-name">The Null<br>Core</div>
+        </div>
+    </div>
+
+    <div class="progression-arrow">
+        dark &nbsp;&rarr;&nbsp; &rarr;&nbsp; &rarr;&nbsp; &rarr;&nbsp; &rarr;&nbsp; &rarr;&nbsp; <span>restored</span>
+    </div>
+</section>
+
+{# ── Three Pillars ── #}
+<section class="pillars-section">
+    <div class="pillars-grid">
+
+        <a href="{% url 'game:play' %}" class="pillar-card primary">
+            <span class="pillar-icon">🎮</span>
+            <div class="pillar-title">Play</div>
+            <p class="pillar-desc">
+                Enter the world. Explore the map. Solve coding challenges to restore ARIA's signal and unlock new regions.
+            </p>
+        </a>
+
+        <a href="#" class="pillar-card">
+            <span class="pillar-icon">📖</span>
+            <div class="pillar-title">Learn</div>
+            <p class="pillar-desc">
+                Not ready to play? Study Python concepts first. Lessons are tied to each region and grow with your progress.
+            </p>
+        </a>
+
+        <a href="#" class="pillar-card">
+            <span class="pillar-icon">⚙️</span>
+            <div class="pillar-title">Practice</div>
+            <p class="pillar-desc">
+                Skip the story and go straight to the challenges. Filter by concept, difficulty, and type. No map required.
+            </p>
+        </a>
+
+    </div>
+</section>
+
 {% endblock %}

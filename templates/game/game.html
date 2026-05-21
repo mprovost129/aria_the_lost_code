@@ -48,8 +48,12 @@
 
     /* Phaser mounts its <canvas> inside this div */
     #game-container {
-        /* Phaser Scale.FIT will handle actual sizing */
+        /* Phaser Scale.FIT will handle actual sizing.
+           width/height 100% ensure the Scale manager reads a non-zero parent
+           size and can compute the FIT canvas dimensions correctly. */
         line-height: 0;
+        width: 100%;
+        height: 100%;
     }
 
     /* ── ARIA dialogue bar (bottom strip) ── */
@@ -175,6 +179,10 @@
         z-index: 100;
         pointer-events: none;
         transition: background 0.25s ease;
+        /* Clip the panel when it is translated off-screen below the viewport.
+           Without this, translateY(110%) on the panel doesn't push it far
+           enough to clear the ARIA bar on typical screen heights. */
+        overflow: hidden;
     }
     #challenge-overlay.open {
         background: rgba(0, 0, 0, 0.82);

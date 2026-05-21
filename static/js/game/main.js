@@ -13,7 +13,9 @@
  */
 
 window.ARIA_GAME = window.ARIA_GAME || {};
-const AG = window.ARIA_GAME;
+// AG is declared as `const AG = window.ARIA_GAME` in config.js (loaded first).
+// Re-declaring const in the same global scope throws a SyntaxError — use the
+// existing reference directly.
 
 // ---------------------------------------------------------------------------
 // 1. Event bus
