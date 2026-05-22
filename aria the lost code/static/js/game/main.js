@@ -1,5 +1,5 @@
 /**
- * ARIA: The Lost Code — Phaser Game Bootstrap + HUD Wiring
+ * ARIA: The Lost Code - Phaser Game Bootstrap + HUD Wiring
  *
  * Loaded last. All other game scripts have already run and attached
  * their exports to window.ARIA_GAME.
@@ -14,7 +14,7 @@
 
 window.ARIA_GAME = window.ARIA_GAME || {};
 // AG is declared as `const AG = window.ARIA_GAME` in config.js (loaded first).
-// Re-declaring const in the same global scope throws a SyntaxError — use the
+// Re-declaring const in the same global scope throws a SyntaxError - use the
 // existing reference directly.
 
 // ---------------------------------------------------------------------------
@@ -47,7 +47,7 @@ Object.entries(AG.GATE_CHALLENGES || {}).forEach(([gateKey, challengeIds]) => {
 // Boss bug / boss chamber state
 AG.bossBugDefeated = false;
 
-// Ejection flag — set when chances drop to 0; cleared on chance:restore
+// Ejection flag - set when chances drop to 0; cleared on chance:restore
 AG.chancesEmpty = false;
 
 // ---------------------------------------------------------------------------
@@ -86,7 +86,7 @@ AG.challengePanel = new AG.ChallengePanel();
 
 // ---------------------------------------------------------------------------
 // 5. Load persisted player state from the backend (Layer 9)
-//    Runs asynchronously — the HUD starts at default 3 and updates when the
+//    Runs asynchronously - the HUD starts at default 3 and updates when the
 //    fetch resolves.  If the player had 0 chances last session, chancesEmpty
 //    is set immediately so gate entry is blocked until chances are restored.
 // ---------------------------------------------------------------------------
@@ -108,7 +108,7 @@ AG.events.on('pyodide:ready', () => {
     if (el) {
         el.textContent = '🐍 ready';
         el.classList.add('ready');
-        // Fade it out after 3 s — no need to keep it visible once loaded
+        // Fade it out after 3 s - no need to keep it visible once loaded
         setTimeout(() => { el.style.opacity = '0'; }, 3000);
     }
 });
@@ -116,7 +116,7 @@ AG.events.on('pyodide:ready', () => {
 // ---------------------------------------------------------------------------
 // 8. HUD: ARIA dialogue bar
 //    All aria:speak events route through the dialogue system (Layer 8).
-//    say() interrupts any current speech — game events always take priority.
+//    say() interrupts any current speech - game events always take priority.
 // ---------------------------------------------------------------------------
 AG.events.on('aria:speak', ({ text }) => {
     AG.dialogue.say(text);
@@ -127,7 +127,7 @@ AG.events.on('aria:speak', ({ text }) => {
 // ---------------------------------------------------------------------------
 let currentChances = 3;
 
-/** Read Django's csrftoken cookie — needed for authenticated AJAX POSTs. */
+/** Read Django's csrftoken cookie - needed for authenticated AJAX POSTs. */
 function _getCsrfToken() {
     const c = document.cookie.split(';').find(s => s.trim().startsWith('csrftoken='));
     return c ? decodeURIComponent(c.trim().split('=')[1]) : '';
@@ -135,7 +135,7 @@ function _getCsrfToken() {
 
 /**
  * Fire-and-forget POST to persist the current chance count to the database.
- * Failures are non-fatal — the JS counter remains authoritative for the session.
+ * Failures are non-fatal - the JS counter remains authoritative for the session.
  */
 function _syncChances(count) {
     fetch('/api/chances/sync/', {
@@ -163,7 +163,7 @@ function updateChancesDisplay(count) {
     });
 
     // Keep Tablet's ARIA tab in sync (tablet may not be instantiated yet
-    // if chances change before main.js finishes — guard with optional chain).
+    // if chances change before main.js finishes - guard with optional chain).
     AG.tablet?.updateChances(count);
 }
 
@@ -173,7 +173,7 @@ AG.events.on('chance:lose', () => {
         _syncChances(currentChances);          // persist the new (decremented) count
 
         if (currentChances === 0) {
-            // Player is out of chances — set ejection flag and auto-close the panel
+            // Player is out of chances - set ejection flag and auto-close the panel
             AG.chancesEmpty = true;
             AG.events.emit('aria:speak', {
                 text: 'That was close. Very close. In the wrong direction. Go review your library and try again.',
@@ -239,7 +239,7 @@ function _handleGateInteraction(col, row) {
     }
 
     if (state.open) {
-        // Gate already open — shouldn't be reachable but guard just in case
+        // Gate already open - shouldn't be reachable but guard just in case
         return;
     }
 
@@ -306,7 +306,7 @@ AG.events.on('boss_bug:solved', () => {
 });
 
 // ---------------------------------------------------------------------------
-// 10. Boss Challenge complete — trigger ripple wave, then show completion card
+// 10. Boss Challenge complete - trigger ripple wave, then show completion card
 // ---------------------------------------------------------------------------
 AG.events.on('boss:solved', () => {
     AG.events.emit('aria:speak', {
@@ -333,7 +333,7 @@ AG.events.on('region:restored', () => {
 
     // Animate the signal bar to 14% (1/7 regions).
     // Double-rAF ensures the CSS transition fires after the class change
-    // that unhides the element — without this the browser skips the tween.
+    // that unhides the element - without this the browser skips the tween.
     if (fill) {
         requestAnimationFrame(() => {
             requestAnimationFrame(() => {
@@ -343,7 +343,7 @@ AG.events.on('region:restored', () => {
     }
 });
 
-// Continue button — dismiss the overlay and speak a closing line
+// Continue button - dismiss the overlay and speak a closing line
 const rcContinueBtn = document.getElementById('rc-continue-btn');
 if (rcContinueBtn) {
     rcContinueBtn.addEventListener('click', () => {
@@ -364,7 +364,7 @@ if (rcContinueBtn) {
 // 11. Shrine modal (Layer 10)
 // ---------------------------------------------------------------------------
 
-// Instantiate ShrineModal — DOM must be ready
+// Instantiate ShrineModal - DOM must be ready
 AG.shrineModal = new AG.ShrineModal();
 
 /**
@@ -386,7 +386,7 @@ function _identifyShrine(col, row) {
 // 13. Tablet (Layer 7) + ARIA Hint tool (Layer 9)
 // ---------------------------------------------------------------------------
 
-// Instantiate Tablet — DOM must be ready (scripts run after body in base.html)
+// Instantiate Tablet - DOM must be ready (scripts run after body in base.html)
 AG.tablet = new AG.Tablet();
 
 // Tablet button in the ARIA bar
@@ -411,7 +411,7 @@ AG.events.on('challenge:opened', ({ challenge }) => {
     AG.tablet.setActiveChallenge(challenge);
 });
 
-// ARIA Hint tool button (Layer 9) — speaks the active challenge hint aloud
+// ARIA Hint tool button (Layer 9) - speaks the active challenge hint aloud
 const ariaHintToolBtn = document.getElementById('aria-hint-tool-btn');
 if (ariaHintToolBtn) {
     ariaHintToolBtn.addEventListener('click', () => {
@@ -446,14 +446,14 @@ AG.events.on('player:moved', ({ col, row }) => {
     const D = AG.DIALOGUE;
     if (!D) return;
 
-    // (a) First-move narrative — appended, not interrupting
+    // (a) First-move narrative - appended, not interrupting
     if (!_firstMoveFired) {
         _firstMoveFired = true;
         const lines = D.REGION1_EVENTS?.first_steps;
         if (lines) AG.dialogue.append(lines);
     }
 
-    // (b) Proximity zone scan — break on first zone within range so we don't
+    // (b) Proximity zone scan - break on first zone within range so we don't
     //     accidentally fire two triggers on the same step
     const zones = D.REGION1_ZONES || [];
     for (const zone of zones) {

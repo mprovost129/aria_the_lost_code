@@ -10,7 +10,7 @@ class PlayerProfile(models.Model):
 
     Created during character creation (not at registration).
     The player enters their display name and picks a gender before
-    the profile record is written — so a User can exist without a
+    the profile record is written - so a User can exist without a
     profile until they start the game for the first time.
     """
 
@@ -118,7 +118,7 @@ class Subscription(models.Model):
 
     def __str__(self):
         status = 'active' if self.is_active else 'inactive'
-        return f'{self.player} — {self.get_plan_display()} ({status})'
+        return f'{self.player} - {self.get_plan_display()} ({status})'
 
 
 class WaitlistEntry(models.Model):

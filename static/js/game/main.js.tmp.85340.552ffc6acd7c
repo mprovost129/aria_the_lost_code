@@ -1,5 +1,5 @@
 /**
- * ARIA: The Lost Code — Phaser Game Bootstrap + HUD Wiring
+ * ARIA: The Lost Code - Phaser Game Bootstrap + HUD Wiring
  *
  * Loaded last. All other game scripts have already run and attached
  * their exports to window.ARIA_GAME.
@@ -78,7 +78,7 @@ AG.events.on('pyodide:ready', () => {
     if (el) {
         el.textContent = '🐍 ready';
         el.classList.add('ready');
-        // Fade it out after 3 s — no need to keep it visible once loaded
+        // Fade it out after 3 s - no need to keep it visible once loaded
         setTimeout(() => { el.style.opacity = '0'; }, 3000);
     }
 });
@@ -107,7 +107,7 @@ function updateChancesDisplay(count) {
         dot.classList.toggle('lost', i >= count);
     });
     // Keep Tablet's ARIA tab in sync (tablet may not be instantiated yet
-    // if chances change before main.js finishes — guard with optional chain).
+    // if chances change before main.js finishes - guard with optional chain).
     AG.tablet?.updateChances(count);
 }
 
@@ -148,7 +148,7 @@ AG.events.on('aria:interact', ({ tileId, col, row }) => {
         }
 
     } else if (tileId === TILE.SHRINE) {
-        // Shrine content — implemented in Layer 7 (Tablet)
+        // Shrine content - implemented in Layer 7 (Tablet)
         AG.events.emit('aria:speak', {
             text: 'A Learning Shrine. Study the concept here before attempting the gates. (Tablet coming in Layer 7)',
         });
@@ -168,7 +168,7 @@ function _handleGateInteraction(col, row) {
     }
 
     if (state.open) {
-        // Gate already open — shouldn't be reachable but guard just in case
+        // Gate already open - shouldn't be reachable but guard just in case
         return;
     }
 
@@ -227,7 +227,7 @@ AG.events.on('boss_bug:solved', () => {
 });
 
 // ---------------------------------------------------------------------------
-// 10. Boss Challenge complete — trigger ripple wave, then show completion card
+// 10. Boss Challenge complete - trigger ripple wave, then show completion card
 // ---------------------------------------------------------------------------
 AG.events.on('boss:solved', () => {
     AG.events.emit('aria:speak', {
@@ -254,7 +254,7 @@ AG.events.on('region:restored', () => {
 
     // Animate the signal bar to 14% (1/7 regions).
     // Double-rAF ensures the CSS transition fires after the class change
-    // that unhides the element — without this the browser skips the tween.
+    // that unhides the element - without this the browser skips the tween.
     if (fill) {
         requestAnimationFrame(() => {
             requestAnimationFrame(() => {
@@ -264,7 +264,7 @@ AG.events.on('region:restored', () => {
     }
 });
 
-// Continue button — dismiss the overlay and speak a closing line
+// Continue button - dismiss the overlay and speak a closing line
 const rcContinueBtn = document.getElementById('rc-continue-btn');
 if (rcContinueBtn) {
     rcContinueBtn.addEventListener('click', () => {
@@ -285,7 +285,7 @@ if (rcContinueBtn) {
 // 11. Tablet (Layer 7)
 // ---------------------------------------------------------------------------
 
-// Instantiate Tablet — DOM must be ready (scripts run after body in base.html)
+// Instantiate Tablet - DOM must be ready (scripts run after body in base.html)
 AG.tablet = new AG.Tablet();
 
 // Tablet button in the ARIA bar

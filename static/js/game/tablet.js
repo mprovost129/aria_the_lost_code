@@ -1,12 +1,12 @@
 /**
- * ARIA: The Lost Code — Tablet UI
+ * ARIA: The Lost Code - Tablet UI
  *
  * Layer 7. A right-side drawer with three tabs:
  *
- *   challenge  — Reference view of the active challenge (read-only; the
+ *   challenge  - Reference view of the active challenge (read-only; the
  *                code editor stays in the challenge panel overlay).
- *   library    — Region 1 lesson cards. Grows with shrine unlocks in Layer 10.
- *   aria       — Chances count, received hints log, tools (Layer 9 placeholder).
+ *   library    - Region 1 lesson cards. Grows with shrine unlocks in Layer 10.
+ *   aria       - Chances count, received hints log, tools (Layer 9 placeholder).
  *
  * Events consumed (wired in main.js):
  *   challenge:opened  { challenge }   → setActiveChallenge()
@@ -17,7 +17,7 @@
 window.ARIA_GAME = window.ARIA_GAME || {};
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Region 1 — Library Content
+// Region 1 - Library Content
 // Each lesson has an id, title, and sections array.
 // Section types: 'text' | 'code' | 'list'
 // ─────────────────────────────────────────────────────────────────────────────
@@ -120,7 +120,7 @@ class Tablet {
 
         // State
         this._activeTab = 'challenge';
-        this._hints     = [];   // { text, title } — hints received this session
+        this._hints     = [];   // { text, title } - hints received this session
         this._chances   = 3;
         this._onKeyDown = null; // bound in open()
 
@@ -132,7 +132,7 @@ class Tablet {
 
     /**
      * Open the drawer.  Optionally switch to a specific tab first.
-     * @param {string|null} tab  — 'challenge' | 'library' | 'aria'
+     * @param {string|null} tab  - 'challenge' | 'library' | 'aria'
      */
     open(tab = null) {
         if (!this._overlay) return;
@@ -161,7 +161,7 @@ class Tablet {
 
     /**
      * Populate the Challenge tab when a gate opens.
-     * @param {object} challenge — from ARIA_GAME.CHALLENGES
+     * @param {object} challenge - from ARIA_GAME.CHALLENGES
      */
     setActiveChallenge(challenge) {
         if (!challenge || !this._chContent) return;
@@ -194,7 +194,7 @@ class Tablet {
 
     /**
      * Sync the Tablet's Chances dots with the HUD.
-     * @param {number} count  — 0..3
+     * @param {number} count  - 0..3
      */
     updateChances(count) {
         this._chances = count;

@@ -1,11 +1,11 @@
 /**
- * ARIA: The Lost Code — Region 1 Dialogue Data  (Layer 8)
+ * ARIA: The Lost Code - Region 1 Dialogue Data  (Layer 8)
  *
- * REGION1_ZONES     — Proximity triggers on the Origin Node map.
+ * REGION1_ZONES     - Proximity triggers on the Origin Node map.
  *                     Checked against player tile position on every player:moved.
  *                     Each zone fires at most once per session.
  *
- * REGION1_EVENTS    — Named dialogue sequences for specific game moments.
+ * REGION1_EVENTS    - Named dialogue sequences for specific game moments.
  *                     Used via AG.dialogue.append() or AG.dialogue.trigger().
  *
  * ARIA's voice in Region 1 (per BIBLE Section III):
@@ -76,7 +76,7 @@ window.ARIA_GAME.DIALOGUE.REGION1_ZONES = [
         radius: 2,
         lines: [
             'Gate three. Strings.',
-            'If you visited the shrine nearby, you are ready. If not — bold strategy. I respect it. A little.',
+            'If you visited the shrine nearby, you are ready. If not - bold strategy. I respect it. A little.',
         ],
     },
 

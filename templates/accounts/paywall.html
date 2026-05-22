@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Upgrade — ARIA: The Lost Code{% endblock %}
+{% block title %}Upgrade - ARIA: The Lost Code{% endblock %}
 {% block meta_description %}Unlock all 7 regions of ARIA: The Lost Code.{% endblock %}
 
 {% block footer %}{% endblock %}
@@ -374,15 +374,15 @@
         <div class="pw-progress">
             <div class="pw-progress-label">
                 <span>ARIA Signal Strength</span>
-                <span>14% — 1 / 7 Regions Restored</span>
+                <span>14% - 1 / 7 Regions Restored</span>
             </div>
             <div class="pw-signal-track">
                 <div class="pw-signal-fill"></div>
             </div>
             <div class="pw-regions">
-                <div class="pw-region-dot unlocked" title="Region 1 — Complete">R1 ✓</div>
+                <div class="pw-region-dot unlocked" title="Region 1 - Complete">R1 ✓</div>
                 {% for i in "234567" %}
-                <div class="pw-region-dot locked" title="Region {{ i }} — Locked">R{{ i }} 🔒</div>
+                <div class="pw-region-dot locked" title="Region {{ i }} - Locked">R{{ i }} 🔒</div>
                 {% endfor %}
             </div>
         </div>
@@ -410,7 +410,7 @@
                 <div class="pw-plan-badge">Best Value</div>
                 <div class="pw-plan-name">Annual</div>
                 <div class="pw-plan-price">$59<span style="font-size:1rem;color:#2a5a3a">.99</span></div>
-                <div class="pw-plan-period">per year — save 50%</div>
+                <div class="pw-plan-period">per year - save 50%</div>
                 <ul class="pw-plan-features">
                     <li>Everything in Monthly</li>
                     <li>Early access to Region 2 beta</li>
@@ -429,7 +429,7 @@
         <div class="pw-waitlist">
             <div class="pw-waitlist-title">
                 {% if joined %}
-                    ✓ You're on the list — we'll email you when plans launch.
+                    ✓ You're on the list - we'll email you when plans launch.
                 {% else %}
                     Not ready to pay yet? Get notified when plans launch:
                 {% endif %}
@@ -479,7 +479,7 @@
 
     if (!btn) return;  // already joined
 
-    // Plan buttons — placeholder until Stripe is integrated
+    // Plan buttons - placeholder until Stripe is integrated
     ['monthly-btn', 'annual-btn'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.addEventListener('click', () => {

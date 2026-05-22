@@ -37,11 +37,50 @@
                     </ul>
                     <ul class="navbar-nav ms-auto">
                         {% if user.is_authenticated %}
-                            <li class="nav-item">
-                                <span class="nav-link text-muted">{{ user.username }}</span>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle d-flex align-items-center gap-2"
+                                   href="#" id="profileDropdown" role="button"
+                                   data-bs-toggle="dropdown" aria-expanded="false">
+                                    <span class="aria-profile-avatar">⚡</span>
+                                    <span class="aria-profile-name">
+                                        {% if user.profile %}{{ user.profile.display_name }}{% else %}{{ user.username }}{% endif %}
+                                    </span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end aria-dropdown" aria-labelledby="profileDropdown">
+                                    <li class="aria-dropdown-header">
+                                        <div class="aria-dd-callsign">{{ user.username }}</div>
+                                        {% if user.profile %}
+                                        <div class="aria-dd-region">
+                                            Region {{ user.profile.current_region.order|default:"1" }}
+                                            &mdash; {{ user.profile.current_region.name|default:"Origin Node" }}
+                                        </div>
+                                        {% endif %}
+                                    </li>
+                                    <li><hr class="aria-dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item aria-dd-item" href="{% url 'game:play' %}">
+                                            <span class="aria-dd-icon">▶</span> Continue Playing
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item aria-dd-item" href="#">
+                                            <span class="aria-dd-icon">👤</span> Profile
+                                            <span class="aria-dd-soon">soon</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item aria-dd-item" href="#">
+                                            <span class="aria-dd-icon">⚙</span> Settings
+                                            <span class="aria-dd-soon">soon</span>
+                                        </a>
+                                    </li>
+                                    <li><hr class="aria-dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item aria-dd-item aria-dd-logout" href="{% url 'logout' %}">
+                                            <span class="aria-dd-icon">⏏</span> Sign Out
+                                        </a>
+                                    </li>
+                                </ul>
                             </li>
                         {% else %}
                             <li class="nav-item">

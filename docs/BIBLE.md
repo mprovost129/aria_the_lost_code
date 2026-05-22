@@ -736,7 +736,917 @@ Full Learn to Code section for all concepts
 
 ---
 
-XIII. Technical Decisions Log
+XIII. Curriculum and Lesson Plan
+
+This section defines the complete lesson plan for Region 1: The Origin Node. Every shrine topic is written in full with plain English explanations, analogies, worked examples, common mistakes, and the challenge it pairs with. This is the authoritative guide for all shrine content in the game and the Learn to Code section.
+
+Every lesson follows the same structure: a plain English explanation, a real-world analogy, worked examples building in complexity, common beginner mistakes, and then the challenge that tests exactly what was taught. Nothing in a challenge should surprise a player who carefully read the shrine.
+
+LESSON NOTE: The lesson plan is the most important document in the bible. The game is the delivery mechanism. The lessons are the product. Every design decision should serve the quality of the learning experience first.
+
+Region 1 Overview: The Origin Node
+
+Coding Concept: Python Fundamentals: Variables and Data Types
+Shrines: 2 (Shrine of Origins, Shrine of Expression)
+Shrine Topics: 5
+Challenges: 8 total: 3 gates, 1 roaming bug, 1 boss bug, 1 boss challenge
+Prerequisite Knowledge: None. No coding experience assumed.
+
+Region 1 introduces the most fundamental concepts in Python: how to store information in variables, what kinds of information Python understands, and how to communicate that information back out. A player who completes Region 1 will be able to name and assign any basic value, recognize the four core data types, write a formatted string, and find and fix simple syntax errors.
+
+Shrine 1: Shrine of Origins
+
+This shrine sits near the start of Region 1. It teaches three topics in sequence. Players must visit before the first two challenge gates become approachable. ARIA greets the player at the door: the shrine is the only place where the lights still work, and it contains everything they need to begin.
+
+ARIA: "The terminals are dark because they have forgotten who they are. Learn to name things. Everything in code starts there."
+
+Topic 1: Variables and Assignment
+Shrine: Shrine of Origins
+Order: 1 of 3
+Pairs With: Challenge Gate 1 (Challenges 1 and 2)
+
+What Is a Variable?
+A variable is a named container that holds a piece of information. Think of it like a labeled box. The label is the name. Whatever you put inside is the value. At any point you can look at the box, take out what is inside, replace it, or pass the box to another part of your program.
+
+In Python, you create a variable by writing the name, an equals sign, then the value. That equals sign does not mean the two sides are the same the way it does in maths. It means: take the value on the right and store it in the container named on the left.
+
+terminal_name = "Terminal A"
+status = "online"
+print(terminal_name, "is", status)
+# Output: Terminal A is online
+
+The Rules for Naming Variables
+Variable names have rules. Break them and Python will refuse to run your code.
+- Names must start with a letter or an underscore. Never a number.
+- Names can contain letters, numbers, and underscores. No spaces, no hyphens, no symbols.
+- Names are case sensitive. terminal_name and Terminal_Name are two different variables.
+- Use lowercase with underscores to separate words. This is called snake_case and is the Python convention.
+- Choose names that describe what the variable contains. x is bad. terminal_name is good.
+
+Why Variables Matter
+Without variables, every piece of information would have to be typed out every time it is needed. If you needed a player name in twenty places and it changed, you would find and change all twenty manually. With a variable, you change it once and every place that uses it updates automatically.
+
+Common Mistakes
+- Forgetting the equals sign and just writing the name alone: Python does not know what to do with a bare name.
+- Putting spaces in the name: terminal name with a space is two separate things. Neither makes sense in that context.
+- Using a reserved word as a name: print, if, for, True are already claimed by Python and cannot be used as variable names.
+- Confusing equals with comparison: a single equals sign stores a value. Two equals signs == checks if two things are the same. These are completely different operations.
+
+LESSON NOTE: Players who struggle with Challenge Gate 1 almost always have one of two problems: they forgot to put quote marks around string values, or they typed the value without the equals sign. The hint for that challenge should address these two mistakes specifically.
+
+Topic 2: Data Types
+Shrine: Shrine of Origins
+Order: 2 of 3
+Pairs With: Challenge Gate 1 (Challenges 1 and 2) and Challenge Gate 2 (Challenge 3)
+
+What Is a Data Type?
+Not all information is the same kind of thing. A name is different from an age. An age is different from whether someone passed a test. Python needs to know what kind of thing a value is so it knows what to do with it. That kind is called a data type.
+
+Region 1 teaches four data types. Every basic value in Python is one of these.
+
+String (str)
+A string is text. Any sequence of characters wrapped in quote marks. Single quotes and double quotes both work, but you must open and close with the same kind.
+
+name = "ARIA"                    # double quotes
+greeting = 'Hello, programmer'   # single quotes
+message = "I am back online"     # use double quotes to avoid apostrophe issues
+
+A string can contain letters, numbers, spaces, punctuation, and symbols. The quote marks are not part of the string. They are the container. If you forget the closing quote mark, Python keeps reading until it finds one or runs out of code, causing a SyntaxError.
+
+Integer (int)
+An integer is a whole number. No decimal point. No quote marks. Just the number itself.
+
+power_level = 100
+region_number = 1
+error_count = 0
+
+Integers can be positive, negative, or zero. You can do maths with them. If you wrap a number in quote marks it becomes a string, not an integer, and maths will fail.
+
+Float (float)
+A float is a number with a decimal point. Use floats when precision matters: percentages, measurements, prices.
+
+version = 1.0
+signal_strength = 14.3
+temperature = -2.5
+
+Boolean (bool)
+A boolean can only be one of two values: True or False. Nothing else. The capital letter is not optional. Python is case sensitive and true with a lowercase t is not a boolean, it is an error.
+
+is_active = True
+backup_running = False
+connection_established = True
+
+Booleans are the language of decisions in code. Is the connection active? Is the player out of chances? Has the gate opened? Every yes/no question in a program is answered with a boolean. Region 2 will show how booleans drive conditions. For now, know what they are and how to assign them.
+
+How Python Knows the Type
+Python figures out the data type automatically from how you write the value. You do not have to declare it.
+
+x = "hello"    # Python sees quotes: str
+y = 42         # Python sees a whole number: int
+z = 3.14       # Python sees a decimal: float
+b = True       # Python sees True or False: bool
+
+# Check the type of any value:
+print(type("hello"))   # class str
+print(type(42))        # class int
+
+Common Type Mistakes
+- Writing true or false in lowercase: Python throws a NameError because it looks for a variable called true.
+- Putting numbers in quotes: power = "100" makes power a string. You cannot do maths with it without converting it.
+- Using the letter O instead of the number zero: they look identical in many fonts. This is one of the most common beginner bugs.
+
+LESSON NOTE: The letter O vs zero mistake (Challenge 4) is intentional. Players will encounter this in real codebases. The earlier they learn to look carefully at every character, the better.
+
+Topic 3: Type Conversion
+Shrine: Shrine of Origins
+Order: 3 of 3
+Pairs With: Challenge Gate 2 (Challenge 4) and the Boss Bug (Challenge 7)
+
+Why Type Matters More Than You Think
+Data types are not just labels. They change what Python will and will not do. If you try to add a string and an integer Python stops and reports a TypeError. The fix is type conversion: explicitly telling Python to treat one type as another.
+
+The Four Conversion Functions
+
+# str() converts anything to a string
+x = str(100)       # "100"
+y = str(True)      # "True"
+
+# int() converts a string or float to an integer
+a = int("42")      # 42
+b = int(3.99)      # 3  (truncates, does not round)
+
+# float() converts a string or integer to a float
+c = float("3.14")  # 3.14
+d = float(5)       # 5.0
+
+# bool() converts a value to True or False
+e = bool(0)        # False
+f = bool(1)        # True
+g = bool("")       # False (empty string)
+h = bool("hi")     # True  (non-empty string)
+
+When Conversion Fails
+Not every conversion is possible. Converting something that does not make sense as the target type raises a ValueError.
+
+# These raise ValueError:
+int("hello")      # "hello" is not a number
+# These work fine:
+int("42")         # "42" looks like a number
+float("3.14")     # "3.14" looks like a decimal
+
+This is why the bug fix challenges matter. A value stored as the wrong type will fail silently or crash when used. Recognizing that "87" and 87 are different things is a foundational debugging skill every programmer needs.
+
+Shrine 2: Shrine of Expression
+
+This shrine sits deeper in Region 1, beyond Challenge Gate 2. It teaches string formatting and lists. Players unlock it after solving the first two gates. ARIA comments that this is where the terminals start talking back, not just listening.
+
+ARIA: "You have learned to store things. Now learn to say them. A terminal that cannot communicate is just an expensive box."
+
+Topic 4: String Formatting and f-strings
+Shrine: Shrine of Expression
+Order: 1 of 2
+Pairs With: Challenge Gate 3 (Challenge 5)
+
+The Problem with Simple Printing
+You can print a variable and you can print a string. But combining them into one readable sentence has limitations with basic comma-separated print. An f-string is the clean solution.
+
+f-strings: The Standard Way
+An f-string is a string that can contain variable values directly inside it. Write it like a normal string but put the letter f immediately before the opening quote. Then use curly braces anywhere you want to insert a variable.
+
+name = "ARIA"
+status = "online"
+message = f"{name} is now {status}"
+print(message)
+# Output: ARIA is now online
+
+The f stands for formatted. Python sees the f and knows to look inside the string for curly brace expressions. When it finds one it evaluates what is inside and drops the result into the string at that position.
+
+What Can Go Inside the Curly Braces
+Any valid Python expression works inside the curly braces of an f-string, not just a variable name.
+
+power = 87
+region = "Origin Node"
+# Variable name
+print(f"Power level: {power}")
+# Output: Power level: 87
+# Multiple variables in one string
+print(f"Node: {region}, Power: {power}")
+# Output: Node: Origin Node, Power: 87
+
+Common f-string Mistakes
+- Forgetting the f before the quote mark: the curly braces print literally instead of inserting the variable.
+- Putting quotes around the variable name inside the braces: {"name"} inserts the literal text name, not the value.
+- Misspelling the variable name inside the braces: Python raises a NameError because it cannot find a variable with that exact name.
+
+LESSON NOTE: Challenge 5 asks the player to write the f-string for ARIA's announcement. This is intentionally personal: the player is writing ARIA's voice. Make sure the ARIA success dialogue for this challenge is enthusiastic and specific.
+
+Topic 5: Lists
+Shrine: Shrine of Expression
+Order: 2 of 2
+Pairs With: Boss Challenge (Challenge 8) and Region 5 (full list curriculum)
+
+When One Variable Is Not Enough
+Every variable so far holds exactly one value. But what if you need to store several related values together? A list is a single variable that holds multiple values in order. Create one with square brackets and separate values with commas.
+
+nodes = ["Alpha", "Beta", "Gamma"]
+print(nodes)
+# Output: ['Alpha', 'Beta', 'Gamma']
+
+# Access by index (counting starts at 0, not 1)
+print(nodes[0])   # Alpha
+print(nodes[1])   # Beta
+print(nodes[2])   # Gamma
+
+Basic List Operations
+
+nodes = ["Alpha", "Beta", "Gamma"]
+print(len(nodes))         # 3
+nodes.append("Delta")
+print(nodes)              # ['Alpha', 'Beta', 'Gamma', 'Delta']
+nodes.remove("Beta")
+print(nodes)              # ['Alpha', 'Gamma', 'Delta']
+print("Alpha" in nodes)   # True
+
+Common List Mistakes
+- Using index 1 to get the first item instead of index 0: this gets the second item. Zero-based indexing is one of the most consistent beginner stumbling blocks.
+- Accessing an index that does not exist: a list of three items has valid indexes 0, 1, and 2. Trying index 3 raises an IndexError.
+- Confusing append with the plus operator: nodes + ["Delta"] creates a new list but does not change nodes. nodes.append("Delta") changes nodes in place.
+
+LESSON NOTE: Lists are introduced in Region 1 as a preview concept only. No list-specific challenge gate here. The full list curriculum comes in Region 5: The Data Wilds. This shrine topic plants the seed so the concept is not completely new when it becomes a gate challenge later.
+
+Region 1 Challenge Design Guide
+
+Every challenge in Region 1 tests exactly one thing the player has been taught. The difficulty comes from applying knowledge correctly, not from encountering something new. A player who thoroughly reads both shrines should complete every challenge on the first or second attempt.
+
+Challenge to Lesson Pairing
+- Challenge 1: Power Up Terminal A     -> Topic 1: Variables, Topic 2: Strings
+- Challenge 2: Power Up Terminal B     -> Topic 1: Variables, Topic 2: Integers, Booleans
+- Challenge 3: Identify the Data Types -> Topic 2: All four data types
+- Challenge 4: Fix the Broken Variable -> Topic 2: Common type mistakes
+- Challenge 5: String Formatting       -> Topic 4: f-strings
+- Challenge 6: Syntax Gnat (Bug)       -> Topic 1: String syntax errors
+- Challenge 7: Boss Bug                -> Topics 1 and 2: Multiple type errors
+- Challenge 8: Boss Challenge          -> Topics 1, 2, and 4: All Region 1 concepts
+
+Difficulty Progression
+- Challenges 1 and 2: Pure fill-in-the-blank. Structure given. Player supplies values.
+- Challenge 3: Multiple blanks of different types. Player identifies which type belongs where.
+- Challenge 4: Bug finding. No blanks. Player reads existing code and finds what is wrong.
+- Challenge 5: f-string writing. Player constructs the formatted string from scratch.
+- Challenge 6: Single-error bug fix under battle conditions with a Chance cost for failure.
+- Challenge 7: Multi-error bug fix. Two errors hidden in four lines of code.
+- Challenge 8: Boss. All concepts. Partially open code. Player writes the f-string themselves.
+
+Validation Philosophy
+Region 1 validation compares the output of the player's code against the expected output stored in the database. This handles most valid variations automatically. For challenges with flexible output (Challenge 3 and Challenge 8), validation checks that the code runs without error and all four variable types are correctly assigned. Exact values are flexible as long as types are right.
+
+LESSON NOTE: The Boss Challenge is intentionally flexible. The player names themselves. Their age is their real age. Their version is their own choice. This personalization is not optional. It is the point. The player is introducing themselves to the system. ARIA's success response should be warm and specific.
+
+ARIA Dialogue Design Guide for Region 1
+
+ARIA has four dialogue moments in every challenge: the intro, the hint after the first wrong answer, the success reaction, and the fail reaction on second and subsequent wrong answers. Each serves a specific purpose and none should be wasted.
+
+- Intro: Sets the scene. Connects the challenge to the world narrative. Gives the player a reason to care.
+- Hint: Points toward the lesson without giving the answer. References the specific concept. Never condescending.
+- Success: Celebrates specifically. Names what the player did right. Connects back to ARIA's recovery.
+- Fail: Acknowledges the attempt. Redirects toward the library. Maintains ARIA's personality under pressure.
+
+ARIA: "That was incorrect. Which is fine. Incorrect is information. It tells us what not to do. Now go read your library and come back with the right answer."
+
+ARIA: "You assigned all four types correctly. I would say I am proud but I am an AI and the concept is complicated. Let's say I am running at optimal capacity. Same thing."
+
+LESSON NOTE: ARIA should never say good job without being specific about what was good. Generic praise feels hollow and players stop listening. Every success line should name the concept the player used correctly.
+
+Learn to Code Section: Region 1 Content Map
+
+The standalone Learn to Code section mirrors the shrine content in web page format outside the game. Each shrine topic becomes a lesson page ending with a direct link to the relevant Practice Area challenges. The content is identical but the presentation is different: no ARIA narrative, no game context, just clean educational content.
+
+- Lesson 1: Variables and Assignment      -> Challenges 1 and 2
+- Lesson 2: Data Types                    -> Challenges 1, 2, and 3
+- Lesson 3: Type Conversion               -> Challenge 4 and Boss Bug
+- Lesson 4: String Formatting (f-strings) -> Challenge 5
+- Lesson 5: Lists                         -> Boss Challenge and Region 5 preview
+
+Every challenge gate references the corresponding lesson page when the player asks for a hint. The lesson page is the authoritative source. The shrine is the in-world version of the same content. Both must always be in sync.
+
+LESSON NOTE: The Learn section and the shrine content must stay synchronized. If the shrine is updated the Learn section page must be updated to match. Treat them as two presentations of one document, not two separate documents.
+
+Post Region 1 Curriculum Notes
+
+The structure established in Region 1 is the template for all future regions. Each region will have its own section in this document following the same format: shrine topics written in full, challenge-lesson pairings, difficulty progression notes, validation philosophy, and ARIA dialogue guidelines.
+
+The following topics are queued for future regions and will be written in full before development of those regions begins:
+- Region 2: Comparison operators, if statements, elif, else, logical operators (and, or, not)
+- Region 3: for loops, while loops, range(), break, continue, nested loops
+- Region 4: Defining functions, parameters, return values, scope, local vs global variables
+- Region 5: List indexing, slicing, list methods, iterating through lists, sorting and filtering
+- Region 6: Classes, objects, attributes, methods, the self keyword, inheritance, polymorphism
+- Region 7: Reading tracebacks, identifying error types, systematic debugging, combining all concepts
+
+LESSON NOTE: Write the full curriculum for a region before building any shrine content in code. The written lesson is the specification. The code is the implementation. Never build first and document later.
+
+---
+
+XIV. Region 1 Shrine Lesson Content
+
+This section contains the complete word-for-word lesson text and exact code examples for every shrine in Region 1. This is what the player reads on screen inside the shrine. Each shrine ends with a small challenge the player must pass to earn that lesson in their Tablet Library.
+
+Code examples are displayed without output. The player is expected to read the code, think about what it will do, and press the Run button to see the result. This is intentional. The act of predicting output before running it is one of the most important habits a beginning programmer can build.
+
+NOTE: Every shrine lesson is written at a level that assumes zero prior coding experience. No jargon without explanation. No assumed knowledge. Every concept introduced is immediately shown in working code.
+
+Shrine 1: Variables and Assignment
+Region: Region 1: The Origin Node
+Topic: Variables and Assignment
+Unlocks: Tablet Library entry: Variables and Assignment
+End Challenge: Fill-in-the-blank, difficulty similar to Challenge Gate 1
+
+Lesson Text
+
+Welcome to your first lesson. Everything you learn here will be added to your Tablet Library. You can come back and read it any time.
+
+A variable is a named container that holds a piece of information. Think of it like a labeled box. You give the box a name, and you put a value inside it. Whenever you need that value, you just use the name of the box.
+
+In Python, you create a variable like this:
+
+terminal_name = "Terminal A"
+
+The name is on the left. The equals sign means store this. The value is on the right. Read it as: create a container called terminal_name and put the text Terminal A inside it.
+
+Once you have created a variable, you can use it anywhere in your program by writing its name.
+
+terminal_name = "Terminal A"
+print(terminal_name)
+
+The print function displays a value on screen. Try hitting Run and see what appears.
+
+You can store a variable and use it multiple times. The box remembers what is inside it.
+
+terminal_name = "Terminal A"
+status = "online"
+print(terminal_name)
+print(status)
+print(terminal_name, "is", status)
+
+You can also change what is inside a variable at any time. The new value replaces the old one.
+
+status = "offline"
+print(status)
+status = "online"
+print(status)
+
+Naming Rules
+Variable names in Python follow strict rules. Break them and Python will refuse to run your code.
+- Start with a letter or an underscore. Never a number.
+- Use only letters, numbers, and underscores. No spaces, no hyphens.
+- Names are case sensitive. status and Status are two completely different variables.
+- Use lowercase letters with underscores to separate words. This style is called snake_case and it is the standard Python convention.
+- Choose names that describe what the variable holds. x tells you nothing. terminal_name tells you exactly what it is.
+
+Here is a quick look at names that work and names that do not:
+
+# These are valid variable names:
+terminal_name = "Terminal A"
+region1 = "Origin Node"
+_status = "online"
+
+# These will cause errors:
+# 1terminal = "bad"      starts with a number
+# terminal name = "bad"  space in the name
+# terminal-name = "bad"  hyphen is not allowed
+
+The lines starting with # are called comments. Python ignores them completely. They are notes for the programmer. You will use them constantly to explain your code.
+
+Why Variables Matter
+Imagine you have a player's name used in fifty different places in your program. Without a variable, you type it out fifty times. If the name changes, you have to find and fix all fifty. With a variable, you change it in one place and every other place updates automatically. That is the power of variables.
+
+Common Mistakes
+
+Mistake 1: Forgetting the equals sign.
+terminal_name   # This does nothing useful
+terminal_name = "Terminal A"   # This is correct
+
+Mistake 2: Putting a space in the variable name.
+# terminal name = "Terminal A"   Error: space not allowed
+terminal_name = "Terminal A"    # Correct: use underscore
+
+Mistake 3: Using = when you mean ==.
+status = "online"       # stores the value online in status
+status == "online"      # checks if status equals online, does not store anything
+
+Shrine Challenge
+The three terminals in this shrine are dark because they have no identity. Fill in the missing values to restore them. Use what you just learned about variables.
+
+# Fill in the three missing values
+terminal_id = ___
+region = ___
+is_operational = ___
+print(terminal_id, "is in", region, "and operational:", is_operational)
+
+VALIDATION: terminal_id must be a string. region must be a string. is_operational must be a boolean. All three variables must be assigned. The print statement must run without error. Exact string values are flexible.
+
+---
+
+Shrine 2: Strings
+Region: Region 1: The Origin Node
+Topic: Strings
+Unlocks: Tablet Library entry: Strings
+End Challenge: Fill-in-the-blank and bug fix, difficulty similar to Challenge Gate 1
+
+Lesson Text
+
+In the last lesson you created variables and stored values in them. One of those values was text: Terminal A. In Python, any piece of text is called a string.
+
+A string is a sequence of characters wrapped in quote marks. The quote marks are not part of the string. They tell Python where the string starts and where it ends.
+
+message = "Hello, programmer"
+print(message)
+
+You can use single quotes or double quotes. Both work. But you must open and close with the same kind.
+
+message1 = "This uses double quotes"
+message2 = 'This uses single quotes'
+print(message1)
+print(message2)
+
+A string can contain letters, numbers, spaces, punctuation, and symbols. Everything between the quote marks is part of the string.
+
+node_id = "Origin-01"
+signal = "14.3 MHz"
+message = "ARIA is back online!"
+print(node_id)
+print(signal)
+print(message)
+
+Combining Strings
+You can join two strings together using the plus sign. This is called concatenation.
+
+first = "Origin"
+second = " Node"
+full_name = first + second
+print(full_name)
+
+Notice the space at the start of the second string. Concatenation joins strings exactly as they are. If you want a space between two words, you have to include it.
+
+# Without space:
+result = "Origin" + "Node"
+print(result)
+# With space:
+result = "Origin" + " " + "Node"
+print(result)
+
+String Length
+You can find out how many characters are in a string using the len function. Every character counts, including spaces.
+
+message = "Terminal A"
+print(len(message))
+region = "Origin Node"
+print(len(region))
+
+Common String Mistakes
+
+Mistake 1: Forgetting the closing quote mark. Python keeps reading until it finds a matching quote or runs out of code. This causes a SyntaxError.
+# This causes an error:
+# message = "Hello
+# This is correct:
+message = "Hello"
+
+Mistake 2: Mixing quote types. You must open and close with the same kind.
+# This causes an error:
+# message = "Hello'
+# These are correct:
+message1 = "Hello"
+message2 = 'Hello'
+
+Mistake 3: Trying to do maths with a string that looks like a number. The quote marks make it a string, not a number. You cannot add two string numbers together and get a mathematical result.
+
+a = "10"
+b = "20"
+print(a + b)
+
+Run that and see what Python actually does. It might surprise you. This is one of the most important things to understand about data types.
+
+Shrine Challenge
+One of the terminals is displaying broken output. The string has errors in it. Find them, fix them, and make the terminal display its message correctly.
+
+# Fix the errors in these strings
+terminal_id = "Origin-01
+location = 'Server Room"
+message = terminal_id + " is located in " + location
+print(message)
+
+VALIDATION: terminal_id must have a closing double quote. location must use matching quote types. The concatenation must produce a valid string. The print must run without error and display a complete message.
+
+---
+
+Shrine 3: Integers and Floats
+Region: Region 1: The Origin Node
+Topic: Integers and Floats
+Unlocks: Tablet Library entry: Integers and Floats
+End Challenge: Fill-in-the-blank with arithmetic, difficulty similar to Challenge Gate 1
+
+Lesson Text
+
+You have stored text in variables. Now you will store numbers. Python has two main types of numbers: integers and floats.
+
+An integer is a whole number. No decimal point. It can be positive, negative, or zero.
+
+power_level = 100
+region_number = 1
+error_count = 0
+temperature = -12
+print(power_level)
+print(region_number)
+print(error_count)
+print(temperature)
+
+A float is a number with a decimal point. Use floats when you need precision, such as for measurements, percentages, or version numbers.
+
+signal_strength = 14.3
+version = 1.0
+completion = 87.5
+temperature = -2.5
+print(signal_strength)
+print(version)
+print(completion)
+print(temperature)
+
+Doing Maths
+Unlike strings, numbers can be used in calculations. Python supports all the basic arithmetic operations.
+
+a = 100
+b = 25
+print(a + b)    # addition
+print(a - b)    # subtraction
+print(a * b)    # multiplication
+print(a / b)    # division
+print(a // b)   # floor division (whole number result)
+print(a % b)    # modulo (remainder after division)
+print(a ** 2)   # exponent (a to the power of 2)
+
+Run that and look carefully at the results. Notice that regular division always produces a float, even when the answer divides evenly. Floor division produces an integer by dropping everything after the decimal point.
+
+You can also mix integers and floats in calculations. Python handles this automatically.
+
+power = 100
+efficiency = 0.85
+actual_power = power * efficiency
+print(actual_power)
+
+Numbers Are Not Strings
+This is one of the most important things to understand early. A number and a string that looks like a number are completely different things.
+
+a = 10      # this is an integer
+b = "10"    # this is a string
+print(a + a)
+print(b + b)
+
+Run that. The first print adds two numbers together. The second joins two strings together. The results are completely different. Never put quote marks around a number unless you specifically want it to be a string.
+
+Common Mistakes
+
+Mistake 1: Putting a number in quotes.
+power = "100"   # this is a string, not an integer
+power = 100     # this is an integer
+
+Mistake 2: Using the letter O instead of the number zero. In many fonts they look identical. Always look carefully.
+count = 10O   # wrong: the last character is the letter O
+count = 100   # correct: three digits
+
+Mistake 3: Trying to mix a number and a string in an operation without converting first.
+power = 100
+label = "Power level: "
+# This will cause a TypeError:
+# print(label + power)
+# This works: convert the integer to a string first
+print(label + str(power))
+
+Shrine Challenge
+The power systems in this region need to be calculated before the terminals can reboot. Fill in the missing values and complete the calculation.
+
+# Fill in the missing values
+max_power = ___
+efficiency = ___
+regions_online = ___
+# Calculate actual power and power per region
+actual_power = max_power * efficiency
+power_per_region = actual_power / regions_online
+print(actual_power)
+print(power_per_region)
+
+VALIDATION: max_power must be an integer greater than zero. efficiency must be a float between 0.0 and 1.0. regions_online must be an integer greater than zero. Both calculations must run without error and produce numeric output.
+
+---
+
+Shrine 4: Booleans
+Region: Region 1: The Origin Node
+Topic: Booleans
+Unlocks: Tablet Library entry: Booleans
+End Challenge: Fill-in-the-blank, difficulty similar to Challenge Gate 1
+
+Lesson Text
+
+You have stored text and numbers. Now you will store the simplest kind of value in programming: a boolean.
+
+A boolean has exactly two possible values: True or False. That is it. Nothing else. Think of it like a switch. The switch is either on or off. The connection is either established or it is not. The terminal is either active or it is not.
+
+is_active = True
+backup_running = False
+connection_established = True
+has_errors = False
+print(is_active)
+print(backup_running)
+print(connection_established)
+print(has_errors)
+
+The capital letter on True and False is not optional. Python is case sensitive. Writing true with a lowercase t is not a boolean. Python will look for a variable called true and when it cannot find one it will raise an error.
+
+# This is correct:
+is_active = True
+is_active = False
+# These will cause a NameError:
+# is_active = true
+# is_active = false
+# is_active = TRUE
+
+What Booleans Are Used For
+Booleans are the language of decisions in programming. Every question with a yes or no answer is a boolean. Every condition that controls whether your code does something or skips it uses a boolean.
+
+You will use booleans constantly starting in Region 2 when you learn about conditions. For now, focus on what they are and how to assign them correctly.
+
+Here is a preview of how booleans power decisions. You do not need to fully understand this yet. Just read it and see if it makes sense:
+
+is_active = True
+if is_active:
+    print("Terminal is online")
+else:
+    print("Terminal is offline")
+
+If is_active is True, the first message prints. If it is False, the second message prints. That is the core of how programs make decisions. Region 2 will teach you everything about this. For now, run the code above and then try changing is_active to False and running it again.
+
+Booleans from Comparisons
+You can also produce a boolean by comparing two values. Python evaluates the comparison and gives you True or False as the result.
+
+power = 100
+minimum = 50
+print(power > minimum)
+print(power < minimum)
+print(power == minimum)
+print(power != minimum)
+
+Run that and look at what each line produces. The double equals == checks if two things are equal. The != checks if they are not equal. These comparison operators all produce a True or False result.
+
+Common Mistakes
+
+Mistake 1: Lowercase true or false.
+# Wrong:
+# is_active = true
+# Correct:
+is_active = True
+
+Mistake 2: Using = instead of == to compare. A single equals sign stores a value. Double equals checks if two values are the same.
+power = 100
+# This stores 50 in power, it does not compare:
+power = 50
+# This compares power to 50 and produces True or False:
+print(power == 50)
+
+Mistake 3: Thinking 0 and False are the same thing, or that 1 and True are the same. Python treats them similarly in some situations but they are different types. Use the right one for the right job. Store yes/no states as booleans, not as 1 and 0.
+
+Shrine Challenge
+The status board for this shrine needs to be completed. Each system needs a boolean status. Fill in the missing values so the board can display correctly.
+
+# Complete the status board
+power_system = ___
+cooling_system = ___
+backup_generator = ___
+network_connection = ___
+print("Power:", power_system)
+print("Cooling:", cooling_system)
+print("Backup:", backup_generator)
+print("Network:", network_connection)
+
+VALIDATION: All four variables must be assigned boolean values (True or False). Capitalization must be correct. The print statements must run without error and display True or False for each system.
+
+---
+
+Shrine 5: Type Conversion
+Region: Region 1: The Origin Node
+Topic: Type Conversion
+Unlocks: Tablet Library entry: Type Conversion
+End Challenge: Bug fix with type errors, difficulty similar to Challenge Gate 2
+
+Lesson Text
+
+You have now learned four data types: strings, integers, floats, and booleans. Each type has its own rules about what you can do with it. But sometimes you need to convert a value from one type to another. This is called type conversion.
+
+Consider this situation. A terminal sends you its power level as text: "87". You want to do maths with it. Can you?
+
+power_text = "87"
+boosted = power_text + 10
+print(boosted)
+
+Run that. Python will raise a TypeError because you cannot add a string and an integer. The value 87 is inside quote marks, which makes it a string, not a number. Even though it looks like a number, Python treats it as text.
+
+The fix is type conversion: explicitly telling Python to treat the string as an integer first.
+
+power_text = "87"
+power_number = int(power_text)
+boosted = power_number + 10
+print(boosted)
+
+The int function converts the string "87" into the integer 87. Now the maths works.
+
+The Four Conversion Functions
+Python has four built-in functions for converting between types.
+
+str() converts anything into a string.
+power = 100
+version = 1.5
+active = True
+print(str(power))
+print(str(version))
+print(str(active))
+print(type(str(power)))
+
+int() converts a string or float into a whole number. When converting a float, it drops everything after the decimal point. It does not round.
+text_number = "42"
+float_number = 3.99
+print(int(text_number))
+print(int(float_number))
+
+float() converts a string or integer into a decimal number.
+whole = 5
+text = "3.14"
+print(float(whole))
+print(float(text))
+
+bool() converts any value into True or False. Zero, empty, and nothing become False. Everything else becomes True.
+print(bool(0))      # zero is False
+print(bool(1))      # any non-zero number is True
+print(bool(100))    # any non-zero number is True
+print(bool(""))     # empty string is False
+print(bool("hi"))   # non-empty string is True
+
+When Conversion Fails
+Not every conversion makes sense. If you try to convert something that cannot be interpreted as the target type, Python raises a ValueError.
+
+# This works fine:
+print(int("42"))
+# This raises a ValueError:
+# print(int("hello"))
+# This works fine:
+print(float("3.14"))
+# This raises a ValueError:
+# print(float("ARIA"))
+
+The rule is simple: you can only convert a string to a number if the string actually looks like a number.
+
+Checking the Type
+You can always check what type a value is using the type function. This is useful when something is not behaving the way you expect.
+
+a = 42
+b = "42"
+c = 42.0
+d = True
+print(type(a))
+print(type(b))
+print(type(c))
+print(type(d))
+
+Run that and look at the output. Even though a, b, and c all look like they hold the same number, Python sees them as three completely different types.
+
+Shrine Challenge
+The data coming in from the network is all the wrong type. The power level came in as a string, the version as an integer, and the signal as text. Convert each one to the correct type so the system can process it.
+
+# These values arrived in the wrong type
+power_raw = "95"
+version_raw = 2
+signal_raw = "14.7"
+# Convert each to the correct type
+power = ___
+version = ___
+signal = ___
+# Now these calculations should work
+total = power + 5
+full_version = version + 0.1
+strong_signal = signal > 10.0
+print(total)
+print(full_version)
+print(strong_signal)
+
+VALIDATION: power must be converted to int. version must be converted to float. signal must be converted to float. All three calculations must run without error. strong_signal must produce a boolean result.
+
+---
+
+Shrine 6: f-strings and String Formatting
+Region: Region 1: The Origin Node
+Topic: f-strings and String Formatting
+Unlocks: Tablet Library entry: f-strings and String Formatting
+End Challenge: Write an f-string from scratch, difficulty between Gate 2 and Gate 3
+
+Lesson Text
+
+You know how to store values in variables. You know how to print them. But what if you want to combine a variable with text in a single clean message? There is a much better way than concatenation, and you are about to learn it.
+
+Here is the problem with basic concatenation:
+
+terminal = "Terminal A"
+status = "online"
+power = 100
+# This works but it is awkward:
+print("Terminal: " + terminal + " Status: " + status + " Power: " + str(power))
+
+You have to add quote marks and plus signs everywhere. You have to manually convert numbers to strings with str(). It is hard to read and easy to make mistakes.
+
+There is a better way. It is called an f-string.
+
+What Is an f-string?
+An f-string is a string with a lowercase f placed immediately before the opening quote mark. Inside the string, you can put any variable name inside curly braces and Python will automatically insert its value.
+
+terminal = "Terminal A"
+status = "online"
+power = 100
+message = f"Terminal: {terminal} Status: {status} Power: {power}"
+print(message)
+
+Run that. The f at the start tells Python this is a formatted string. The curly braces tell Python: insert the value of this variable here. Python handles the conversion automatically. No plus signs. No str() calls. Just readable code.
+
+Building f-strings
+You can use as many variables as you want inside one f-string. Each one goes in its own set of curly braces.
+
+name = "ARIA"
+region = "Origin Node"
+signal = 14.3
+active = True
+print(f"{name} is operating in {region}")
+print(f"Signal strength: {signal}")
+print(f"System active: {active}")
+print(f"{name} in {region} with signal {signal} and active: {active}")
+
+You can also put expressions directly inside the curly braces. Python evaluates them and inserts the result.
+
+max_power = 200
+efficiency = 0.85
+print(f"Actual power: {max_power * efficiency}")
+print(f"Double power would be: {max_power * 2}")
+
+Formatting Numbers in f-strings
+You can control how numbers look inside an f-string by adding a format specifier after the variable name, separated by a colon.
+
+signal = 14.3456789
+completion = 0.875
+# Round to 2 decimal places:
+print(f"Signal: {signal:.2f}")
+# Display as a percentage:
+print(f"Completion: {completion:.1%}")
+
+The :.2f means: format as a float with 2 decimal places. The :.1% means: format as a percentage with 1 decimal place.
+
+Common f-string Mistakes
+
+Mistake 1: Forgetting the f before the quote mark. Without the f, curly braces are just literal characters and no substitution happens.
+name = "ARIA"
+# Without f: curly braces print literally
+print("{name} is online")
+# With f: the variable value is inserted
+print(f"{name} is online")
+
+Mistake 2: Putting quote marks around the variable name inside the braces.
+name = "ARIA"
+# Wrong: inserts the literal text name, not the value
+# print(f"{"name"} is online")
+# Correct: inserts the value of the variable name
+print(f"{name} is online")
+
+Mistake 3: Misspelling the variable name inside the curly braces. Python will raise a NameError because it looks for a variable with that exact spelling.
+terminal_name = "Terminal A"
+# Wrong: terminal_nmae does not exist
+# print(f"{terminal_nmae} is online")
+# Correct:
+print(f"{terminal_name} is online")
+
+Shrine Challenge
+The main display terminal needs a status report written as a single formatted message. You have all the variables. Write the f-string that combines them into one complete line.
+
+# These variables are already set
+node_name = "Origin Node"
+terminals_online = 3
+signal_strength = 14.3
+aria_status = "reconnecting"
+# Write ONE f-string that includes all four variables
+# The message must reference node_name, terminals_online,
+# signal_strength, and aria_status
+report = ___
+print(report)
+
+VALIDATION: report must be an f-string (starts with f before the quote). The f-string must reference all four variables by name inside curly braces. The print must run without error and display a complete message containing all four values.
+
+NOTE: All six shrine lessons are now fully documented for Region 1. These are the authoritative lesson texts. Any updates to shrine content must be reflected here first. The game implementation follows this document, not the other way around.
+
+---
+
+XV. Technical Decisions Log
 
 This section records every significant technical or design decision made during development. All decisions are recorded here so they can be referenced, revisited, or reversed with full context. Any decision not documented here should be considered undecided.
 
@@ -836,7 +1746,7 @@ HUD: Chance icons (glowing green dots) and Tablet button, same bar
 
 ---
 
-XIV. Build Progress Log
+XVI. Build Progress Log
 
 Layer 1: Django Project Setup and Render Deployment
 Status: Complete
@@ -880,7 +1790,7 @@ Date: 2026-05-21
 Files created:
   static/js/game/data/region1_challenges.js  All 8 Region 1 challenges hardcoded
                                               (Layer 10 replaces with API fetch)
-  static/js/game/challenge.js                ChallengePanel class — overlay, editor,
+  static/js/game/challenge.js                ChallengePanel class - overlay, editor,
                                              hint, submit, result, event emission
 Files updated:
   static/js/game/scenes/OriginNodeScene.js   Added tileImages registry, updateTile(),
@@ -902,7 +1812,7 @@ Layer 5: Code Submission and Pyodide Validation
 Status: Complete
 Date: 2026-05-21
 Files created:
-  static/js/game/pyodide_runner.js   PyodideRunner class — loads Pyodide from CDN,
+  static/js/game/pyodide_runner.js   PyodideRunner class - loads Pyodide from CDN,
                                      captures stdout, cleans Python tracebacks
 Files updated:
   static/js/game/challenge.js        _submit and _validate are now async;
@@ -924,7 +1834,7 @@ Notes:
   Two validation modes:
     Standard: stdout.trim() === expected_output.trim()
     Sentinel: challenge has validation_code; stdout must end with __VALID__
-  Challenges ch3 and ch4 use sentinel mode (no print in player code — types checked).
+  Challenges ch3 and ch4 use sentinel mode (no print in player code - types checked).
   Challenge ch8 uses sentinel mode (player's print runs first, then type checks).
   No infinite-loop timeout in V1. Region 1 challenges cannot produce loops.
     Post-V1: move Pyodide to a Web Worker, add interrupt mechanism.
@@ -936,7 +1846,7 @@ Status: COMPLETE (2026-05-21)
 Files changed:
   static/js/game/scenes/OriginNodeScene.js
     - _generateTileTextures(): ROAD_RESTORED (9) = bright green circuit trace + corner dots;
-      FLOOR_LIT (10) = warm green grid lines — both fully drawn programmatically.
+      FLOOR_LIT (10) = warm green grid lines - both fully drawn programmatically.
     - _listenToBus(): region:restore → _restoreRegion()
     - _restoreRegion(AG): camera flash → player glow burst → collects all ROAD/FLOOR
       tiles sorted by Manhattan distance from boss chamber at (22,5) → staggered
@@ -956,7 +1866,7 @@ Files changed:
       (scale spring animation via cubic-bezier(0.34,1.56,0.64,1)); .rc-avatar pulse keyframes;
       .rc-signal-bar-fill (width 0→14.3% transition with 0.5s delay); .rc-badge; #rc-continue-btn.
     - HTML: #region-complete-overlay containing #region-complete-card with ARIA avatar,
-      "SIGNAL RESTORED" / "THE ORIGIN NODE — ONLINE" heading, ARIA dialogue, signal
+      "SIGNAL RESTORED" / "THE ORIGIN NODE - ONLINE" heading, ARIA dialogue, signal
       strength bar (14%, 1/7 regions), "Concept Mastered: Python Basics" badge,
       Continue button.
 
@@ -973,15 +1883,15 @@ Files changed:
     - _REGION1_LESSONS: 5 lesson objects (Variables, Data Types, Type Conversion,
       Strings, Lists), each with an array of typed sections (text/code/list).
     - Tablet class:
-        open(tab?)         — adds .open to overlay, starts Escape listener
-        close()            — removes .open, removes Escape listener
-        switchTab(name)    — toggles .active on tab buttons + panels
-        setActiveChallenge(challenge) — populates Challenge tab
-        addHint({text, title})        — logs hint to ARIA tab (newest first)
-        updateChances(count)          — syncs chance dots + "N / 3" label
-        _buildLibrary()    — generates .lib-card HTML from _REGION1_LESSONS
-        _buildSection(s)   — renders text/code/list blocks
-        _escHtml(str)      — escapes < > & for safe <pre> insertion
+        open(tab?)         - adds .open to overlay, starts Escape listener
+        close()            - removes .open, removes Escape listener
+        switchTab(name)    - toggles .active on tab buttons + panels
+        setActiveChallenge(challenge) - populates Challenge tab
+        addHint({text, title})        - logs hint to ARIA tab (newest first)
+        updateChances(count)          - syncs chance dots + "N / 3" label
+        _buildLibrary()    - generates .lib-card HTML from _REGION1_LESSONS
+        _buildSection(s)   - renders text/code/list blocks
+        _escHtml(str)      - escapes < > & for safe <pre> insertion
 
   static/js/game/challenge.js
     - open(): emits challenge:opened { challenge } after challenge:open
@@ -1007,10 +1917,10 @@ Files changed:
     - Script: tablet.js added between challenge.js and main.js.
 
 Tab summary (V1):
-  Challenge — shows active challenge title, ARIA intro, prompt code, lesson ref.
+  Challenge - shows active challenge title, ARIA intro, prompt code, lesson ref.
               Populated on challenge:opened; note reminds player to use the gate editor.
-  Library   — 5 static Region 1 lesson cards. Grows via shrines in Layer 10.
-  ARIA      — 3 chance dots (synced with HUD), hints log (newest first), tools stub.
+  Library   - 5 static Region 1 lesson cards. Grows via shrines in Layer 10.
+  ARIA      - 3 chance dots (synced with HUD), hints log (newest first), tools stub.
 
 Layer 8: ARIA Dialogue System
 Status: COMPLETE (2026-05-21)
@@ -1018,13 +1928,13 @@ Status: COMPLETE (2026-05-21)
 Files changed:
   static/js/game/dialogue.js  (NEW)
     - DialogueSystem class, constructor takes the #aria-text DOM element.
-    - say(text)          — interrupt + typewriter (for game events via aria:speak)
-    - append(lines)      — queue without interrupting (for narrative sequences)
-    - trigger(id, lines) — one-time proximity trigger; skips if ARIA is busy
-    - _startTyping(text) — typewriter at 15ms/char; holds 2600ms after line complete
-    - _advanceQueue()    — shifts next line from queue; sets _typing=false when empty
-    - _interrupt()       — clears timer + queue + flag (used by say())
-    - _firedTriggers     — Set; prevents proximity zones from repeating per session
+    - say(text)          - interrupt + typewriter (for game events via aria:speak)
+    - append(lines)      - queue without interrupting (for narrative sequences)
+    - trigger(id, lines) - one-time proximity trigger; skips if ARIA is busy
+    - _startTyping(text) - typewriter at 15ms/char; holds 2600ms after line complete
+    - _advanceQueue()    - shifts next line from queue; sets _typing=false when empty
+    - _interrupt()       - clears timer + queue + flag (used by say())
+    - _firedTriggers     - Set; prevents proximity zones from repeating per session
 
   static/js/game/data/region1_dialogue.js  (NEW)
     - REGION1_ZONES: 7 proximity trigger objects
@@ -1091,7 +2001,7 @@ Files changed:
       sets AG.chancesEmpty=true and schedules AG.challengePanel.close() after 2200ms
     - chance:restore handler: clears AG.chancesEmpty, calls _syncChances(3)
     - _handleGateInteraction(): returns early with ARIA speech if AG.chancesEmpty
-    - Section 5 (new): fetch('/api/player-state/') on page load — initialises HUD
+    - Section 5 (new): fetch('/api/player-state/') on page load - initialises HUD
       from persisted count; sets AG.chancesEmpty=true if count===0
     - ARIA Hint tool button: #aria-hint-tool-btn click →
         if AG.tablet._activeChallenge: emit aria:speak with hint_text, close Tablet
@@ -1111,19 +2021,19 @@ Status: Complete
 Components delivered:
 
 1. Character Creation flow
-   game/views.py          — character_create() view (GET/POST)
+   game/views.py          - character_create() view (GET/POST)
                             GET: renders character_creation.html
                             POST: validates display_name (1–50 chars) + gender (male/female),
                                   creates PlayerProfile, creates PlayerRegionProgress for Region 1
                                   (is_unlocked=True), redirects to game:play
                             Guard: if profile already exists → redirect to game:play immediately
-   game/urls.py           — path('character/', views.character_create, name='character_create')
+   game/urls.py           - path('character/', views.character_create, name='character_create')
    templates/game/character_creation.html
-                          — ARIA-themed centered card; scanline body overlay; ARIA greeting block
+                          - ARIA-themed centered card; scanline body overlay; ARIA greeting block
                             (avatar + typewriter text); display name input; gender selector
                             (two radio cards with emoji icons, CSS :checked state); error display;
                             submit button; csrf_token; POST re-populates fields on validation fail
-   game/views.py          — GameView.get() now checks for profile; redirects to character_create
+   game/views.py          - GameView.get() now checks for profile; redirects to character_create
                             if request.user has no related profile
 
 2. Learning Shrine modal
@@ -1132,19 +2042,19 @@ Components delivered:
        shrine1  cols:[5,6] rows:[3,4]  name:'Shrine of Origins'
                 topics: Variables & Assignment, Data Types, Type Conversion
        shrine2  cols:[9,10] rows:[8,9] name:'Shrine of Expression'
-                topics: String Formatting — f-strings, Lists
+                topics: String Formatting - f-strings, Lists
      Each topic has sections typed text/code/list following the same shape as tablet.js lessons.
 
    static/js/game/shrine.js  (NEW)
      class ShrineModal:
-       constructor()     — binds close button, backdrop click, ESC keydown
-       open(shrine)      — sets title, renders topics via _renderShrine(), adds .open class,
+       constructor()     - binds close button, backdrop click, ESC keydown
+       open(shrine)      - sets title, renders topics via _renderShrine(), adds .open class,
                            emits aria:speak with shrine.aria_intro
-       close()           — removes .open class
-       _renderShrine()   — maps topics → _renderTopic()
-       _renderTopic()    — renders topic number, title, sections via _renderSection()
-       _renderSection()  — type: text → <p>, code → <pre> (HTML-escaped), list → <ul>
-       _escHtml()        — escapes & < > " for code blocks
+       close()           - removes .open class
+       _renderShrine()   - maps topics → _renderTopic()
+       _renderTopic()    - renders topic number, title, sections via _renderSection()
+       _renderSection()  - type: text → <p>, code → <pre> (HTML-escaped), list → <ul>
+       _escHtml()        - escapes & < > " for code blocks
      window.ARIA_GAME.ShrineModal = ShrineModal
 
    templates/game/game.html  (UPDATED)
@@ -1158,7 +2068,7 @@ Components delivered:
 
    static/js/game/main.js  (UPDATED)
      Section 11 (new): AG.shrineModal = new AG.ShrineModal()
-                        _identifyShrine(col, row) — scans AG.SHRINES for a shrine whose
+                        _identifyShrine(col, row) - scans AG.SHRINES for a shrine whose
                         cols/rows arrays include the given position; returns shrine or null
      aria:interact shrine branch: calls _identifyShrine(); opens AG.shrineModal.open(shrine)
                                   if matched; fallback ARIA speak if not matched
@@ -1170,18 +2080,18 @@ Components delivered:
    game/management/commands/load_region1.py
      Command: load_region1   --reset flag (destructive wipe before reload)
      Loads in one @transaction.atomic block:
-       Region 1 (The Origin Node) — slug origin-node, order 1, unlocked_by_default True
-       Shrine 1 (Shrine of Origins)  — 3 ShrineTopic records (Variables, Data Types, Type Conversion)
-       Shrine 2 (Shrine of Expression) — 2 ShrineTopic records (f-strings, Lists)
+       Region 1 (The Origin Node) - slug origin-node, order 1, unlocked_by_default True
+       Shrine 1 (Shrine of Origins)  - 3 ShrineTopic records (Variables, Data Types, Type Conversion)
+       Shrine 2 (Shrine of Expression) - 2 ShrineTopic records (f-strings, Lists)
        8 Challenge records mapping to all game challenges:
-         ch1 fill_blank gate beginner      — Power Up Terminal A
-         ch2 fill_blank gate beginner      — Power Up Terminal B
-         ch3 fill_blank gate beginner      — Identify the Data Types
-         ch4 bug_fix    gate beginner      — Fix the Broken Variable
-         ch5 fill_blank gate beginner      — String Formatting
-         ch6 bug_fix    roaming_bug beginner — Syntax Gnat
-         ch7 bug_fix    boss_bug intermediate — Boss Bug — Gate to Boss Chamber
-         ch8 boss       boss_chamber intermediate — Who Are You — Boss Challenge
+         ch1 fill_blank gate beginner      - Power Up Terminal A
+         ch2 fill_blank gate beginner      - Power Up Terminal B
+         ch3 fill_blank gate beginner      - Identify the Data Types
+         ch4 bug_fix    gate beginner      - Fix the Broken Variable
+         ch5 fill_blank gate beginner      - String Formatting
+         ch6 bug_fix    roaming_bug beginner - Syntax Gnat
+         ch7 bug_fix    boss_bug intermediate - Boss Bug - Gate to Boss Chamber
+         ch8 boss       boss_chamber intermediate - Who Are You - Boss Challenge
      All fields populated including solution_code (server-side reference).
      Fully idempotent: get_or_create + field update on existing records.
 
@@ -1197,19 +2107,19 @@ Layer 11: Registration, Cinematic, Visual Overhaul, Challenge UX, Subscription G
 Status: COMPLETE (2026-05-21)
 
 Registration
-  accounts/views.py     — RegisterForm (username, email, password1, password2)
+  accounts/views.py     - RegisterForm (username, email, password1, password2)
                           register() view: GET renders form, POST validates,
                           creates User, auto-logs in, redirects to character_create
-  config/urls.py        — path('accounts/register/', name='register')
+  config/urls.py        - path('accounts/register/', name='register')
   templates/registration/register.html
-                        — ARIA-themed card matching character creation aesthetic;
+                        - ARIA-themed card matching character creation aesthetic;
                           password strength bar (5-level color + label);
                           "Already have an account? Sign in" footer link
   templates/registration/login.html
-                        — Fully restyled to match ARIA dark theme;
+                        - Fully restyled to match ARIA dark theme;
                           ARIA greeting "Connection attempt detected";
                           error shows single generic message not raw Django errors
-  templates/base.html   — Navbar: added Register + Sign In links for unauthenticated users
+  templates/base.html   - Navbar: added Register + Sign In links for unauthenticated users
 
 Opening Cinematic
   static/js/game/scenes/CinematicScene.js  (NEW)
@@ -1219,25 +2129,25 @@ Opening Cinematic
               CRACK flash + blackout → power restored → ARIA terminal streams text →
               [YES]/[NO] buttons → suck-in effect → fade to black → OriginNodeScene.
     Skip: Space, Enter, or skip button in top-right corner at any time.
-  main.js               — scene array updated to [CinematicScene, OriginNodeScene]
-  game.html             — CinematicScene.js added before OriginNodeScene.js in load order
+  main.js               - scene array updated to [CinematicScene, OriginNodeScene]
+  game.html             - CinematicScene.js added before OriginNodeScene.js in load order
 
 Visual Overhaul
   static/js/game/scenes/OriginNodeScene.js  (REWRITTEN)
     _generateTileTextures(): All 11 tile types fully redrawn:
-      WALL — offset stone brick pattern
-      FLOOR — subtle cross-grid + corner dots
-      ROAD — PCB circuit trace with solder pads at intersections
-      SHRINE — dark green floor base (building drawn as overlay)
-      GATE — dual stone pillars + horizontal energy barrier beam
-      BOSS_CHAMBER — heavy columns + lintel + purple energy field + diamond sigil
-      TERMINAL — monitor casing, screen, scanlines, cursor, LED, stand
-      BOSS_BUG — warning stripe base (bug drawn as overlay)
-      ROAD_RESTORED — bright green circuit trace + glow pads
-      FLOOR_LIT — warm green grid + corner glow dots
+      WALL - offset stone brick pattern
+      FLOOR - subtle cross-grid + corner dots
+      ROAD - PCB circuit trace with solder pads at intersections
+      SHRINE - dark green floor base (building drawn as overlay)
+      GATE - dual stone pillars + horizontal energy barrier beam
+      BOSS_CHAMBER - heavy columns + lintel + purple energy field + diamond sigil
+      TERMINAL - monitor casing, screen, scanlines, cursor, LED, stand
+      BOSS_BUG - warning stripe base (bug drawn as overlay)
+      ROAD_RESTORED - bright green circuit trace + glow pads
+      FLOOR_LIT - warm green grid + corner glow dots
     _generatePlayerTextures(): Human silhouette in 32×32 texture:
       Shadow ellipse, legs, torso, arms, neck, head (lighter tint), eyes, highlight.
-      setFlipX() on direction change — one texture, mirrored for left-facing.
+      setFlipX() on direction change - one texture, mirrored for left-facing.
       Vertical bob tween during movement.
     _renderShrineOverlays(): Draws a unified 64×68 temple building over each 2×2 shrine block:
       Stone base platform, steps, columns with capitals, door arch with glow,
@@ -1261,9 +2171,9 @@ Challenge UX
   region1_challenges.js
     ch3: Added print(type(...)) line so players see type feedback in the output box.
          expected_output updated to show the four type strings.
-    ch4: Added print(node_id, power, is_connected) — players see fix result immediately.
+    ch4: Added print(node_id, power, is_connected) - players see fix result immediately.
          expected_output: 'Origin-01 100 True'
-  game.html  — Added #cp-expected-hint, #cp-bugfix-banner HTML elements + CSS
+  game.html  - Added #cp-expected-hint, #cp-bugfix-banner HTML elements + CSS
 
 Subscription / Waitlist Gate
   accounts/models.py
@@ -1271,22 +2181,22 @@ Subscription / Waitlist Gate
       started_at, expires_at; stripe_customer_id, stripe_subscription_id (Phase 2).
     WaitlistEntry model: email (unique), user (FK nullable), created_at.
     PlayerProfile.has_full_access property: True for staff or active subscription.
-  accounts/admin.py   — Subscription (activate/deactivate actions), WaitlistEntry registered
-  accounts/views.py   — paywall() GET view; waitlist_join() POST (AJAX + form fallback)
-  accounts/urls.py    (NEW) — app_name='accounts'; /subscribe/ and /subscribe/waitlist/
-  config/urls.py      — path('accounts/', include('accounts.urls')) added
+  accounts/admin.py   - Subscription (activate/deactivate actions), WaitlistEntry registered
+  accounts/views.py   - paywall() GET view; waitlist_join() POST (AJAX + form fallback)
+  accounts/urls.py    (NEW) - app_name='accounts'; /subscribe/ and /subscribe/waitlist/
+  config/urls.py      - path('accounts/', include('accounts.urls')) added
   templates/accounts/paywall.html  (NEW)
     ARIA-themed upgrade page: signal progress bar (14%), 7-region dot grid,
-    Monthly ($9.99) and Annual ($59.99 — "Best Value") plan cards,
+    Monthly ($9.99) and Annual ($59.99 - "Best Value") plan cards,
     AJAX waitlist email capture with confirm/error states.
-    All "Buy" buttons show "launching soon" — no Stripe integration yet.
+    All "Buy" buttons show "launching soon" - no Stripe integration yet.
   accounts/migrations/0003_subscription_waitlistentry.py  (NEW)
 
 Freemium gating strategy (implemented):
-  Region 1 — always free (no gate check)
-  Regions 2-7 — check PlayerProfile.has_full_access; redirect to /subscribe/ if False
-  Staff users — bypass subscription check (has_full_access = True for is_staff)
-  Stripe Phase 2 — integrate dj-stripe; webhook sets Subscription.is_active = True on payment
+  Region 1 - always free (no gate check)
+  Regions 2-7 - check PlayerProfile.has_full_access; redirect to /subscribe/ if False
+  Staff users - bypass subscription check (has_full_access = True for is_staff)
+  Stripe Phase 2 - integrate dj-stripe; webhook sets Subscription.is_active = True on payment
 
 ---
 

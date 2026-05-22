@@ -1,15 +1,15 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Play — ARIA: The Lost Code{% endblock %}
-{% block meta_description %}ARIA: The Lost Code — the game is running.{% endblock %}
+{% block title %}Play - ARIA: The Lost Code{% endblock %}
+{% block meta_description %}ARIA: The Lost Code - the game is running.{% endblock %}
 
 {# ── Suppress the site nav and footer during gameplay ── #}
 {% block footer %}{% endblock %}
 
 {% block extra_css %}
 <style>
-    /* Lock the viewport — no scroll bars during play */
+    /* Lock the viewport - no scroll bars during play */
     html, body {
         overflow: hidden;
         background: #0d0d1a;
@@ -157,7 +157,7 @@
 {% block content %}
 <div id="game-wrapper">
 
-    {# Canvas area — Phaser mounts here #}
+    {# Canvas area - Phaser mounts here #}
     <div id="game-canvas-area">
         <div id="game-container"></div>
     </div>
@@ -187,10 +187,10 @@
 
 
 {% block extra_js %}
-{# Phaser 3 via CDN — must load before our game scripts #}
+{# Phaser 3 via CDN - must load before our game scripts #}
 <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
 
-{# Game scripts — order matters; config first, map second, scene third, main last #}
+{# Game scripts - order matters; config first, map second, scene third, main last #}
 <script src="{% static 'js/game/config.js' %}"></script>
 <script src="{% static 'js/game/maps/origin_node.js' %}"></script>
 <script src="{% static 'js/game/scenes/OriginNodeScene.js' %}"></script>

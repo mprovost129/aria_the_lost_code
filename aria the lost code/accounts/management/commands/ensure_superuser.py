@@ -2,12 +2,12 @@
 Management command: ensure_superuser
 
 Creates a Django superuser from environment variables if one with that
-username does not already exist.  Safe to run on every deploy — idempotent.
+username does not already exist.  Safe to run on every deploy - idempotent.
 
 Required env vars (set in Render → Environment):
     DJANGO_SUPERUSER_USERNAME   default: admin
     DJANGO_SUPERUSER_EMAIL      default: (empty)
-    DJANGO_SUPERUSER_PASSWORD   required — command is a no-op if missing
+    DJANGO_SUPERUSER_PASSWORD   required - command is a no-op if missing
 
 Usage (called automatically by render.yaml buildCommand):
     python manage.py ensure_superuser
@@ -31,7 +31,7 @@ class Command(BaseCommand):
         if not password:
             self.stdout.write(
                 self.style.WARNING(
-                    "DJANGO_SUPERUSER_PASSWORD not set — skipping superuser creation."
+                    "DJANGO_SUPERUSER_PASSWORD not set - skipping superuser creation."
                 )
             )
             return
@@ -39,7 +39,7 @@ class Command(BaseCommand):
         if User.objects.filter(username=username).exists():
             self.stdout.write(
                 self.style.SUCCESS(
-                    f'Superuser "{username}" already exists — nothing to do.'
+                    f'Superuser "{username}" already exists - nothing to do.'
                 )
             )
             return

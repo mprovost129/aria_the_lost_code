@@ -63,7 +63,7 @@ class LearningShrine(models.Model):
         verbose_name_plural = 'Learning Shrines'
 
     def __str__(self):
-        return f'{self.region.name} — {self.name}'
+        return f'{self.region.name} - {self.name}'
 
 
 class ShrineTopic(models.Model):
@@ -88,7 +88,7 @@ class ShrineTopic(models.Model):
         verbose_name_plural = 'Shrine Topics'
 
     def __str__(self):
-        return f'{self.shrine} — {self.title}'
+        return f'{self.shrine} - {self.title}'
 
 
 # ---------------------------------------------------------------------------
@@ -178,7 +178,7 @@ class Challenge(models.Model):
         help_text='e.g. "Code Library: Strings and Variable Assignment"',
     )
 
-    # ARIA dialogue — four moments in every challenge
+    # ARIA dialogue - four moments in every challenge
     aria_intro = models.TextField(
         help_text='What ARIA says when the player approaches this challenge.',
     )
@@ -250,7 +250,7 @@ class PlayerRegionProgress(models.Model):
             status = 'unlocked'
         else:
             status = 'locked'
-        return f'{self.player} — {self.region} ({status})'
+        return f'{self.player} - {self.region} ({status})'
 
     def unlock(self):
         """Unlock this region for the player."""
@@ -294,7 +294,7 @@ class PlayerChallengeProgress(models.Model):
 
     def __str__(self):
         status = 'solved' if self.solved else f'{self.attempts} attempt(s)'
-        return f'{self.player} — {self.challenge.title} ({status})'
+        return f'{self.player} - {self.challenge.title} ({status})'
 
     def record_attempt(self, correct: bool):
         """
@@ -338,7 +338,7 @@ class MemoryFragment(models.Model):
         verbose_name_plural = 'Memory Fragments'
 
     def __str__(self):
-        return f'{self.region.name} — {self.title}'
+        return f'{self.region.name} - {self.title}'
 
 
 class PlayerMemoryFragment(models.Model):
@@ -402,7 +402,7 @@ class PlayerTool(models.Model):
         verbose_name_plural = 'Player Tools'
 
     def __str__(self):
-        return f'{self.player} — {self.get_tool_type_display()} ×{self.uses_remaining}'
+        return f'{self.player} - {self.get_tool_type_display()} ×{self.uses_remaining}'
 
     def use(self):
         """Consume one charge. Returns True if a charge was available."""

@@ -1,21 +1,21 @@
 /**
- * ARIA: The Lost Code — Opening Cinematic Scene
+ * ARIA: The Lost Code - Opening Cinematic Scene
  *
  * Plays once (on first visit) before OriginNodeScene.
  * On subsequent visits the scene is skipped automatically.
  *
  * Sequence:
- *   0s   — Fade in: late-night office. Three monitor glow.
+ *   0s   - Fade in: late-night office. Three monitor glow.
  *          Typewriter: "The Programmer hunches over his workstation…"
- *   4s   — CRACK flash. All monitors go dark.
+ *   4s   - CRACK flash. All monitors go dark.
  *          Typewriter: "A power surge. Total blackout."
- *   7s   — Lights return. Monitors flicker back.
+ *   7s   - Lights return. Monitors flicker back.
  *          Typewriter: "ARIA? Status report."
- *   10s  — Central monitor glitches. ARIA text streams in.
+ *   10s  - Central monitor glitches. ARIA text streams in.
  *          Typewriter (ARIA voice, green): "Programmer… I'm still here, but barely…"
- *   15s  — [YES] / [NO] buttons appear. YES is the only real option.
- *   16s  — Screen explosion flash. Player gets sucked in.
- *   18s  — Fade to black → OriginNodeScene starts.
+ *   15s  - [YES] / [NO] buttons appear. YES is the only real option.
+ *   16s  - Screen explosion flash. Player gets sucked in.
+ *   18s  - Fade to black → OriginNodeScene starts.
  *
  * Skip: pressing Space, Enter, or clicking the skip button jumps directly
  * to the OriginNodeScene transition at any point.
@@ -33,7 +33,7 @@ class CinematicScene extends Phaser.Scene {
     // ── Phaser lifecycle ────────────────────────────────────────────────────
 
     preload() {
-        // Nothing to load — all graphics are procedural.
+        // Nothing to load - all graphics are procedural.
     }
 
     create() {
@@ -53,7 +53,7 @@ class CinematicScene extends Phaser.Scene {
         // ── Background: dark office ─────────────────────────────────────────
         this._bg = this.add.rectangle(W / 2, H / 2, W, H, 0x0a0a12).setDepth(0);
 
-        // ── Monitor glow — three blueish rectangles ─────────────────────────
+        // ── Monitor glow - three blueish rectangles ─────────────────────────
         const monW = 120, monH = 80, monY = H * 0.38;
         const monPositions = [W * 0.28, W * 0.5, W * 0.72];
         this._monitors = monPositions.map(x => {
@@ -231,17 +231,17 @@ class CinematicScene extends Phaser.Scene {
             );
         });
 
-        // Narrative beat 2 — CRACK flash
+        // Narrative beat 2 - CRACK flash
         this.time.delayedCall(4200, () => {
             this._crack();
         });
 
-        // Narrative beat 3 — power restored
+        // Narrative beat 3 - power restored
         this.time.delayedCall(7500, () => {
             this._restorePower();
             this._typeNarrative(
                 '"ARIA?" The programmer\'s voice cuts the silence.\n' +
-                '"ARIA — status report."'
+                '"ARIA - status report."'
             );
         });
 
@@ -459,7 +459,7 @@ class CinematicScene extends Phaser.Scene {
     }
 
     _skipToGame() {
-        // No cinematic — start game scene immediately
+        // No cinematic - start game scene immediately
         this.scene.start('OriginNodeScene');
     }
 }

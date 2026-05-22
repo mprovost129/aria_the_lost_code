@@ -1,5 +1,5 @@
 /**
- * ARIA: The Lost Code — Dialogue System  (Layer 8)
+ * ARIA: The Lost Code - Dialogue System  (Layer 8)
  *
  * Manages the ARIA dialogue bar with a typewriter animation, a sequential
  * line queue, and named one-time proximity triggers.
@@ -24,7 +24,7 @@ window.ARIA_GAME = window.ARIA_GAME || {};
 
 class DialogueSystem {
     /**
-     * @param {HTMLElement} el — the #aria-text element
+     * @param {HTMLElement} el - the #aria-text element
      */
     constructor(el) {
         this._el            = el;
@@ -34,7 +34,7 @@ class DialogueSystem {
         this._firedTriggers = new Set();
 
         // Timing
-        this._CHAR_DELAY = 15;   // ms per character  (~67 char/s — snappy but visible)
+        this._CHAR_DELAY = 15;   // ms per character  (~67 char/s - snappy but visible)
         this._LINE_HOLD  = 2600; // ms to hold each fully-typed line before advancing
         this._PREFIX     = 'ARIA: "';
         this._SUFFIX     = '"';
@@ -44,7 +44,7 @@ class DialogueSystem {
 
     /**
      * Interrupt any current speech and immediately start typing `text`.
-     * Clears the queue — game events always take priority over ambient dialogue.
+     * Clears the queue - game events always take priority over ambient dialogue.
      */
     say(text) {
         this._interrupt();
@@ -73,14 +73,14 @@ class DialogueSystem {
      *                          (Proximity triggers should not stomp gameplay speech.)
      *   • If ARIA is idle    → play lines in sequence.
      *
-     * @param {string}   id    — unique trigger identifier
-     * @param {string[]} lines — one or more dialogue lines
+     * @param {string}   id    - unique trigger identifier
+     * @param {string[]} lines - one or more dialogue lines
      */
     trigger(id, lines) {
         if (this._firedTriggers.has(id)) return;
         this._firedTriggers.add(id);
 
-        if (this._typing) return; // ARIA is already speaking — skip ambient trigger
+        if (this._typing) return; // ARIA is already speaking - skip ambient trigger
 
         this._queue = Array.isArray(lines) ? [...lines] : [lines];
         this._advanceQueue();
@@ -121,7 +121,7 @@ class DialogueSystem {
                 if (this._el) this._el.textContent += full[i++];
                 this._timer = setTimeout(tick, this._CHAR_DELAY);
             } else {
-                // Line fully typed — hold, then advance queue
+                // Line fully typed - hold, then advance queue
                 this._timer = setTimeout(() => this._advanceQueue(), this._LINE_HOLD);
             }
         };

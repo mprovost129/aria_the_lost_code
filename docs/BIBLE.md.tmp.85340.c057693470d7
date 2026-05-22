@@ -880,7 +880,7 @@ Date: 2026-05-21
 Files created:
   static/js/game/data/region1_challenges.js  All 8 Region 1 challenges hardcoded
                                               (Layer 10 replaces with API fetch)
-  static/js/game/challenge.js                ChallengePanel class — overlay, editor,
+  static/js/game/challenge.js                ChallengePanel class - overlay, editor,
                                              hint, submit, result, event emission
 Files updated:
   static/js/game/scenes/OriginNodeScene.js   Added tileImages registry, updateTile(),
@@ -902,7 +902,7 @@ Layer 5: Code Submission and Pyodide Validation
 Status: Complete
 Date: 2026-05-21
 Files created:
-  static/js/game/pyodide_runner.js   PyodideRunner class — loads Pyodide from CDN,
+  static/js/game/pyodide_runner.js   PyodideRunner class - loads Pyodide from CDN,
                                      captures stdout, cleans Python tracebacks
 Files updated:
   static/js/game/challenge.js        _submit and _validate are now async;
@@ -924,7 +924,7 @@ Notes:
   Two validation modes:
     Standard: stdout.trim() === expected_output.trim()
     Sentinel: challenge has validation_code; stdout must end with __VALID__
-  Challenges ch3 and ch4 use sentinel mode (no print in player code — types checked).
+  Challenges ch3 and ch4 use sentinel mode (no print in player code - types checked).
   Challenge ch8 uses sentinel mode (player's print runs first, then type checks).
   No infinite-loop timeout in V1. Region 1 challenges cannot produce loops.
     Post-V1: move Pyodide to a Web Worker, add interrupt mechanism.
@@ -936,7 +936,7 @@ Status: COMPLETE (2026-05-21)
 Files changed:
   static/js/game/scenes/OriginNodeScene.js
     - _generateTileTextures(): ROAD_RESTORED (9) = bright green circuit trace + corner dots;
-      FLOOR_LIT (10) = warm green grid lines — both fully drawn programmatically.
+      FLOOR_LIT (10) = warm green grid lines - both fully drawn programmatically.
     - _listenToBus(): region:restore → _restoreRegion()
     - _restoreRegion(AG): camera flash → player glow burst → collects all ROAD/FLOOR
       tiles sorted by Manhattan distance from boss chamber at (22,5) → staggered
@@ -956,7 +956,7 @@ Files changed:
       (scale spring animation via cubic-bezier(0.34,1.56,0.64,1)); .rc-avatar pulse keyframes;
       .rc-signal-bar-fill (width 0→14.3% transition with 0.5s delay); .rc-badge; #rc-continue-btn.
     - HTML: #region-complete-overlay containing #region-complete-card with ARIA avatar,
-      "SIGNAL RESTORED" / "THE ORIGIN NODE — ONLINE" heading, ARIA dialogue, signal
+      "SIGNAL RESTORED" / "THE ORIGIN NODE - ONLINE" heading, ARIA dialogue, signal
       strength bar (14%, 1/7 regions), "Concept Mastered: Python Basics" badge,
       Continue button.
 

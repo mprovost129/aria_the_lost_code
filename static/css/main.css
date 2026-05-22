@@ -1,5 +1,5 @@
 /* =============================================================================
-   Bootstrap 5 Color Scheme — override these variables per project
+   Bootstrap 5 Color Scheme - override these variables per project
    ============================================================================= */
 
 :root {
@@ -106,7 +106,7 @@ nav {
 }
 
 /* =============================================================================
-   Messages — map Django message tags to Bootstrap alert colors
+   Messages - map Django message tags to Bootstrap alert colors
    ============================================================================= */
 
 .messages {
@@ -158,4 +158,114 @@ button[type="submit"] {
 
 button[type="submit"]:hover {
     background: var(--bs-link-hover-color);
+}
+
+/* =============================================================================
+   Profile dropdown - ARIA dark theme
+   ============================================================================= */
+
+.aria-profile-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #0a1a10;
+    border: 1px solid #00cc55;
+    font-size: 0.7rem;
+    box-shadow: 0 0 6px rgba(0, 200, 80, 0.35);
+    flex-shrink: 0;
+}
+
+.aria-profile-name {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.82rem;
+    letter-spacing: 0.04em;
+}
+
+/* The dropdown panel */
+.aria-dropdown {
+    background: #070d0a !important;
+    border: 1px solid rgba(0, 180, 60, 0.25) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(0, 200, 80, 0.08) !important;
+    padding: 0 !important;
+    min-width: 220px;
+    margin-top: 0.4rem !important;
+    overflow: hidden;
+}
+
+/* Header block: display name + region */
+.aria-dropdown-header {
+    padding: 0.8rem 1rem 0.65rem;
+    background: #060c08;
+    border-bottom: 1px solid rgba(0, 120, 40, 0.18);
+}
+
+.aria-dd-callsign {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.78rem;
+    color: #00ff88;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.18rem;
+}
+
+.aria-dd-region {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.62rem;
+    color: #3a6a4a;
+    letter-spacing: 0.04em;
+}
+
+.aria-dropdown-divider {
+    border-color: rgba(0, 120, 40, 0.15) !important;
+    margin: 0 !important;
+}
+
+/* Menu items */
+.aria-dd-item {
+    font-family: 'Courier New', Courier, monospace !important;
+    font-size: 0.8rem !important;
+    color: #5a8a6a !important;
+    padding: 0.52rem 1rem !important;
+    letter-spacing: 0.03em;
+    display: flex !important;
+    align-items: center;
+    gap: 0.6rem;
+    transition: background 0.15s, color 0.15s;
+}
+
+.aria-dd-item:hover,
+.aria-dd-item:focus {
+    background: rgba(0, 180, 60, 0.08) !important;
+    color: #00ff88 !important;
+}
+
+.aria-dd-icon {
+    width: 1.1em;
+    text-align: center;
+    flex-shrink: 0;
+    opacity: 0.7;
+}
+
+.aria-dd-soon {
+    margin-left: auto;
+    font-size: 0.58rem;
+    color: #2a4a3a;
+    border: 1px solid #1a3a2a;
+    border-radius: 20px;
+    padding: 0.1em 0.45em;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.aria-dd-logout {
+    color: #6a4a4a !important;
+}
+
+.aria-dd-logout:hover,
+.aria-dd-logout:focus {
+    background: rgba(200, 50, 50, 0.08) !important;
+    color: #ff6666 !important;
 }

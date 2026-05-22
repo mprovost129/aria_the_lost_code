@@ -880,7 +880,7 @@ Date: 2026-05-21
 Files created:
   static/js/game/data/region1_challenges.js  All 8 Region 1 challenges hardcoded
                                               (Layer 10 replaces with API fetch)
-  static/js/game/challenge.js                ChallengePanel class — overlay, editor,
+  static/js/game/challenge.js                ChallengePanel class - overlay, editor,
                                              hint, submit, result, event emission
 Files updated:
   static/js/game/scenes/OriginNodeScene.js   Added tileImages registry, updateTile(),
@@ -902,7 +902,7 @@ Layer 5: Code Submission and Pyodide Validation
 Status: Complete
 Date: 2026-05-21
 Files created:
-  static/js/game/pyodide_runner.js   PyodideRunner class — loads Pyodide from CDN,
+  static/js/game/pyodide_runner.js   PyodideRunner class - loads Pyodide from CDN,
                                      captures stdout, cleans Python tracebacks
 Files updated:
   static/js/game/challenge.js        _submit and _validate are now async;
@@ -924,7 +924,7 @@ Notes:
   Two validation modes:
     Standard: stdout.trim() === expected_output.trim()
     Sentinel: challenge has validation_code; stdout must end with __VALID__
-  Challenges ch3 and ch4 use sentinel mode (no print in player code — types checked).
+  Challenges ch3 and ch4 use sentinel mode (no print in player code - types checked).
   Challenge ch8 uses sentinel mode (player's print runs first, then type checks).
   No infinite-loop timeout in V1. Region 1 challenges cannot produce loops.
     Post-V1: move Pyodide to a Web Worker, add interrupt mechanism.
@@ -936,7 +936,7 @@ Status: COMPLETE (2026-05-21)
 Files changed:
   static/js/game/scenes/OriginNodeScene.js
     - _generateTileTextures(): ROAD_RESTORED (9) = bright green circuit trace + corner dots;
-      FLOOR_LIT (10) = warm green grid lines — both fully drawn programmatically.
+      FLOOR_LIT (10) = warm green grid lines - both fully drawn programmatically.
     - _listenToBus(): region:restore → _restoreRegion()
     - _restoreRegion(AG): camera flash → player glow burst → collects all ROAD/FLOOR
       tiles sorted by Manhattan distance from boss chamber at (22,5) → staggered
@@ -956,7 +956,7 @@ Files changed:
       (scale spring animation via cubic-bezier(0.34,1.56,0.64,1)); .rc-avatar pulse keyframes;
       .rc-signal-bar-fill (width 0→14.3% transition with 0.5s delay); .rc-badge; #rc-continue-btn.
     - HTML: #region-complete-overlay containing #region-complete-card with ARIA avatar,
-      "SIGNAL RESTORED" / "THE ORIGIN NODE — ONLINE" heading, ARIA dialogue, signal
+      "SIGNAL RESTORED" / "THE ORIGIN NODE - ONLINE" heading, ARIA dialogue, signal
       strength bar (14%, 1/7 regions), "Concept Mastered: Python Basics" badge,
       Continue button.
 
@@ -973,15 +973,15 @@ Files changed:
     - _REGION1_LESSONS: 5 lesson objects (Variables, Data Types, Type Conversion,
       Strings, Lists), each with an array of typed sections (text/code/list).
     - Tablet class:
-        open(tab?)         — adds .open to overlay, starts Escape listener
-        close()            — removes .open, removes Escape listener
-        switchTab(name)    — toggles .active on tab buttons + panels
-        setActiveChallenge(challenge) — populates Challenge tab
-        addHint({text, title})        — logs hint to ARIA tab (newest first)
-        updateChances(count)          — syncs chance dots + "N / 3" label
-        _buildLibrary()    — generates .lib-card HTML from _REGION1_LESSONS
-        _buildSection(s)   — renders text/code/list blocks
-        _escHtml(str)      — escapes < > & for safe <pre> insertion
+        open(tab?)         - adds .open to overlay, starts Escape listener
+        close()            - removes .open, removes Escape listener
+        switchTab(name)    - toggles .active on tab buttons + panels
+        setActiveChallenge(challenge) - populates Challenge tab
+        addHint({text, title})        - logs hint to ARIA tab (newest first)
+        updateChances(count)          - syncs chance dots + "N / 3" label
+        _buildLibrary()    - generates .lib-card HTML from _REGION1_LESSONS
+        _buildSection(s)   - renders text/code/list blocks
+        _escHtml(str)      - escapes < > & for safe <pre> insertion
 
   static/js/game/challenge.js
     - open(): emits challenge:opened { challenge } after challenge:open
@@ -1007,10 +1007,10 @@ Files changed:
     - Script: tablet.js added between challenge.js and main.js.
 
 Tab summary (V1):
-  Challenge — shows active challenge title, ARIA intro, prompt code, lesson ref.
+  Challenge - shows active challenge title, ARIA intro, prompt code, lesson ref.
               Populated on challenge:opened; note reminds player to use the gate editor.
-  Library   — 5 static Region 1 lesson cards. Grows via shrines in Layer 10.
-  ARIA      — 3 chance dots (synced with HUD), hints log (newest first), tools stub.
+  Library   - 5 static Region 1 lesson cards. Grows via shrines in Layer 10.
+  ARIA      - 3 chance dots (synced with HUD), hints log (newest first), tools stub.
 
 Layer 8: ARIA Dialogue System
 Status: COMPLETE (2026-05-21)
@@ -1018,13 +1018,13 @@ Status: COMPLETE (2026-05-21)
 Files changed:
   static/js/game/dialogue.js  (NEW)
     - DialogueSystem class, constructor takes the #aria-text DOM element.
-    - say(text)          — interrupt + typewriter (for game events via aria:speak)
-    - append(lines)      — queue without interrupting (for narrative sequences)
-    - trigger(id, lines) — one-time proximity trigger; skips if ARIA is busy
-    - _startTyping(text) — typewriter at 15ms/char; holds 2600ms after line complete
-    - _advanceQueue()    — shifts next line from queue; sets _typing=false when empty
-    - _interrupt()       — clears timer + queue + flag (used by say())
-    - _firedTriggers     — Set; prevents proximity zones from repeating per session
+    - say(text)          - interrupt + typewriter (for game events via aria:speak)
+    - append(lines)      - queue without interrupting (for narrative sequences)
+    - trigger(id, lines) - one-time proximity trigger; skips if ARIA is busy
+    - _startTyping(text) - typewriter at 15ms/char; holds 2600ms after line complete
+    - _advanceQueue()    - shifts next line from queue; sets _typing=false when empty
+    - _interrupt()       - clears timer + queue + flag (used by say())
+    - _firedTriggers     - Set; prevents proximity zones from repeating per session
 
   static/js/game/data/region1_dialogue.js  (NEW)
     - REGION1_ZONES: 7 proximity trigger objects
@@ -1091,7 +1091,7 @@ Files changed:
       sets AG.chancesEmpty=true and schedules AG.challengePanel.close() after 2200ms
     - chance:restore handler: clears AG.chancesEmpty, calls _syncChances(3)
     - _handleGateInteraction(): returns early with ARIA speech if AG.chancesEmpty
-    - Section 5 (new): fetch('/api/player-state/') on page load — initialises HUD
+    - Section 5 (new): fetch('/api/player-state/') on page load - initialises HUD
       from persisted count; sets AG.chancesEmpty=true if count===0
     - ARIA Hint tool button: #aria-hint-tool-btn click →
         if AG.tablet._activeChallenge: emit aria:speak with hint_text, close Tablet
@@ -1111,19 +1111,19 @@ Status: Complete
 Components delivered:
 
 1. Character Creation flow
-   game/views.py          — character_create() view (GET/POST)
+   game/views.py          - character_create() view (GET/POST)
                             GET: renders character_creation.html
                             POST: validates display_name (1–50 chars) + gender (male/female),
                                   creates PlayerProfile, creates PlayerRegionProgress for Region 1
                                   (is_unlocked=True), redirects to game:play
                             Guard: if profile already exists → redirect to game:play immediately
-   game/urls.py           — path('character/', views.character_create, name='character_create')
+   game/urls.py           - path('character/', views.character_create, name='character_create')
    templates/game/character_creation.html
-                          — ARIA-themed centered card; scanline body overlay; ARIA greeting block
+                          - ARIA-themed centered card; scanline body overlay; ARIA greeting block
                             (avatar + typewriter text); display name input; gender selector
                             (two radio cards with emoji icons, CSS :checked state); error display;
                             submit button; csrf_token; POST re-populates fields on validation fail
-   game/views.py          — GameView.get() now checks for profile; redirects to character_create
+   game/views.py          - GameView.get() now checks for profile; redirects to character_create
                             if request.user has no related profile
 
 2. Learning Shrine modal
@@ -1132,19 +1132,19 @@ Components delivered:
        shrine1  cols:[5,6] rows:[3,4]  name:'Shrine of Origins'
                 topics: Variables & Assignment, Data Types, Type Conversion
        shrine2  cols:[9,10] rows:[8,9] name:'Shrine of Expression'
-                topics: String Formatting — f-strings, Lists
+                topics: String Formatting - f-strings, Lists
      Each topic has sections typed text/code/list following the same shape as tablet.js lessons.
 
    static/js/game/shrine.js  (NEW)
      class ShrineModal:
-       constructor()     — binds close button, backdrop click, ESC keydown
-       open(shrine)      — sets title, renders topics via _renderShrine(), adds .open class,
+       constructor()     - binds close button, backdrop click, ESC keydown
+       open(shrine)      - sets title, renders topics via _renderShrine(), adds .open class,
                            emits aria:speak with shrine.aria_intro
-       close()           — removes .open class
-       _renderShrine()   — maps topics → _renderTopic()
-       _renderTopic()    — renders topic number, title, sections via _renderSection()
-       _renderSection()  — type: text → <p>, code → <pre> (HTML-escaped), list → <ul>
-       _escHtml()        — escapes & < > " for code blocks
+       close()           - removes .open class
+       _renderShrine()   - maps topics → _renderTopic()
+       _renderTopic()    - renders topic number, title, sections via _renderSection()
+       _renderSection()  - type: text → <p>, code → <pre> (HTML-escaped), list → <ul>
+       _escHtml()        - escapes & < > " for code blocks
      window.ARIA_GAME.ShrineModal = ShrineModal
 
    templates/game/game.html  (UPDATED)
@@ -1158,7 +1158,7 @@ Components delivered:
 
    static/js/game/main.js  (UPDATED)
      Section 11 (new): AG.shrineModal = new AG.ShrineModal()
-                        _identifyShrine(col, row) — scans AG.SHRINES for a shrine whose
+                        _identifyShrine(col, row) - scans AG.SHRINES for a shrine whose
                         cols/rows arrays include the given position; returns shrine or null
      aria:interact shrine branch: calls _identifyShrine(); opens AG.shrineModal.open(shrine)
                                   if matched; fallback ARIA speak if not matched
@@ -1170,18 +1170,18 @@ Components delivered:
    game/management/commands/load_region1.py
      Command: load_region1   --reset flag (destructive wipe before reload)
      Loads in one @transaction.atomic block:
-       Region 1 (The Origin Node) — slug origin-node, order 1, unlocked_by_default True
-       Shrine 1 (Shrine of Origins)  — 3 ShrineTopic records (Variables, Data Types, Type Conversion)
-       Shrine 2 (Shrine of Expression) — 2 ShrineTopic records (f-strings, Lists)
+       Region 1 (The Origin Node) - slug origin-node, order 1, unlocked_by_default True
+       Shrine 1 (Shrine of Origins)  - 3 ShrineTopic records (Variables, Data Types, Type Conversion)
+       Shrine 2 (Shrine of Expression) - 2 ShrineTopic records (f-strings, Lists)
        8 Challenge records mapping to all game challenges:
-         ch1 fill_blank gate beginner      — Power Up Terminal A
-         ch2 fill_blank gate beginner      — Power Up Terminal B
-         ch3 fill_blank gate beginner      — Identify the Data Types
-         ch4 bug_fix    gate beginner      — Fix the Broken Variable
-         ch5 fill_blank gate beginner      — String Formatting
-         ch6 bug_fix    roaming_bug beginner — Syntax Gnat
-         ch7 bug_fix    boss_bug intermediate — Boss Bug — Gate to Boss Chamber
-         ch8 boss       boss_chamber intermediate — Who Are You — Boss Challenge
+         ch1 fill_blank gate beginner      - Power Up Terminal A
+         ch2 fill_blank gate beginner      - Power Up Terminal B
+         ch3 fill_blank gate beginner      - Identify the Data Types
+         ch4 bug_fix    gate beginner      - Fix the Broken Variable
+         ch5 fill_blank gate beginner      - String Formatting
+         ch6 bug_fix    roaming_bug beginner - Syntax Gnat
+         ch7 bug_fix    boss_bug intermediate - Boss Bug - Gate to Boss Chamber
+         ch8 boss       boss_chamber intermediate - Who Are You - Boss Challenge
      All fields populated including solution_code (server-side reference).
      Fully idempotent: get_or_create + field update on existing records.
 
@@ -1197,19 +1197,19 @@ Layer 11: Registration, Cinematic, Visual Overhaul, Challenge UX, Subscription G
 Status: COMPLETE (2026-05-21)
 
 Registration
-  accounts/views.py     — RegisterForm (username, email, password1, password2)
+  accounts/views.py     - RegisterForm (username, email, password1, password2)
                           register() view: GET renders form, POST validates,
                           creates User, auto-logs in, redirects to character_create
-  config/urls.py        — path('accounts/register/', name='register')
+  config/urls.py        - path('accounts/register/', name='register')
   templates/registration/register.html
-                        — ARIA-themed card matching character creation aesthetic;
+                        - ARIA-themed card matching character creation aesthetic;
                           password strength bar (5-level color + label);
                           "Already have an account? Sign in" footer link
   templates/registration/login.html
-                        — Fully restyled to match ARIA dark theme;
+                        - Fully restyled to match ARIA dark theme;
                           ARIA greeting "Connection attempt detected";
                           error shows single generic message not raw Django errors
-  templates/base.html   — Navbar: added Register + Sign In links for unauthenticated users
+  templates/base.html   - Navbar: added Register + Sign In links for unauthenticated users
 
 Opening Cinematic
   static/js/game/scenes/CinematicScene.js  (NEW)
@@ -1219,25 +1219,25 @@ Opening Cinematic
               CRACK flash + blackout → power restored → ARIA terminal streams text →
               [YES]/[NO] buttons → suck-in effect → fade to black → OriginNodeScene.
     Skip: Space, Enter, or skip button in top-right corner at any time.
-  main.js               — scene array updated to [CinematicScene, OriginNodeScene]
-  game.html             — CinematicScene.js added before OriginNodeScene.js in load order
+  main.js               - scene array updated to [CinematicScene, OriginNodeScene]
+  game.html             - CinematicScene.js added before OriginNodeScene.js in load order
 
 Visual Overhaul
   static/js/game/scenes/OriginNodeScene.js  (REWRITTEN)
     _generateTileTextures(): All 11 tile types fully redrawn:
-      WALL — offset stone brick pattern
-      FLOOR — subtle cross-grid + corner dots
-      ROAD — PCB circuit trace with solder pads at intersections
-      SHRINE — dark green floor base (building drawn as overlay)
-      GATE — dual stone pillars + horizontal energy barrier beam
-      BOSS_CHAMBER — heavy columns + lintel + purple energy field + diamond sigil
-      TERMINAL — monitor casing, screen, scanlines, cursor, LED, stand
-      BOSS_BUG — warning stripe base (bug drawn as overlay)
-      ROAD_RESTORED — bright green circuit trace + glow pads
-      FLOOR_LIT — warm green grid + corner glow dots
+      WALL - offset stone brick pattern
+      FLOOR - subtle cross-grid + corner dots
+      ROAD - PCB circuit trace with solder pads at intersections
+      SHRINE - dark green floor base (building drawn as overlay)
+      GATE - dual stone pillars + horizontal energy barrier beam
+      BOSS_CHAMBER - heavy columns + lintel + purple energy field + diamond sigil
+      TERMINAL - monitor casing, screen, scanlines, cursor, LED, stand
+      BOSS_BUG - warning stripe base (bug drawn as overlay)
+      ROAD_RESTORED - bright green circuit trace + glow pads
+      FLOOR_LIT - warm green grid + corner glow dots
     _generatePlayerTextures(): Human silhouette in 32×32 texture:
       Shadow ellipse, legs, torso, arms, neck, head (lighter tint), eyes, highlight.
-      setFlipX() on direction change — one texture, mirrored for left-facing.
+      setFlipX() on direction change - one texture, mirrored for left-facing.
       Vertical bob tween during movement.
     _renderShrineOverlays(): Draws a unified 64×68 temple building over each 2×2 shrine block:
       Stone base platform, steps, columns with capitals, door arch with glow,
@@ -1261,9 +1261,9 @@ Challenge UX
   region1_challenges.js
     ch3: Added print(type(...)) line so players see type feedback in the output box.
          expected_output updated to show the four type strings.
-    ch4: Added print(node_id, power, is_connected) — players see fix result immediately.
+    ch4: Added print(node_id, power, is_connected) - players see fix result immediately.
          expected_output: 'Origin-01 100 True'
-  game.html  — Added #cp-expected-hint, #cp-bugfix-banner HTML elements + CSS
+  game.html  - Added #cp-expected-hint, #cp-bugfix-banner HTML elements + CSS
 
 Subscription / Waitlist Gate
   accounts/models.py
@@ -1271,22 +1271,22 @@ Subscription / Waitlist Gate
       started_at, expires_at; stripe_customer_id, stripe_subscription_id (Phase 2).
     WaitlistEntry model: email (unique), user (FK nullable), created_at.
     PlayerProfile.has_full_access property: True for staff or active subscription.
-  accounts/admin.py   — Subscription (activate/deactivate actions), WaitlistEntry registered
-  accounts/views.py   — paywall() GET view; waitlist_join() POST (AJAX + form fallback)
-  accounts/urls.py    (NEW) — app_name='accounts'; /subscribe/ and /subscribe/waitlist/
-  config/urls.py      — path('accounts/', include('accounts.urls')) added
+  accounts/admin.py   - Subscription (activate/deactivate actions), WaitlistEntry registered
+  accounts/views.py   - paywall() GET view; waitlist_join() POST (AJAX + form fallback)
+  accounts/urls.py    (NEW) - app_name='accounts'; /subscribe/ and /subscribe/waitlist/
+  config/urls.py      - path('accounts/', include('accounts.urls')) added
   templates/accounts/paywall.html  (NEW)
     ARIA-themed upgrade page: signal progress bar (14%), 7-region dot grid,
-    Monthly ($9.99) and Annual ($59.99 — "Best Value") plan cards,
+    Monthly ($9.99) and Annual ($59.99 - "Best Value") plan cards,
     AJAX waitlist email capture with confirm/error states.
-    All "Buy" buttons show "launching soon" — no Stripe integration yet.
+    All "Buy" buttons show "launching soon" - no Stripe integration yet.
   accounts/migrations/0003_subscription_waitlistentry.py  (NEW)
 
 Freemium gating strategy (implemented):
-  Region 1 — always free (no gate check)
-  Regions 2-7 — check PlayerProfile.has_full_access; redirect to /subscribe/ if False
-  Staff users — bypass subscription check (has_full_access = True for is_staff)
-  Stripe Phase 2 — integrate dj-stripe; webhook sets Subscription.is_active = True on payment
+  Region 1 - always free (no gate check)
+  Regions 2-7 - check PlayerProfile.has_full_access; redirect to /subscribe/ if False
+  Staff users - bypass subscription check (has_full_access = True for is_staff)
+  Stripe Phase 2 - integrate dj-stripe; webhook sets Subscription.is_active = True on payment
 
 ---
 

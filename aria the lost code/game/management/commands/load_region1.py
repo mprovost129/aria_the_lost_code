@@ -9,7 +9,7 @@ Populates the database with Region 1 (The Origin Node) content:
 Run once after migrations:
     python manage.py load_region1
 
-Re-running is safe — uses get_or_create throughout, then updates
+Re-running is safe - uses get_or_create throughout, then updates
 fields in-place via save(). Run again any time challenge text changes.
 """
 
@@ -56,7 +56,7 @@ SHRINES = [
                     'A variable is a named storage container. '
                     'You create one by writing a name, an equals sign (`=`), and a value.\n\n'
                     'Variable names must start with a letter or underscore. '
-                    'No spaces — use underscores for multi-word names.\n\n'
+                    'No spaces - use underscores for multi-word names.\n\n'
                     '```python\n'
                     'terminal_name = "Terminal A"\n'
                     'status = "online"\n'
@@ -76,10 +76,10 @@ SHRINES = [
                 'content': (
                     '## Data Types\n\n'
                     'Every value in Python has a type. The four you need for Region 1:\n\n'
-                    '- **str** — text, wrapped in quotes: `"Hello"` or `\'Hello\'`\n'
-                    '- **int** — whole number, no quotes: `42`\n'
-                    '- **float** — decimal number: `3.14`\n'
-                    '- **bool** — either `True` or `False` (capital first letter)\n\n'
+                    '- **str** - text, wrapped in quotes: `"Hello"` or `\'Hello\'`\n'
+                    '- **int** - whole number, no quotes: `42`\n'
+                    '- **float** - decimal number: `3.14`\n'
+                    '- **bool** - either `True` or `False` (capital first letter)\n\n'
                     '```python\n'
                     'name    = "ARIA"   # str\n'
                     'power   = 100      # int\n'
@@ -130,9 +130,9 @@ SHRINES = [
         'topics': [
             {
                 'order': 1,
-                'title': 'String Formatting — f-strings',
+                'title': 'String Formatting - f-strings',
                 'content': (
-                    '## String Formatting — f-strings\n\n'
+                    '## String Formatting - f-strings\n\n'
                     'An f-string lets you embed variable values directly inside a string. '
                     'Start the string with the letter `f`, then use `{curly braces}` '
                     'to insert variables.\n\n'
@@ -235,7 +235,7 @@ CHALLENGES = [
         'hint_text':         'Power level is a whole number. Active status is either True or False.',
         'lesson_reference':  'Code Library: Integers, Booleans',
         'aria_intro':        'Numbers for quantities. True or False for states. Keep it simple.',
-        'aria_hint':         'An integer has no quotes. A boolean is exactly True or False — capital T or F.',
+        'aria_hint':         'An integer has no quotes. A boolean is exactly True or False - capital T or F.',
         'aria_success':      'Both terminals online. Gate 1 is open. Good work.',
         'aria_fail':         'Not quite. Remember: integers have no quotes, and True needs a capital T.',
     },
@@ -288,7 +288,7 @@ CHALLENGES = [
         'lesson_reference':  'Code Library: Variable Assignment',
         'aria_intro':        'Something is wrong on every line. Find all three before you submit.',
         'aria_hint':         'Line 1: the string needs a closing quote mark. Line 2: that O is not a zero. Line 3: Python booleans are capitalised.',
-        'aria_success':      'All three fixed. That is exactly how bugs hide — one per line, waiting.',
+        'aria_success':      'All three fixed. That is exactly how bugs hide - one per line, waiting.',
         'aria_fail':         'Still broken somewhere. Check all three lines. Closing quote, zero vs letter O, capital True.',
     },
 
@@ -347,7 +347,7 @@ CHALLENGES = [
     # ── BOSS BUG ────────────────────────────────────────────────────────────
     {
         'order':          7,
-        'title':          'Boss Bug — Gate to Boss Chamber',
+        'title':          'Boss Bug - Gate to Boss Chamber',
         'challenge_type': Challenge.TYPE_BUG_FIX,
         'category':       Challenge.CATEGORY_BOSS_BUG,
         'difficulty':     Challenge.DIFFICULTY_INTERMEDIATE,
@@ -365,9 +365,9 @@ CHALLENGES = [
         ),
         'expected_output':   'Node: Origin Node, Power: 87',
         'hint_text':         'Two errors. One value is missing quotes. One value has the wrong type.',
-        'lesson_reference':  'Code Library: Region 1 — All Concepts',
+        'lesson_reference':  'Code Library: Region 1 - All Concepts',
         'aria_intro':        'This one has two errors hiding in it. Take your time. We are close to the Boss Chamber.',
-        'aria_hint':         'node_name needs quote marks — it is a string. power_remaining should be the integer 87, not the string "87".',
+        'aria_hint':         'node_name needs quote marks - it is a string. power_remaining should be the integer 87, not the string "87".',
         'aria_success':      'Both errors found. Full Chance restoration. The Boss Chamber is open.',
         'aria_fail':         'Two errors, not one. Look at both the name and the power level carefully.',
     },
@@ -375,7 +375,7 @@ CHALLENGES = [
     # ── BOSS CHALLENGE ───────────────────────────────────────────────────────
     {
         'order':          8,
-        'title':          'Who Are You — Boss Challenge',
+        'title':          'Who Are You - Boss Challenge',
         'challenge_type': Challenge.TYPE_BOSS,
         'category':       Challenge.CATEGORY_BOSS_CHAMBER,
         'difficulty':     Challenge.DIFFICULTY_INTERMEDIATE,
@@ -400,7 +400,7 @@ CHALLENGES = [
         ),
         'expected_output':   '',
         'hint_text':         'All four data types. String, integer, boolean, float. Then an f-string that uses at least two of the variables.',
-        'lesson_reference':  'Code Library: Region 1 — All Concepts',
+        'lesson_reference':  'Code Library: Region 1 - All Concepts',
         'aria_intro':        'Tell the system who you are. All of it. This is how we prove you belong here.',
         'aria_hint':         'Four variables, one f-string. The f-string should reference at least your_name and one other variable.',
         'aria_success':      'The Origin Node is restored. Signal expanding. Region 2 unlocked. We are just getting started.',

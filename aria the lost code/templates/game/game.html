@@ -1,15 +1,15 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Play — ARIA: The Lost Code{% endblock %}
-{% block meta_description %}ARIA: The Lost Code — the game is running.{% endblock %}
+{% block title %}Play - ARIA: The Lost Code{% endblock %}
+{% block meta_description %}ARIA: The Lost Code - the game is running.{% endblock %}
 
 {# ── Suppress the site nav and footer during gameplay ── #}
 {% block footer %}{% endblock %}
 
 {% block extra_css %}
 <style>
-    /* Lock the viewport — no scroll bars during play */
+    /* Lock the viewport - no scroll bars during play */
     html, body {
         overflow: hidden;
         background: #0d0d1a;
@@ -383,7 +383,7 @@
         line-height: 1.5;
     }
 
-    /* Code output (Layer 5 — Pyodide stdout display) */
+    /* Code output (Layer 5 - Pyodide stdout display) */
     #cp-output-section {
         display: none;
     }
@@ -469,7 +469,7 @@
     #cp-submit:hover { background: #224422; border-color: #00aa44; }
 
     /* ═══════════════════════════════════════════════════════════════════════
-       REGION COMPLETE OVERLAY  (Layer 6 — region restored card)
+       REGION COMPLETE OVERLAY  (Layer 6 - region restored card)
        Appears after the ripple wave finishes and region:restored fires.
     ═══════════════════════════════════════════════════════════════════════ */
 
@@ -645,7 +645,7 @@
     }
 
     /* ═══════════════════════════════════════════════════════════════════════
-       TABLET OVERLAY  (Layer 7 — right-side drawer)
+       TABLET OVERLAY  (Layer 7 - right-side drawer)
        Z-index 150: above challenge overlay (100), below region-complete (200).
     ═══════════════════════════════════════════════════════════════════════ */
 
@@ -657,7 +657,7 @@
     }
     #tablet-overlay.open { pointer-events: all; }
 
-    /* Semi-transparent backdrop — clicking it closes the drawer */
+    /* Semi-transparent backdrop - clicking it closes the drawer */
     #tablet-backdrop {
         position: absolute;
         inset: 0;
@@ -669,7 +669,7 @@
         background: rgba(0, 0, 0, 0.55);
     }
 
-    /* The drawer itself — slides in from the right */
+    /* The drawer itself - slides in from the right */
     #tablet-drawer {
         position: absolute;
         right: 0;
@@ -907,7 +907,7 @@
     }
     .lib-list li { margin-bottom: 0.1rem; }
 
-    /* ── ARIA tab — chances ─────────────────────────────────────────────── */
+    /* ── ARIA tab - chances ─────────────────────────────────────────────── */
     .tablet-chances-row {
         display: flex;
         gap: 8px;
@@ -930,7 +930,7 @@
         margin-left: 0.4rem;
     }
 
-    /* ── ARIA tab — hints list ──────────────────────────────────────────── */
+    /* ── ARIA tab - hints list ──────────────────────────────────────────── */
     .tablet-hint-item {
         background: #0a0a20;
         border: 1px solid #1a1a4a;
@@ -954,7 +954,7 @@
     }
 
     /* ═══════════════════════════════════════════════════════════════════════
-       SHRINE MODAL  (Layer 10 — Learning Shrine content viewer)
+       SHRINE MODAL  (Layer 10 - Learning Shrine content viewer)
        Z-index 120: above challenge overlay (100), below tablet (150).
        Centered modal; ESC or backdrop click to close.
     ═══════════════════════════════════════════════════════════════════════ */
@@ -1133,7 +1133,7 @@
         font-size: 0.88em;
     }
 
-    /* ── ARIA tab — tool cards (Layer 9) ──────────────────────────────────── */
+    /* ── ARIA tab - tool cards (Layer 9) ──────────────────────────────────── */
     .tool-card {
         background: #0a0a1e;
         border: 1px solid #1a2a4a;
@@ -1188,7 +1188,7 @@
 {% block content %}
 <div id="game-wrapper">
 
-    {# Canvas area — Phaser mounts here #}
+    {# Canvas area - Phaser mounts here #}
     <div id="game-canvas-area">
         <div id="game-container"></div>
     </div>
@@ -1217,7 +1217,7 @@
 {# Region label overlay #}
 <div id="region-label">Region 1 &mdash; The Origin Node</div>
 
-{# ── Tablet Overlay (Layer 7) — right-side drawer ── #}
+{# ── Tablet Overlay (Layer 7) - right-side drawer ── #}
 <div id="tablet-overlay">
     <div id="tablet-backdrop"></div>
     <div id="tablet-drawer">
@@ -1235,7 +1235,7 @@
 
         <div id="tablet-body">
 
-            {# Tab 1: Current Challenge (reference only — editor stays in the challenge panel) #}
+            {# Tab 1: Current Challenge (reference only - editor stays in the challenge panel) #}
             <div class="tablet-panel active" id="tab-challenge">
                 <div id="tab-ch-empty" class="tablet-empty-state">
                     <div class="tablet-empty-icon">🔒</div>
@@ -1292,7 +1292,7 @@
     </div>{# /tablet-drawer #}
 </div>{# /tablet-overlay #}
 
-{# ── Shrine Modal (Layer 10) — centered reading overlay for Learning Shrines ── #}
+{# ── Shrine Modal (Layer 10) - centered reading overlay for Learning Shrines ── #}
 <div id="shrine-overlay">
     <div id="shrine-backdrop"></div>
     <div id="shrine-modal" role="dialog" aria-modal="true" aria-labelledby="shrine-title">
@@ -1380,7 +1380,7 @@
                 autocapitalize="off"
             ></textarea>
 
-            {# Expected output preview — shown before submission for standard challenges #}
+            {# Expected output preview - shown before submission for standard challenges #}
             <div id="cp-expected-hint">
                 <span class="expect-label">▶ Your code should output:</span>
                 <span class="expect-value" id="cp-expected-value"></span>
@@ -1389,7 +1389,7 @@
             {# Lesson reference #}
             <div id="cp-lesson-ref" style="display:none;"></div>
 
-            {# Code output — shown after submission (Layer 5: Pyodide stdout) #}
+            {# Code output - shown after submission (Layer 5: Pyodide stdout) #}
             <div id="cp-output-section">
                 <div class="cp-output-label">▶ Output:</div>
                 <pre id="cp-output"></pre>
@@ -1419,14 +1419,14 @@
 
 
 {% block extra_js %}
-{# Phaser 3 — must come before our game scripts #}
+{# Phaser 3 - must come before our game scripts #}
 <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
 
-{# Pyodide — Python in the browser. Provides global loadPyodide(). #}
+{# Pyodide - Python in the browser. Provides global loadPyodide(). #}
 {# Loaded here so the runtime starts warming up while the player reads the map. #}
 <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
 
-{# Game scripts — order is significant #}
+{# Game scripts - order is significant #}
 <script src="{% static 'js/game/config.js' %}"></script>
 <script src="{% static 'js/game/maps/origin_node.js' %}"></script>
 <script src="{% static 'js/game/data/region1_challenges.js' %}"></script>

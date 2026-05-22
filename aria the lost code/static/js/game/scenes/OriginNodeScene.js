@@ -1,5 +1,5 @@
 /**
- * ARIA: The Lost Code — Origin Node Scene (Region 1)
+ * ARIA: The Lost Code - Origin Node Scene (Region 1)
  *
  * Visual overhaul: detailed tile art, human player silhouette with direction
  * flip, unified shrine building overlay, actual bug sprite overlay.
@@ -61,7 +61,7 @@ class OriginNodeScene extends Phaser.Scene {
     }
 
     // -------------------------------------------------------------------------
-    // Tile textures — detailed 32×32 pixel art
+    // Tile textures - detailed 32×32 pixel art
     // -------------------------------------------------------------------------
 
     _generateTileTextures(AG) {
@@ -512,7 +512,7 @@ class OriginNodeScene extends Phaser.Scene {
     }
 
     // -------------------------------------------------------------------------
-    // Input — keyboard + click/tap
+    // Input - keyboard + click/tap
     // -------------------------------------------------------------------------
 
     _setupInput(AG) {
@@ -575,10 +575,10 @@ class OriginNodeScene extends Phaser.Scene {
                 row += dy;
                 path.push({ col, row });
             } else {
-                // Path is blocked — walk to the last passable tile
+                // Path is blocked - walk to the last passable tile
                 // and try to bump the target to trigger an interaction
                 if (path.length === 0) {
-                    // Immediately adjacent blocker — emit bump
+                    // Immediately adjacent blocker - emit bump
                     this._onBump(col + dx, row + dy);
                 }
                 break;
@@ -599,7 +599,7 @@ class OriginNodeScene extends Phaser.Scene {
         const AG   = window.ARIA_GAME;
 
         if (!this._isPassable(next.col, next.row)) {
-            // Something changed (gate closed etc) — check for bump interaction
+            // Something changed (gate closed etc) - check for bump interaction
             this._onBump(next.col, next.row);
             this._moveQueue = [];
             this._processingQueue = false;

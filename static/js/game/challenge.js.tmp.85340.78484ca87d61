@@ -1,5 +1,5 @@
 /**
- * ARIA: The Lost Code — ChallengePanel
+ * ARIA: The Lost Code - ChallengePanel
  *
  * Manages the challenge overlay: renders a coding challenge, accepts player
  * input, validates the submission, and emits results to the event bus.
@@ -8,12 +8,12 @@
  * Layer 5 replaces validation with Pyodide code execution.
  *
  * Events emitted:
- *   aria:speak       { text }         — update ARIA dialogue bar
- *   challenge:open                    — tells the scene to disable movement
- *   challenge:close                   — tells the scene to re-enable movement
- *   gate:solved      { col, row }     — tells the scene to open a gate tile
- *   boss_bug:solved                   — tells the scene to clear the boss bug tile
- *   boss:solved                       — triggers region completion flow
+ *   aria:speak       { text }         - update ARIA dialogue bar
+ *   challenge:open                    - tells the scene to disable movement
+ *   challenge:close                   - tells the scene to re-enable movement
+ *   gate:solved      { col, row }     - tells the scene to open a gate tile
+ *   boss_bug:solved                   - tells the scene to clear the boss bug tile
+ *   boss:solved                       - triggers region completion flow
  */
 
 window.ARIA_GAME = window.ARIA_GAME || {};
@@ -133,7 +133,7 @@ class ChallengePanel {
     }
 
     /**
-     * Layer 4 validation — keyword-based string matching.
+     * Layer 4 validation - keyword-based string matching.
      * Layer 5 replaces this with Pyodide execution.
      */
     _validate(code, challenge) {

@@ -1,5 +1,5 @@
 /**
- * ARIA: The Lost Code — Shrine Modal (Layer 10)
+ * ARIA: The Lost Code - Shrine Modal (Layer 10)
  *
  * Displays Learning Shrine content when the player bumps a shrine tile.
  * Opens a centered modal with topic cards; ESC or the close button dismisses it.
@@ -55,7 +55,7 @@ class ShrineModal {
         this._bodyEl.innerHTML    = this._renderShrine(shrine);
         this._overlay.classList.add('open');
 
-        // ARIA speaks the shrine intro — interrupts any ambient dialogue
+        // ARIA speaks the shrine intro - interrupts any ambient dialogue
         const AG = window.ARIA_GAME;
         if (AG.events) {
             AG.events.emit('aria:speak', { text: shrine.aria_intro });
@@ -98,7 +98,7 @@ class ShrineModal {
         return '';
     }
 
-    /** Escape HTML special chars — used for code blocks only (not text/list which embed tags). */
+    /** Escape HTML special chars - used for code blocks only (not text/list which embed tags). */
     _escHtml(str) {
         return String(str)
             .replace(/&/g, '&amp;')

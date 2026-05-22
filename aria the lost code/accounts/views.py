@@ -25,7 +25,7 @@ class RegisterForm(forms.Form):
         required=False,
         widget=forms.EmailInput(attrs={
             'class':        'cc-input',
-            'placeholder':  'optional — for password recovery',
+            'placeholder':  'optional - for password recovery',
             'autocomplete': 'email',
         }),
     )
@@ -78,8 +78,8 @@ class RegisterForm(forms.Form):
 
 def register(request):
     """
-    GET  /accounts/register/  — show the registration form.
-    POST /accounts/register/  — validate, create user, auto-login, redirect to
+    GET  /accounts/register/  - show the registration form.
+    POST /accounts/register/  - validate, create user, auto-login, redirect to
                                 character creation (first-time setup).
     """
     if request.user.is_authenticated:
@@ -101,7 +101,7 @@ def register(request):
 
 def paywall(request):
     """
-    GET  /subscribe/   — show the paywall / upgrade page.
+    GET  /subscribe/   - show the paywall / upgrade page.
     Accessible to anyone who has finished Region 1 and wants to continue.
     """
     joined = request.session.pop('waitlist_joined', False)

@@ -10,7 +10,7 @@ from django.views.generic import TemplateView
 
 
 # ---------------------------------------------------------------------------
-# API: player state (Layer 9 — Chances persistence)
+# API: player state (Layer 9 - Chances persistence)
 # ---------------------------------------------------------------------------
 
 @login_required
@@ -28,7 +28,7 @@ def player_state(request):
             'display_name': profile.display_name,
         })
     except Exception:
-        # No profile yet — player has not started the game
+        # No profile yet - player has not started the game
         return JsonResponse({'chances': 3, 'has_profile': False})
 
 
@@ -50,7 +50,7 @@ def sync_chances(request):
             profile.save(update_fields=['chances', 'updated_at'])
             return JsonResponse({'ok': True, 'chances': profile.chances})
         except Exception:
-            # No profile yet — silently accept; profile created in Layer 10
+            # No profile yet - silently accept; profile created in Layer 10
             return JsonResponse({'ok': True, 'chances': count})
     except (json.JSONDecodeError, ValueError, TypeError) as exc:
         return JsonResponse({'ok': False, 'error': str(exc)}, status=400)
@@ -63,12 +63,12 @@ def sync_chances(request):
 @login_required
 def character_create(request):
     """
-    GET  /character/  — show the character creation form.
-    POST /character/  — create PlayerProfile + unlock Region 1 → redirect to game.
+    GET  /character/  - show the character creation form.
+    POST /character/  - create PlayerProfile + unlock Region 1 → redirect to game.
 
     If the player already has a profile, redirect straight to the game.
     """
-    # Already has a profile — skip creation
+    # Already has a profile - skip creation
     try:
         _ = request.user.profile
         return redirect('game:play')
@@ -111,7 +111,7 @@ def character_create(request):
                     },
                 )
             except Region.DoesNotExist:
-                pass   # Management command not yet run — non-fatal
+                pass   # Management command not yet run - non-fatal
 
             return redirect('game:play')
 
@@ -119,7 +119,7 @@ def character_create(request):
 
 
 # ---------------------------------------------------------------------------
-# Game page (Layer 10 — redirects to character creation if no profile)
+# Game page (Layer 10 - redirects to character creation if no profile)
 # ---------------------------------------------------------------------------
 
 class GameView(LoginRequiredMixin, TemplateView):

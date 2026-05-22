@@ -1,5 +1,5 @@
 /**
- * ARIA: The Lost Code — ChallengePanel
+ * ARIA: The Lost Code - ChallengePanel
  *
  * Manages the challenge overlay: renders a coding challenge, accepts player
  * input, validates the submission, and emits results to the event bus.
@@ -8,12 +8,12 @@
  * Layer 5 replaces validation with Pyodide code execution.
  *
  * Events emitted:
- *   aria:speak       { text }         — update ARIA dialogue bar
- *   challenge:open                    — tells the scene to disable movement
- *   challenge:close                   — tells the scene to re-enable movement
- *   gate:solved      { col, row }     — tells the scene to open a gate tile
- *   boss_bug:solved                   — tells the scene to clear the boss bug tile
- *   boss:solved                       — triggers region completion flow
+ *   aria:speak       { text }         - update ARIA dialogue bar
+ *   challenge:open                    - tells the scene to disable movement
+ *   challenge:close                   - tells the scene to re-enable movement
+ *   gate:solved      { col, row }     - tells the scene to open a gate tile
+ *   boss_bug:solved                   - tells the scene to clear the boss bug tile
+ *   boss:solved                       - triggers region completion flow
  */
 
 window.ARIA_GAME = window.ARIA_GAME || {};
@@ -159,12 +159,12 @@ class ChallengePanel {
     }
 
     /**
-     * Layer 5 validation — executes the player's code in Pyodide, captures
+     * Layer 5 validation - executes the player's code in Pyodide, captures
      * stdout, and compares it to the challenge's expected output.
      *
      * Two validation modes:
-     *   Standard     — stdout.trim() must equal challenge.expected_output.trim()
-     *   Sentinel     — challenge has validation_code; stdout must end with __VALID__
+     *   Standard     - stdout.trim() must equal challenge.expected_output.trim()
+     *   Sentinel     - challenge has validation_code; stdout must end with __VALID__
      *
      * @returns {{ correct: boolean, message?: string, stdout?: string }}
      */
@@ -187,7 +187,7 @@ class ChallengePanel {
             };
         }
 
-        // Sentinel mode — challenge has validation_code appended
+        // Sentinel mode - challenge has validation_code appended
         if (challenge.validation_code) {
             const valid = stdout.endsWith('__VALID__');
             if (valid) return { correct: true, stdout };
@@ -200,7 +200,7 @@ class ChallengePanel {
             return { correct: false, message: msg, stdout };
         }
 
-        // Standard mode — compare stdout to expected_output
+        // Standard mode - compare stdout to expected_output
         const expected = (challenge.expected_output || '').trim();
         const got      = stdout.trim();
 
@@ -209,7 +209,7 @@ class ChallengePanel {
         return {
             correct: false,
             message: expected
-                ? `Output was: "${got}" — expected: "${expected}"`
+                ? `Output was: "${got}" - expected: "${expected}"`
                 : 'Output did not match. Check your values.',
             stdout,
         };

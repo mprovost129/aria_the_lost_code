@@ -10,7 +10,7 @@ if _render_hostname:
     _allowed.append(_render_hostname)
 ALLOWED_HOSTS = [h for h in _allowed if h]
 
-# Whitenoise — insert after SecurityMiddleware
+# Whitenoise - insert after SecurityMiddleware
 MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
 STORAGES = {

@@ -2,19 +2,27 @@
 {% load static %}
 
 {% block title %}ARIA: The Lost Code{% endblock %}
-{% block meta_description %}Learn to code through an epic adventure. Fix bugs, solve challenges, and restore ARIA's world — one line of code at a time.{% endblock %}
+{% block meta_description %}Learn to code through an epic adventure. Fix bugs, solve challenges, and restore ARIA's world - one line of code at a time.{% endblock %}
 
 {% block extra_css %}
 <style>
     html, body {
-        background: #07071a;
+        background: #04080c;
         margin: 0;
         padding: 0;
     }
 
+    /* ── Circuit board canvas ── */
+    #aria-server-bg {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+    }
+
     body > header {
-        background: rgba(7, 7, 26, 0.95);
-        border-bottom: 1px solid #1a1a3a;
+        background: rgba(4, 8, 14, 0.96);
+        border-bottom: 1px solid rgba(0, 180, 60, 0.18);
         backdrop-filter: blur(8px);
         position: sticky;
         top: 0;
@@ -31,7 +39,7 @@
 
     body > header .nav-link {
         font-family: 'Courier New', Courier, monospace;
-        color: #4a4a8a;
+        color: #4a7a60;
         font-size: 0.85rem;
         letter-spacing: 0.06em;
         transition: color 0.2s;
@@ -39,7 +47,7 @@
 
     body > header .nav-link:hover { color: #00ff88; }
 
-    /* ── Scanline overlay ── */
+    /* ── Scanlines ── */
     body::before {
         content: '';
         position: fixed;
@@ -55,6 +63,145 @@
         z-index: 1;
     }
 
+    /* ── Server rack side panels ── */
+    .server-rack {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        width: 68px;
+        z-index: 3;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        padding: 58px 0 0;
+        gap: 2px;
+        pointer-events: none;
+        background: linear-gradient(90deg, #040a06, #060e08);
+    }
+
+    .server-rack--left  { left: 0;  border-right: 1px solid rgba(0, 160, 50, 0.18); }
+    .server-rack--right { right: 0; border-left:  1px solid rgba(0, 160, 50, 0.18); transform: scaleX(-1); }
+
+    .server-unit {
+        height: 17px;
+        flex-shrink: 0;
+        background: linear-gradient(180deg, #08100a, #050c07);
+        border-top: 1px solid rgba(0, 80, 25, 0.28);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.5);
+        position: relative;
+        display: flex;
+        align-items: center;
+        padding: 0 4px 0 8px;
+        gap: 3px;
+    }
+
+    /* Left ear plate */
+    .server-unit::before {
+        content: '';
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        width: 5px;
+        background: #0a1408;
+        border-right: 1px solid rgba(0, 0, 0, 0.4);
+    }
+
+    .unit-slots {
+        flex: 1;
+        height: 5px;
+        background: repeating-linear-gradient(
+            90deg,
+            #050a07 0px, #050a07 3px,
+            #0a1209 3px, #0a1209 6px
+        );
+        border-radius: 1px;
+        opacity: 0.65;
+    }
+
+    .unit-led {
+        width: 3px;
+        height: 3px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .led-g { background: #00ee44; box-shadow: 0 0 4px #00ee44; }
+    .led-a { background: #ffaa00; box-shadow: 0 0 4px #ffaa00; }
+    .led-r { background: #ff2200; box-shadow: 0 0 4px #ff2200; }
+    .led-o { background: #141a12; }
+
+    @keyframes blinkSlow { 0%,100%{opacity:1;} 50%{opacity:0.08;} }
+    @keyframes blinkFast { 0%,100%{opacity:1;} 50%{opacity:0.04;} }
+    @keyframes blinkRand { 0%,82%,100%{opacity:1;} 88%{opacity:0.04;} }
+
+    .blink-slow { animation: blinkSlow 2.2s ease-in-out infinite; }
+    .blink-fast { animation: blinkFast 0.38s ease-in-out infinite; }
+    .blink-rand { animation: blinkRand 3.4s ease-in-out infinite; }
+
+    @media (max-width: 1100px) { .server-rack { display: none; } }
+
+    /* ── Spark flash overlay ── */
+    #spark-flash {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 6;
+        opacity: 0;
+        background: radial-gradient(
+            ellipse at var(--fx, 50%) var(--fy, 50%),
+            rgba(0, 255, 160, 0.14) 0%,
+            transparent 55%
+        );
+    }
+
+    /* ── Server status HUD ── */
+    .server-hud {
+        position: fixed;
+        bottom: 1.4rem;
+        right: 1.4rem;
+        z-index: 10;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.6rem;
+        color: #2a5a3a;
+        letter-spacing: 0.06em;
+        line-height: 1.9;
+        text-align: right;
+        pointer-events: none;
+    }
+
+    .hud-val       { color: #00cc55; }
+    .hud-val.warn  { color: #ffaa00; }
+    .hud-val.ok    { color: #00ff88; }
+
+    @media (max-width: 768px) { .server-hud { display: none; } }
+
+    /* ── Sound toggle ── */
+    .sound-toggle {
+        position: fixed;
+        bottom: 1.4rem;
+        left: 1.4rem;
+        z-index: 100;
+        background: rgba(4, 12, 6, 0.88);
+        border: 1px solid rgba(0, 160, 55, 0.28);
+        border-radius: 6px;
+        color: #2a6a3a;
+        font-size: 0.85rem;
+        width: 34px;
+        height: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: border-color 0.2s, color 0.2s, box-shadow 0.2s;
+        padding: 0;
+        line-height: 1;
+    }
+
+    .sound-toggle:hover {
+        border-color: #00ff88;
+        color: #00ff88;
+        box-shadow: 0 0 10px rgba(0, 255, 136, 0.2);
+    }
+
     /* ── Hero ── */
     .hero {
         position: relative;
@@ -67,16 +214,13 @@
         z-index: 2;
     }
 
-    /* Radial glow behind hero text */
     .hero::after {
         content: '';
         position: absolute;
-        top: 40%;
-        left: 50%;
+        top: 40%; left: 50%;
         transform: translate(-50%, -50%);
-        width: 600px;
-        height: 600px;
-        background: radial-gradient(circle, rgba(0,255,136,0.06) 0%, transparent 70%);
+        width: 600px; height: 600px;
+        background: radial-gradient(circle, rgba(0,255,136,0.05) 0%, transparent 70%);
         pointer-events: none;
     }
 
@@ -96,14 +240,14 @@
     }
 
     @keyframes pulse {
-        0%, 100% { filter: drop-shadow(0 0 20px rgba(0,255,136,0.5)); }
-        50%       { filter: drop-shadow(0 0 32px rgba(0,255,136,0.85)); }
+        0%,100% { filter: drop-shadow(0 0 20px rgba(0,255,136,0.5)); }
+        50%      { filter: drop-shadow(0 0 32px rgba(0,255,136,0.85)); }
     }
 
     .hero-eyebrow {
         font-family: 'Courier New', Courier, monospace;
         font-size: 0.72rem;
-        color: #2a2a6a;
+        color: #6a6ab0;
         letter-spacing: 0.22em;
         text-transform: uppercase;
         margin-bottom: 0.75rem;
@@ -119,23 +263,19 @@
         margin-bottom: 0.5rem;
     }
 
-    .hero-title span {
-        color: #00ff88;
-        text-shadow: 0 0 20px rgba(0,255,136,0.4);
-    }
+    .hero-title span { color: #00ff88; text-shadow: 0 0 20px rgba(0,255,136,0.4); }
 
     .hero-subtitle {
         font-family: 'Courier New', Courier, monospace;
         font-size: 1rem;
-        color: #3a3a7a;
+        color: #8888c0;
         line-height: 1.7;
         margin: 1.25rem 0 2rem;
     }
 
-    /* ARIA dialogue box */
     .hero-aria {
-        background: #0a0a1e;
-        border: 1px solid #1a1a4a;
+        background: rgba(6, 14, 10, 0.92);
+        border: 1px solid rgba(0, 200, 80, 0.18);
         border-left: 3px solid #00ff88;
         border-radius: 0 8px 8px 0;
         padding: 0.85rem 1.1rem;
@@ -144,14 +284,14 @@
         align-items: flex-start;
         gap: 0.75rem;
         text-align: left;
+        backdrop-filter: blur(4px);
     }
 
     .hero-aria-avatar {
-        width: 32px;
-        height: 32px;
+        width: 32px; height: 32px;
         flex-shrink: 0;
         border-radius: 50%;
-        background: #0d1e14;
+        background: #061208;
         border: 2px solid #00ff88;
         display: flex;
         align-items: center;
@@ -169,7 +309,6 @@
         padding-top: 0.1rem;
     }
 
-    /* CTA buttons */
     .hero-ctas {
         display: flex;
         gap: 0.75rem;
@@ -178,9 +317,9 @@
     }
 
     .btn-aria-primary {
-        background: #0d2e1a;
+        background: #071a0e;
         color: #00ff88;
-        border: 1px solid #2a6a2a;
+        border: 1px solid #1a5a2a;
         border-radius: 6px;
         padding: 0.75rem 2rem;
         font-family: 'Courier New', Courier, monospace;
@@ -191,7 +330,7 @@
     }
 
     .btn-aria-primary:hover {
-        background: #133d22;
+        background: #0e2a18;
         border-color: #00ff88;
         color: #00ff88;
         box-shadow: 0 0 16px rgba(0,255,136,0.3);
@@ -200,8 +339,8 @@
 
     .btn-aria-secondary {
         background: transparent;
-        color: #4a4a8a;
-        border: 1px solid #2a2a5a;
+        color: #7070b0;
+        border: 1px solid #4a4a80;
         border-radius: 6px;
         padding: 0.75rem 2rem;
         font-family: 'Courier New', Courier, monospace;
@@ -212,8 +351,8 @@
     }
 
     .btn-aria-secondary:hover {
-        border-color: #6a6aaa;
-        color: #8888cc;
+        border-color: #8888bb;
+        color: #aaaadd;
         text-decoration: none;
     }
 
@@ -228,7 +367,7 @@
     .progression-label {
         font-family: 'Courier New', Courier, monospace;
         font-size: 0.68rem;
-        color: #2a2a5a;
+        color: #6868a8;
         letter-spacing: 0.2em;
         text-transform: uppercase;
         margin-bottom: 0.6rem;
@@ -245,20 +384,20 @@
     .progression-sub {
         font-family: 'Courier New', Courier, monospace;
         font-size: 0.82rem;
-        color: #2a2a5a;
+        color: #7272a8;
         margin-bottom: 2.5rem;
     }
 
-    /* The seven-region strip */
     .region-strip {
         display: flex;
         gap: 0;
         border-radius: 10px;
         overflow: hidden;
-        border: 1px solid #1a1a3a;
+        border: 1px solid #0e0e28;
         max-width: 900px;
         margin: 0 auto 1.5rem;
         position: relative;
+        box-shadow: 0 4px 32px rgba(0,0,0,0.6);
     }
 
     .region-tile {
@@ -275,73 +414,82 @@
 
     .region-tile:hover { transform: translateY(-3px); }
 
-    /* Each region gets progressively lighter */
-    .region-tile:nth-child(1) { background: #070714; }
-    .region-tile:nth-child(2) { background: #090d12; }
-    .region-tile:nth-child(3) { background: #0a0f14; }
-    .region-tile:nth-child(4) { background: #0c1018; }
-    .region-tile:nth-child(5) { background: #101820; }
-    .region-tile:nth-child(6) { background: #142030; }
-    .region-tile:nth-child(7) { background: linear-gradient(160deg, #1a3a4a, #2a4a6a, #3a6080); }
-
-    /* Divider line between tiles */
-    .region-tile + .region-tile {
-        border-left: 1px solid #1a1a3a;
+    .region-tile:nth-child(1) { background: #03030a; }
+    .region-tile:nth-child(2) { background: #070b18; }
+    .region-tile:nth-child(3) { background: #0c1428; }
+    .region-tile:nth-child(4) { background: #131e3e; }
+    .region-tile:nth-child(5) { background: #1a2e58; }
+    .region-tile:nth-child(6) { background: #1e4070; }
+    .region-tile:nth-child(7) {
+        background: linear-gradient(160deg, #1560a0, #1880c8, #10a8e0);
+        animation: regionPulse 3s ease-in-out infinite;
     }
+
+    @keyframes regionPulse {
+        0%,100% { box-shadow: inset 0 0 24px rgba(0,180,255,0.12), 0 0 24px rgba(0,180,255,0.35); }
+        50%      { box-shadow: inset 0 0 40px rgba(0,200,255,0.25), 0 0 50px rgba(0,200,255,0.65); }
+    }
+
+    .region-tile + .region-tile { border-left: 1px solid rgba(40,50,90,0.5); }
 
     .region-tile-num {
         font-family: 'Courier New', Courier, monospace;
         font-size: 0.58rem;
         letter-spacing: 0.12em;
-        color: #2a2a5a;
         text-transform: uppercase;
     }
+    .region-tile:nth-child(1) .region-tile-num { color: #1e1e38; }
+    .region-tile:nth-child(2) .region-tile-num { color: #2a2a52; }
+    .region-tile:nth-child(3) .region-tile-num { color: #3c3c70; }
+    .region-tile:nth-child(4) .region-tile-num { color: #525290; }
+    .region-tile:nth-child(5) .region-tile-num { color: #6a6aaa; }
+    .region-tile:nth-child(6) .region-tile-num { color: #88a8c8; }
+    .region-tile:nth-child(7) .region-tile-num { color: #c0e8ff; text-shadow: 0 0 8px rgba(0,200,255,0.8); }
 
-    .region-tile:nth-child(7) .region-tile-num { color: #4a8aaa; }
-
-    .region-tile-icon {
-        font-size: 1.4rem;
-        filter: grayscale(0.9) brightness(0.5);
-        transition: filter 0.3s;
-    }
-
-    .region-tile:nth-child(6) .region-tile-icon { filter: grayscale(0.4) brightness(0.7); }
-    .region-tile:nth-child(7) .region-tile-icon { filter: grayscale(0) brightness(1); }
-
-    .region-tile:hover .region-tile-icon { filter: grayscale(0) brightness(1); }
+    .region-tile-icon { font-size: 1.4rem; transition: filter 0.3s; }
+    .region-tile:nth-child(1) .region-tile-icon { filter: grayscale(1)    brightness(0.2)  opacity(0.45); }
+    .region-tile:nth-child(2) .region-tile-icon { filter: grayscale(0.9)  brightness(0.35) opacity(0.55); }
+    .region-tile:nth-child(3) .region-tile-icon { filter: grayscale(0.75) brightness(0.5)  opacity(0.7); }
+    .region-tile:nth-child(4) .region-tile-icon { filter: grayscale(0.55) brightness(0.65); }
+    .region-tile:nth-child(5) .region-tile-icon { filter: grayscale(0.35) brightness(0.82); }
+    .region-tile:nth-child(6) .region-tile-icon { filter: grayscale(0.1)  brightness(0.95); }
+    .region-tile:nth-child(7) .region-tile-icon { filter: grayscale(0) brightness(1.3) drop-shadow(0 0 10px rgba(0,220,255,0.9)); }
+    .region-tile:hover .region-tile-icon { filter: grayscale(0) brightness(1.1); }
 
     .region-tile-name {
         font-family: 'Courier New', Courier, monospace;
         font-size: 0.6rem;
-        color: #2a2a5a;
         text-align: center;
         letter-spacing: 0.04em;
         line-height: 1.3;
     }
+    .region-tile:nth-child(1) .region-tile-name { color: #1e1e3a; }
+    .region-tile:nth-child(2) .region-tile-name { color: #2e2e55; }
+    .region-tile:nth-child(3) .region-tile-name { color: #424278; }
+    .region-tile:nth-child(4) .region-tile-name { color: #5858a0; }
+    .region-tile:nth-child(5) .region-tile-name { color: #7878b8; }
+    .region-tile:nth-child(6) .region-tile-name { color: #94b8d4; }
+    .region-tile:nth-child(7) .region-tile-name { color: #ddf4ff; text-shadow: 0 0 6px rgba(0,200,255,0.7); }
 
-    .region-tile:nth-child(6) .region-tile-name { color: #3a5a6a; }
-    .region-tile:nth-child(7) .region-tile-name { color: #6aaacc; }
-
-    /* Glow on last tile — the restored world */
     .region-tile:nth-child(7)::after {
         content: '';
         position: absolute;
         inset: 0;
-        background: radial-gradient(ellipse at center, rgba(100,200,255,0.08) 0%, transparent 70%);
+        background: radial-gradient(ellipse at 50% 60%, rgba(0,200,255,0.18) 0%, transparent 70%);
         pointer-events: none;
     }
 
-    /* Progress arrow */
     .progression-arrow {
         font-family: 'Courier New', Courier, monospace;
         font-size: 0.72rem;
-        color: #1a1a4a;
+        color: #5a5a90;
         letter-spacing: 0.15em;
         margin-top: 0.5rem;
     }
 
     .progression-arrow span {
-        color: #00ff88;
+        color: #00ccff;
+        text-shadow: 0 0 10px rgba(0,200,255,0.6);
     }
 
     /* ── Three pillars ── */
@@ -360,29 +508,30 @@
     }
 
     .pillar-card {
-        background: #080816;
-        border: 1px solid #1a1a3a;
+        background: rgba(5, 10, 7, 0.92);
+        border: 1px solid rgba(0, 150, 55, 0.14);
         border-radius: 10px;
         padding: 1.75rem 1.5rem;
         text-align: center;
-        transition: border-color 0.2s, transform 0.2s;
+        transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
         text-decoration: none;
         display: block;
+        backdrop-filter: blur(4px);
     }
 
     .pillar-card:hover {
-        border-color: #3a3a7a;
+        border-color: rgba(0, 200, 80, 0.32);
         transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 200, 80, 0.07);
         text-decoration: none;
     }
 
-    .pillar-card.primary:hover { border-color: #00aa44; }
-
-    .pillar-icon {
-        font-size: 2rem;
-        display: block;
-        margin-bottom: 0.75rem;
+    .pillar-card.primary:hover {
+        border-color: rgba(0, 255, 136, 0.45);
+        box-shadow: 0 8px 24px rgba(0, 255, 136, 0.1);
     }
+
+    .pillar-icon { font-size: 2rem; display: block; margin-bottom: 0.75rem; }
 
     .pillar-title {
         font-family: 'Courier New', Courier, monospace;
@@ -399,26 +548,46 @@
     .pillar-desc {
         font-family: 'Courier New', Courier, monospace;
         font-size: 0.78rem;
-        color: #3a3a6a;
+        color: #7272a8;
         line-height: 1.65;
     }
 
-    /* Footer */
     body > footer {
-        border-top: 1px solid #0d0d2a;
-        background: #07071a;
+        border-top: 1px solid rgba(0, 100, 35, 0.14);
+        background: rgba(4, 8, 6, 0.96);
     }
 
     body > footer small {
         font-family: 'Courier New', Courier, monospace;
         font-size: 0.68rem;
-        color: #1a1a3a;
+        color: #4a4a78;
         letter-spacing: 0.06em;
     }
 </style>
 {% endblock %}
 
 {% block content %}
+
+{# ── Circuit board background canvas ── #}
+<canvas id="aria-server-bg" aria-hidden="true"></canvas>
+
+{# ── Server rack side panels ── #}
+<div class="server-rack server-rack--left"  id="rack-left"  aria-hidden="true"></div>
+<div class="server-rack server-rack--right" id="rack-right" aria-hidden="true"></div>
+
+{# ── Spark flash overlay ── #}
+<div id="spark-flash" aria-hidden="true"></div>
+
+{# ── Server status HUD ── #}
+<div class="server-hud" aria-hidden="true">
+    <div>SYS TEMP &nbsp;<span class="hud-val warn" id="hud-temp">--°C</span></div>
+    <div>UPTIME &nbsp;&nbsp;<span class="hud-val"      id="hud-uptime">00:00:00</span></div>
+    <div>NET I/O &nbsp;&nbsp;<span class="hud-val ok"   id="hud-net">-- KB/s</span></div>
+    <div>SIGNAL &nbsp;&nbsp;<span class="hud-val ok">PARTIAL</span></div>
+</div>
+
+{# ── Sound toggle ── #}
+<button class="sound-toggle" id="sound-toggle" title="Enable sound effects" aria-label="Toggle sound">🔇</button>
 
 {# ── Hero ── #}
 <section class="hero">
@@ -499,7 +668,7 @@
     </div>
 
     <div class="progression-arrow">
-        dark &nbsp;&rarr;&nbsp; &rarr;&nbsp; &rarr;&nbsp; &rarr;&nbsp; &rarr;&nbsp; &rarr;&nbsp; <span>restored</span>
+        corrupted &nbsp;&rarr;&nbsp; &rarr;&nbsp; &rarr;&nbsp; &rarr;&nbsp; &rarr;&nbsp; &rarr;&nbsp; <span>✦ fully restored ✦</span>
     </div>
 </section>
 
@@ -534,4 +703,381 @@
     </div>
 </section>
 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+'use strict';
+
+/* ═══════════════════════════════════════════════════
+   CIRCUIT BOARD CANVAS
+   ═══════════════════════════════════════════════════ */
+const cvs = document.getElementById('aria-server-bg');
+const ctx = cvs.getContext('2d');
+let W, H, traceCache = null;
+let traces = [], pads = [], chips = [], packets = [];
+const GRID = 50;
+
+function buildCircuit() {
+    traces = []; pads = []; chips = []; packets = [];
+    const cols = Math.ceil(W / GRID) + 2;
+    const rows = Math.ceil(H / GRID) + 2;
+    const nmap = {};
+    const nlist = [];
+
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            if (Math.random() < 0.42) {
+                const n = { x: c * GRID, y: r * GRID, c, r };
+                nmap[c + ',' + r] = n;
+                nlist.push(n);
+            }
+        }
+    }
+
+    nlist.forEach(function (n) {
+        var right = nmap[(n.c + 1) + ',' + n.r];
+        if (right && Math.random() < 0.55) {
+            var active = Math.random() < 0.12;
+            traces.push({ x1: n.x, y1: n.y, x2: right.x, y2: right.y, active: active });
+            pads.push({ x: n.x, y: n.y });
+            pads.push({ x: right.x, y: right.y });
+        }
+        var down = nmap[n.c + ',' + (n.r + 1)];
+        if (down && Math.random() < 0.55) {
+            var active2 = Math.random() < 0.12;
+            traces.push({ x1: n.x, y1: n.y, x2: down.x, y2: down.y, active: active2 });
+            pads.push({ x: n.x, y: n.y });
+            pads.push({ x: down.x, y: down.y });
+        }
+    });
+
+    nlist.filter(function () { return Math.random() < 0.035; }).forEach(function (n) {
+        chips.push({ x: n.x - 14, y: n.y - 8, w: 28 + Math.floor(Math.random() * 22), h: 16 });
+    });
+
+    var packetCount = Math.min(20, Math.ceil(traces.length * 0.016));
+    for (var i = 0; i < packetCount; i++) {
+        var t = traces[Math.floor(Math.random() * traces.length)];
+        if (t) packets.push({ trace: t, p: Math.random(), speed: 0.0014 + Math.random() * 0.004, dir: Math.random() > 0.5 ? 1 : -1 });
+    }
+}
+
+function buildCache() {
+    var oc = document.createElement('canvas');
+    oc.width = W; oc.height = H;
+    var ox = oc.getContext('2d');
+
+    ox.fillStyle = '#04080c';
+    ox.fillRect(0, 0, W, H);
+
+    // Inactive traces
+    ox.strokeStyle = 'rgba(0,170,65,0.13)';
+    ox.lineWidth = 1;
+    traces.forEach(function (t) {
+        if (!t.active) { ox.beginPath(); ox.moveTo(t.x1, t.y1); ox.lineTo(t.x2, t.y2); ox.stroke(); }
+    });
+
+    // Active (brighter) traces
+    ox.strokeStyle = 'rgba(0,220,90,0.26)';
+    ox.lineWidth = 1.4;
+    traces.forEach(function (t) {
+        if (t.active) { ox.beginPath(); ox.moveTo(t.x1, t.y1); ox.lineTo(t.x2, t.y2); ox.stroke(); }
+    });
+
+    // Pads
+    ox.fillStyle = 'rgba(0,190,75,0.22)';
+    pads.forEach(function (p) { ox.beginPath(); ox.arc(p.x, p.y, 2.2, 0, Math.PI * 2); ox.fill(); });
+
+    // IC chips
+    chips.forEach(function (c) {
+        ox.fillStyle   = 'rgba(6,14,8,0.9)';
+        ox.strokeStyle = 'rgba(0,170,60,0.32)';
+        ox.lineWidth = 0.8;
+        ox.fillRect(c.x, c.y, c.w, c.h);
+        ox.strokeRect(c.x, c.y, c.w, c.h);
+        // leads on top and bottom
+        var step = c.w / 4;
+        for (var i = 1; i < 4; i++) {
+            var lx = c.x + step * i;
+            ox.beginPath();
+            ox.strokeStyle = 'rgba(0,160,55,0.28)';
+            ox.moveTo(lx, c.y - 4); ox.lineTo(lx, c.y);
+            ox.moveTo(lx, c.y + c.h); ox.lineTo(lx, c.y + c.h + 4);
+            ox.stroke();
+        }
+    });
+
+    traceCache = oc;
+}
+
+function draw() {
+    if (!traceCache) buildCache();
+    ctx.drawImage(traceCache, 0, 0);
+
+    // Animated data packets
+    packets.forEach(function (pk) {
+        pk.p += pk.speed * pk.dir;
+        if (pk.p > 1.08) pk.p = -0.08;
+        if (pk.p < -0.08) pk.p = 1.08;
+
+        var t = pk.trace;
+        var x = t.x1 + (t.x2 - t.x1) * pk.p;
+        var y = t.y1 + (t.y2 - t.y1) * pk.p;
+
+        // Tail
+        var tp = Math.max(0, Math.min(1, pk.p - pk.dir * 0.07));
+        var tx = t.x1 + (t.x2 - t.x1) * tp;
+        var ty = t.y1 + (t.y2 - t.y1) * tp;
+        var tg = ctx.createLinearGradient(tx, ty, x, y);
+        tg.addColorStop(0, 'rgba(0,255,140,0)');
+        tg.addColorStop(1, 'rgba(0,255,140,0.55)');
+        ctx.strokeStyle = tg;
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(x, y); ctx.stroke();
+
+        // Glow head
+        var g = ctx.createRadialGradient(x, y, 0, x, y, 7);
+        g.addColorStop(0,   'rgba(0,255,170,0.96)');
+        g.addColorStop(0.4, 'rgba(0,255,110,0.5)');
+        g.addColorStop(1,   'rgba(0,255,110,0)');
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI * 2); ctx.fill();
+    });
+
+    requestAnimationFrame(draw);
+}
+
+function initCanvas() {
+    W = cvs.width  = window.innerWidth;
+    H = cvs.height = window.innerHeight;
+    traceCache = null;
+    buildCircuit();
+}
+
+window.addEventListener('resize', initCanvas);
+initCanvas();
+requestAnimationFrame(draw);
+
+
+/* ═══════════════════════════════════════════════════
+   SERVER RACK PANELS
+   ═══════════════════════════════════════════════════ */
+var ledCols   = ['led-g','led-a','led-r','led-o'];
+var blinkMods = ['','blink-slow','blink-fast','blink-rand','',''];
+
+function buildRack(el) {
+    if (!el) return;
+    var count = Math.ceil(window.innerHeight / 19) + 3;
+    var html = '';
+    for (var i = 0; i < count; i++) {
+        var lc  = ledCols[Math.floor(Math.random() * ledCols.length)];
+        var bm  = blinkMods[Math.floor(Math.random() * blinkMods.length)];
+        var twoLeds = Math.random() < 0.38;
+        var lc2 = ledCols[Math.floor(Math.random() * ledCols.length)];
+        var bm2 = blinkMods[Math.floor(Math.random() * blinkMods.length)];
+        html += '<div class="server-unit">'
+              + '<div class="unit-led ' + lc + ' ' + bm + '"></div>'
+              + (twoLeds ? '<div class="unit-led ' + lc2 + ' ' + bm2 + '"></div>' : '')
+              + '<div class="unit-slots"></div>'
+              + '</div>';
+    }
+    el.innerHTML = html;
+}
+
+buildRack(document.getElementById('rack-left'));
+buildRack(document.getElementById('rack-right'));
+
+
+/* ═══════════════════════════════════════════════════
+   SERVER STATUS HUD
+   ═══════════════════════════════════════════════════ */
+var hudTemp   = document.getElementById('hud-temp');
+var hudUptime = document.getElementById('hud-uptime');
+var hudNet    = document.getElementById('hud-net');
+var uptimeBase = Date.now() - Math.floor(Math.random() * 72000000);
+
+function updateHUD() {
+    var temp = 36 + Math.round(Math.sin(Date.now() / 7500) * 9 + Math.random() * 4 + 10);
+    if (hudTemp) {
+        hudTemp.textContent = temp + '°C';
+        hudTemp.className = 'hud-val' + (temp > 52 ? ' warn' : '');
+    }
+    var sec = Math.floor((Date.now() - uptimeBase) / 1000);
+    var hh  = String(Math.floor(sec / 3600)).padStart(2, '0');
+    var mm  = String(Math.floor((sec % 3600) / 60)).padStart(2, '0');
+    var ss  = String(sec % 60).padStart(2, '0');
+    if (hudUptime) hudUptime.textContent = hh + ':' + mm + ':' + ss;
+    var net = (Math.random() * 820 + 45).toFixed(1);
+    if (hudNet) hudNet.textContent = net + ' KB/s';
+}
+setInterval(updateHUD, 1000);
+updateHUD();
+
+
+/* ═══════════════════════════════════════════════════
+   WEB AUDIO - ELECTRICAL SPARKS
+   ═══════════════════════════════════════════════════ */
+var AC = null, soundOn = false, sparkTimer = null;
+var flashEl  = document.getElementById('spark-flash');
+var toggleEl = document.getElementById('sound-toggle');
+
+function ac() {
+    if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
+    return AC;
+}
+
+function noise(dur) {
+    var a = ac(), buf = a.createBuffer(1, Math.ceil(a.sampleRate * dur), a.sampleRate);
+    var d = buf.getChannelData(0);
+    for (var i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    return buf;
+}
+
+/* Quick zap */
+function zap() {
+    var a = ac(), now = a.currentTime;
+    var src = a.createBufferSource(); src.buffer = noise(0.07);
+    var f = a.createBiquadFilter(); f.type = 'bandpass';
+    f.frequency.value = 3000 + Math.random() * 5000; f.Q.value = 1.2;
+    var g = a.createGain();
+    g.gain.setValueAtTime(0.45, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+    src.connect(f); f.connect(g); g.connect(a.destination); src.start(now);
+}
+
+/* Sustained sizzle */
+function sizzle() {
+    var a = ac(), now = a.currentTime, dur = 0.12 + Math.random() * 0.18;
+    var src = a.createBufferSource(); src.buffer = noise(dur);
+    var f = a.createBiquadFilter(); f.type = 'highpass';
+    f.frequency.value = 2200 + Math.random() * 2000;
+    var g = a.createGain();
+    g.gain.setValueAtTime(0.18, now);
+    g.gain.setValueAtTime(0.28, now + 0.025);
+    g.gain.exponentialRampToValueAtTime(0.001, now + dur);
+    src.connect(f); f.connect(g); g.connect(a.destination); src.start(now);
+}
+
+/* Multi-pop crackle */
+function crackle() {
+    var a = ac(), now = a.currentTime, count = 3 + Math.floor(Math.random() * 6);
+    for (var i = 0; i < count; i++) {
+        (function (delay) {
+            var src = a.createBufferSource(); src.buffer = noise(0.025);
+            var f = a.createBiquadFilter(); f.type = 'bandpass';
+            f.frequency.value = 700 + Math.random() * 6500; f.Q.value = 2.5;
+            var g = a.createGain();
+            g.gain.setValueAtTime(0, now + delay);
+            g.gain.linearRampToValueAtTime(0.38, now + delay + 0.002);
+            g.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.025);
+            src.connect(f); f.connect(g); g.connect(a.destination);
+            src.start(now + delay);
+        }(Math.random() * 0.2));
+    }
+}
+
+/* Low hum burst */
+function humBurst() {
+    var a = ac(), now = a.currentTime;
+    var osc = a.createOscillator(); osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(50 + Math.random() * 70, now);
+    osc.frequency.linearRampToValueAtTime(280 + Math.random() * 320, now + 0.06);
+    var f = a.createBiquadFilter(); f.type = 'bandpass';
+    f.frequency.value = 350 + Math.random() * 200; f.Q.value = 4;
+    var g = a.createGain();
+    g.gain.setValueAtTime(0.22, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+    osc.connect(f); f.connect(g); g.connect(a.destination);
+    osc.start(now); osc.stop(now + 0.15);
+}
+
+/* Big arc flash (rare) */
+function arcFlash() {
+    var a = ac(), now = a.currentTime;
+    // Noise core
+    var src = a.createBufferSource(); src.buffer = noise(0.45);
+    var f = a.createBiquadFilter(); f.type = 'lowpass';
+    f.frequency.setValueAtTime(9000, now);
+    f.frequency.exponentialRampToValueAtTime(400, now + 0.4);
+    var g = a.createGain();
+    g.gain.setValueAtTime(0.65, now);
+    g.gain.setValueAtTime(0.35, now + 0.05);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+    src.connect(f); f.connect(g); g.connect(a.destination); src.start(now);
+    // Harmonic buzz
+    var osc = a.createOscillator(); osc.type = 'square';
+    osc.frequency.setValueAtTime(130, now);
+    osc.frequency.exponentialRampToValueAtTime(60, now + 0.3);
+    var g2 = a.createGain();
+    g2.gain.setValueAtTime(0.16, now);
+    g2.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
+    osc.connect(g2); g2.connect(a.destination);
+    osc.start(now); osc.stop(now + 0.35);
+}
+
+function flash(intense) {
+    if (!flashEl) return;
+    flashEl.style.setProperty('--fx', (25 + Math.random() * 50).toFixed(0) + '%');
+    flashEl.style.setProperty('--fy', (15 + Math.random() * 65).toFixed(0) + '%');
+    flashEl.style.opacity = intense ? 1 : (0.45 + Math.random() * 0.55);
+    flashEl.style.transition = 'opacity 0s';
+    setTimeout(function () {
+        flashEl.style.transition = 'opacity 0.18s';
+        flashEl.style.opacity = 0;
+    }, intense ? 130 : 55);
+}
+
+function spark() {
+    if (!soundOn) return;
+    var r = Math.random();
+    if      (r < 0.04) { arcFlash(); flash(true); }
+    else if (r < 0.26) { zap();      flash(false); }
+    else if (r < 0.56) { sizzle();   flash(false); }
+    else if (r < 0.80) { crackle(); }
+    else               { humBurst(); }
+}
+
+function schedule() {
+    var burst = Math.random() < 0.13;
+    var delay = burst ? 350 + Math.random() * 650 : 1100 + Math.random() * 5200;
+    sparkTimer = setTimeout(function () {
+        spark();
+        if (burst) {
+            var extra = 1 + Math.floor(Math.random() * 3);
+            for (var i = 0; i < extra; i++) {
+                setTimeout(spark, 70 + i * 110 + Math.random() * 90);
+            }
+        }
+        schedule();
+    }, delay);
+}
+
+function enableSound() {
+    if (soundOn) return;
+    soundOn = true; ac();
+    if (toggleEl) { toggleEl.textContent = '🔊'; toggleEl.title = 'Sound on - click to mute'; }
+    schedule();
+}
+
+if (toggleEl) {
+    toggleEl.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (!soundOn) {
+            enableSound();
+        } else {
+            soundOn = false;
+            clearTimeout(sparkTimer);
+            toggleEl.textContent = '🔇';
+            toggleEl.title = 'Enable sound effects';
+        }
+    });
+}
+
+// Auto-enable on first natural interaction with the page
+document.addEventListener('click', enableSound, { once: true });
+
+}());
+</script>
 {% endblock %}

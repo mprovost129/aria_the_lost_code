@@ -1,5 +1,5 @@
 /**
- * ARIA: The Lost Code — PyodideRunner
+ * ARIA: The Lost Code - PyodideRunner
  *
  * Loads Pyodide (Python via WebAssembly) in the background and exposes
  * a single async run() method used by ChallengePanel for code validation.
@@ -29,7 +29,7 @@ class PyodideRunner {
     }
 
     /**
-     * Begin loading Pyodide. Safe to call multiple times — returns the same
+     * Begin loading Pyodide. Safe to call multiple times - returns the same
      * promise. Called automatically from load(), but can be triggered early
      * (e.g. on page load) to pre-warm the runtime.
      */

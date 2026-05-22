@@ -1,12 +1,12 @@
 /**
- * ARIA: The Lost Code — Region 1 Challenge Data (Hardcoded Stub)
+ * ARIA: The Lost Code - Region 1 Challenge Data (Hardcoded Stub)
  *
- * Source of truth: BIBLE.md Section X — Region 1 Challenge Specifications.
+ * Source of truth: BIBLE.md Section X - Region 1 Challenge Specifications.
  *
  * In Layer 10, these will be fetched from the Django API (game.Challenge model).
  * For Layers 4–9, this file is the hardcoded data source.
  *
- * Validation strategy (Layer 4 — pre-Pyodide):
+ * Validation strategy (Layer 4 - pre-Pyodide):
  *   required_keywords: every string in this list must appear in the submitted code.
  *   Layer 5 replaces this with Pyodide execution vs. expected_output.
  *
@@ -74,7 +74,7 @@ print("Power:", power_level, "Active:", is_active)`,
         lesson_reference: 'Code Library: Integers, Booleans',
 
         aria_intro:   'Numbers for quantities. True or False for states. Keep it simple.',
-        aria_hint:    'An integer has no quotes. A boolean is exactly True or False — capital T or F.',
+        aria_hint:    'An integer has no quotes. A boolean is exactly True or False - capital T or F.',
         aria_success: 'Both terminals online. Gate 1 is open. Good work.',
         aria_fail:    'Not quite. Remember: integers have no quotes, and True needs a capital T.',
     },
@@ -100,7 +100,7 @@ print(type(programmer_name), type(years_coding), type(has_coffee), type(favorite
         required_keywords: ['"', '5', 'True', '3.14'],
         required_keywords_alt: ["'", '5', 'True', '3.14'],
 
-        // No print in the player's code — Pyodide validates types directly
+        // No print in the player's code - Pyodide validates types directly
         validation_code:
 `_ok = (
     isinstance(programmer_name, str) and
@@ -152,7 +152,7 @@ else: print("__VALID__")`,
 
         aria_intro:   'Something is wrong on every line. Find all three before you submit.',
         aria_hint:    'Line 1: the string needs a closing quote mark. Line 2: that O is not a zero. Line 3: Python booleans are capitalised.',
-        aria_success: 'All three fixed. That is exactly how bugs hide — one per line, waiting.',
+        aria_success: 'All three fixed. That is exactly how bugs hide - one per line, waiting.',
         aria_fail:    'Still broken somewhere. Check all three lines. Closing quote, zero vs letter O, capital True.',
     },
 
@@ -216,7 +216,7 @@ print(greeting)`,
 
     ch7: {
         id:          'ch7',
-        title:       'Boss Bug — Gate to Boss Chamber',
+        title:       'Boss Bug - Gate to Boss Chamber',
         type:        'bug_fix',
         category:    'boss_bug',
         difficulty:  'intermediate',
@@ -233,10 +233,10 @@ print(f"Node: {node_name}, Power: {power_remaining}")`,
         required_keywords_alt: ["'Origin Node'", '87'],
 
         hint_text:        'Two errors. One value is missing quotes. One value has the wrong type.',
-        lesson_reference: 'Code Library: Region 1 — All Concepts',
+        lesson_reference: 'Code Library: Region 1 - All Concepts',
 
         aria_intro:   'This one has two errors hiding in it. Take your time. We are close to the Boss Chamber.',
-        aria_hint:    'node_name needs quote marks — it is a string. power_remaining should be the integer 87, not the string "87".',
+        aria_hint:    'node_name needs quote marks - it is a string. power_remaining should be the integer 87, not the string "87".',
         aria_success: 'Both errors found. Full Chance restoration. The Boss Chamber is open.',
         aria_fail:    'Two errors, not one. Look at both the name and the power level carefully.',
     },
@@ -245,7 +245,7 @@ print(f"Node: {node_name}, Power: {power_remaining}")`,
 
     ch8: {
         id:          'ch8',
-        title:       'Who Are You — Boss Challenge',
+        title:       'Who Are You - Boss Challenge',
         type:        'boss',
         category:    'boss_chamber',
         difficulty:  'intermediate',
@@ -266,7 +266,7 @@ version = ___
 # Print a summary using an f-string
 print(___)`,
 
-        expected_output: '',   // open-ended — validated by type checks + f-string presence
+        expected_output: '',   // open-ended - validated by type checks + f-string presence
 
         // Must have all four types and an f-string
         required_keywords: ['f"', '{your_name}', 'True'],
@@ -281,10 +281,10 @@ print(___)`,
     isinstance(is_programmer, bool) and
     isinstance(version, float)
 )
-print("__VALID__" if _ok else "__INVALID__: check your data types — string, integer, boolean, float")`,
+print("__VALID__" if _ok else "__INVALID__: check your data types - string, integer, boolean, float")`,
 
         hint_text:        'All four data types. String, integer, boolean, float. Then an f-string that uses at least two of the variables.',
-        lesson_reference: 'Code Library: Region 1 — All Concepts',
+        lesson_reference: 'Code Library: Region 1 - All Concepts',
 
         aria_intro:   'Tell the system who you are. All of it. This is how we prove you belong here.',
         aria_hint:    'Four variables, one f-string. The f-string should reference at least your_name and one other variable.',
@@ -299,9 +299,9 @@ print("__VALID__" if _ok else "__INVALID__: check your data types — string, in
 // ---------------------------------------------------------------------------
 
 window.ARIA_GAME.GATE_CHALLENGES = {
-    '7,5':  ['ch1', 'ch2'],   // Gate 1 — Challenges 1 & 2
-    '12,5': ['ch3', 'ch4'],   // Gate 2 — Challenges 3 & 4
-    '13,8': ['ch5'],          // Gate 3 — Challenge 5
+    '7,5':  ['ch1', 'ch2'],   // Gate 1 - Challenges 1 & 2
+    '12,5': ['ch3', 'ch4'],   // Gate 2 - Challenges 3 & 4
+    '13,8': ['ch5'],          // Gate 3 - Challenge 5
 };
 
 // Boss Bug and Boss Chamber have their own mappings

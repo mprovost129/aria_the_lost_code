@@ -103,7 +103,7 @@
     .hero-eyebrow {
         font-family: 'Courier New', Courier, monospace;
         font-size: 0.72rem;
-        color: #2a2a6a;
+        color: #6a6ab0;
         letter-spacing: 0.22em;
         text-transform: uppercase;
         margin-bottom: 0.75rem;
@@ -127,7 +127,7 @@
     .hero-subtitle {
         font-family: 'Courier New', Courier, monospace;
         font-size: 1rem;
-        color: #3a3a7a;
+        color: #8888c0;
         line-height: 1.7;
         margin: 1.25rem 0 2rem;
     }
@@ -200,8 +200,8 @@
 
     .btn-aria-secondary {
         background: transparent;
-        color: #4a4a8a;
-        border: 1px solid #2a2a5a;
+        color: #7070b0;
+        border: 1px solid #4a4a80;
         border-radius: 6px;
         padding: 0.75rem 2rem;
         font-family: 'Courier New', Courier, monospace;
@@ -212,8 +212,8 @@
     }
 
     .btn-aria-secondary:hover {
-        border-color: #6a6aaa;
-        color: #8888cc;
+        border-color: #8888bb;
+        color: #aaaadd;
         text-decoration: none;
     }
 
@@ -228,7 +228,7 @@
     .progression-label {
         font-family: 'Courier New', Courier, monospace;
         font-size: 0.68rem;
-        color: #2a2a5a;
+        color: #6868a8;
         letter-spacing: 0.2em;
         text-transform: uppercase;
         margin-bottom: 0.6rem;
@@ -245,7 +245,7 @@
     .progression-sub {
         font-family: 'Courier New', Courier, monospace;
         font-size: 0.82rem;
-        color: #2a2a5a;
+        color: #7272a8;
         margin-bottom: 2.5rem;
     }
 
@@ -255,10 +255,11 @@
         gap: 0;
         border-radius: 10px;
         overflow: hidden;
-        border: 1px solid #1a1a3a;
+        border: 1px solid #0e0e28;
         max-width: 900px;
         margin: 0 auto 1.5rem;
         position: relative;
+        box-shadow: 0 4px 32px rgba(0,0,0,0.6);
     }
 
     .region-tile {
@@ -275,59 +276,81 @@
 
     .region-tile:hover { transform: translateY(-3px); }
 
-    /* Each region gets progressively lighter */
-    .region-tile:nth-child(1) { background: #070714; }
-    .region-tile:nth-child(2) { background: #090d12; }
-    .region-tile:nth-child(3) { background: #0a0f14; }
-    .region-tile:nth-child(4) { background: #0c1018; }
-    .region-tile:nth-child(5) { background: #101820; }
-    .region-tile:nth-child(6) { background: #142030; }
-    .region-tile:nth-child(7) { background: linear-gradient(160deg, #1a3a4a, #2a4a6a, #3a6080); }
+    /* Dramatic dark → light progression */
+    .region-tile:nth-child(1) { background: #03030a; }
+    .region-tile:nth-child(2) { background: #070b18; }
+    .region-tile:nth-child(3) { background: #0c1428; }
+    .region-tile:nth-child(4) { background: #131e3e; }
+    .region-tile:nth-child(5) { background: #1a2e58; }
+    .region-tile:nth-child(6) { background: #1e4070; }
+    .region-tile:nth-child(7) {
+        background: linear-gradient(160deg, #1560a0, #1880c8, #10a8e0);
+        animation: regionPulse 3s ease-in-out infinite;
+    }
+
+    @keyframes regionPulse {
+        0%, 100% { box-shadow: inset 0 0 24px rgba(0,180,255,0.12), 0 0 24px rgba(0,180,255,0.35); }
+        50%       { box-shadow: inset 0 0 40px rgba(0,200,255,0.25), 0 0 50px rgba(0,200,255,0.65); }
+    }
 
     /* Divider line between tiles */
     .region-tile + .region-tile {
-        border-left: 1px solid #1a1a3a;
+        border-left: 1px solid rgba(40, 50, 90, 0.5);
     }
 
+    /* Region numbers - progressively brighter */
     .region-tile-num {
         font-family: 'Courier New', Courier, monospace;
         font-size: 0.58rem;
         letter-spacing: 0.12em;
-        color: #2a2a5a;
         text-transform: uppercase;
     }
+    .region-tile:nth-child(1) .region-tile-num { color: #1e1e38; }
+    .region-tile:nth-child(2) .region-tile-num { color: #2a2a52; }
+    .region-tile:nth-child(3) .region-tile-num { color: #3c3c70; }
+    .region-tile:nth-child(4) .region-tile-num { color: #525290; }
+    .region-tile:nth-child(5) .region-tile-num { color: #6a6aaa; }
+    .region-tile:nth-child(6) .region-tile-num { color: #88a8c8; }
+    .region-tile:nth-child(7) .region-tile-num { color: #c0e8ff; text-shadow: 0 0 8px rgba(0,200,255,0.8); }
 
-    .region-tile:nth-child(7) .region-tile-num { color: #4a8aaa; }
-
+    /* Icons - progressively brighter and more colorful */
     .region-tile-icon {
         font-size: 1.4rem;
-        filter: grayscale(0.9) brightness(0.5);
         transition: filter 0.3s;
     }
+    .region-tile:nth-child(1) .region-tile-icon { filter: grayscale(1)   brightness(0.2)  opacity(0.45); }
+    .region-tile:nth-child(2) .region-tile-icon { filter: grayscale(0.9) brightness(0.35) opacity(0.55); }
+    .region-tile:nth-child(3) .region-tile-icon { filter: grayscale(0.75) brightness(0.5) opacity(0.7); }
+    .region-tile:nth-child(4) .region-tile-icon { filter: grayscale(0.55) brightness(0.65); }
+    .region-tile:nth-child(5) .region-tile-icon { filter: grayscale(0.35) brightness(0.82); }
+    .region-tile:nth-child(6) .region-tile-icon { filter: grayscale(0.1)  brightness(0.95); }
+    .region-tile:nth-child(7) .region-tile-icon { filter: grayscale(0)    brightness(1.3)
+                                                   drop-shadow(0 0 10px rgba(0,220,255,0.9)); }
 
-    .region-tile:nth-child(6) .region-tile-icon { filter: grayscale(0.4) brightness(0.7); }
-    .region-tile:nth-child(7) .region-tile-icon { filter: grayscale(0) brightness(1); }
+    .region-tile:hover .region-tile-icon { filter: grayscale(0) brightness(1.1); }
 
-    .region-tile:hover .region-tile-icon { filter: grayscale(0) brightness(1); }
-
+    /* Names - progressively brighter */
     .region-tile-name {
         font-family: 'Courier New', Courier, monospace;
         font-size: 0.6rem;
-        color: #2a2a5a;
         text-align: center;
         letter-spacing: 0.04em;
         line-height: 1.3;
     }
+    .region-tile:nth-child(1) .region-tile-name { color: #1e1e3a; }
+    .region-tile:nth-child(2) .region-tile-name { color: #2e2e55; }
+    .region-tile:nth-child(3) .region-tile-name { color: #424278; }
+    .region-tile:nth-child(4) .region-tile-name { color: #5858a0; }
+    .region-tile:nth-child(5) .region-tile-name { color: #7878b8; }
+    .region-tile:nth-child(6) .region-tile-name { color: #94b8d4; }
+    .region-tile:nth-child(7) .region-tile-name { color: #ddf4ff; text-shadow: 0 0 6px rgba(0,200,255,0.7); }
 
-    .region-tile:nth-child(6) .region-tile-name { color: #3a5a6a; }
-    .region-tile:nth-child(7) .region-tile-name { color: #6aaacc; }
-
-    /* Glow on last tile - the restored world */
+    /* Glow overlay on last tile */
     .region-tile:nth-child(7)::after {
         content: '';
         position: absolute;
         inset: 0;
-        background: radial-gradient(ellipse at center, rgba(100,200,255,0.08) 0%, transparent 70%);
+        background: radial-gradient(ellipse at 50% 60%, rgba(0,200,255,0.18) 0%, transparent 70%);
         pointer-events: none;
     }
 
@@ -335,13 +358,14 @@
     .progression-arrow {
         font-family: 'Courier New', Courier, monospace;
         font-size: 0.72rem;
-        color: #1a1a4a;
+        color: #5a5a90;
         letter-spacing: 0.15em;
         margin-top: 0.5rem;
     }
 
     .progression-arrow span {
-        color: #00ff88;
+        color: #00ccff;
+        text-shadow: 0 0 10px rgba(0,200,255,0.6);
     }
 
     /* ── Three pillars ── */
@@ -399,7 +423,7 @@
     .pillar-desc {
         font-family: 'Courier New', Courier, monospace;
         font-size: 0.78rem;
-        color: #3a3a6a;
+        color: #7272a8;
         line-height: 1.65;
     }
 
@@ -412,7 +436,7 @@
     body > footer small {
         font-family: 'Courier New', Courier, monospace;
         font-size: 0.68rem;
-        color: #1a1a3a;
+        color: #4a4a78;
         letter-spacing: 0.06em;
     }
 </style>
@@ -499,7 +523,7 @@
     </div>
 
     <div class="progression-arrow">
-        dark &nbsp;&rarr;&nbsp; &rarr;&nbsp; &rarr;&nbsp; &rarr;&nbsp; &rarr;&nbsp; &rarr;&nbsp; <span>restored</span>
+        corrupted &nbsp;&rarr;&nbsp; &rarr;&nbsp; &rarr;&nbsp; &rarr;&nbsp; &rarr;&nbsp; &rarr;&nbsp; <span>✦ fully restored ✦</span>
     </div>
 </section>
 

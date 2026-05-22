@@ -1,9 +1,9 @@
 /**
- * ARIA: The Lost Code — Origin Node Tile Map (Region 1)
+ * ARIA: The Lost Code - Origin Node Tile Map (Region 1)
  * Concept: Variables and Data Types
  *
  * Dimensions: 25 columns × 18 rows at 32px per tile = 800 × 576 pixels
- * No camera scrolling required — the full map fits on screen.
+ * No camera scrolling required - the full map fits on screen.
  *
  * Road structure (rectangular loop):
  *   Top road:    row 5,  columns 4–21
@@ -14,12 +14,12 @@
  * Key positions (col, row):
  *   Spawn:        ( 7,  7)  player start, inside the road loop
  *   Shrine 1:     ( 5,  3)–( 6,  4)  upper left, Variables & Data Types
- *   Gate 1:       ( 7,  5)  top road — Challenges 1 & 2 (Power Up Terminals)
- *   Gate 2:       (12,  5)  top road — Challenges 3 & 4 (Data Types & Bug Fix)
- *   Shrine 2:     ( 9,  8)–(10,  9)  inside loop — String Formatting
- *   Gate 3:       (13,  8)  lower area — Challenge 5 (String Formatting)
- *   Boss Bug:     (18,  5)  top road — guards Boss Chamber
- *   Boss Chamber: (22,  5)–(23,  6)  far right — Boss Challenge (Who Are You)
+ *   Gate 1:       ( 7,  5)  top road - Challenges 1 & 2 (Power Up Terminals)
+ *   Gate 2:       (12,  5)  top road - Challenges 3 & 4 (Data Types & Bug Fix)
+ *   Shrine 2:     ( 9,  8)–(10,  9)  inside loop - String Formatting
+ *   Gate 3:       (13,  8)  lower area - Challenge 5 (String Formatting)
+ *   Boss Bug:     (18,  5)  top road - guards Boss Chamber
+ *   Boss Chamber: (22,  5)–(23,  6)  far right - Boss Challenge (Who Are You)
  *
  * Tile type key:
  *   0 WALL         1 FLOOR        2 ROAD         3 SHRINE

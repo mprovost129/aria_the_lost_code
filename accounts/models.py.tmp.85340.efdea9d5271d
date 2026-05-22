@@ -10,7 +10,7 @@ class PlayerProfile(models.Model):
 
     Created during character creation (not at registration).
     The player enters their display name and picks a gender before
-    the profile record is written — so a User can exist without a
+    the profile record is written - so a User can exist without a
     profile until they start the game for the first time.
     """
 
