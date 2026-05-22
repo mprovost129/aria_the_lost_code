@@ -60,7 +60,9 @@ const phaserConfig = {
     backgroundColor: '#0d0d1a',
     parent:          'game-container',
     pixelArt:        true,
-    scene:           [AG.OriginNodeScene],
+    // CinematicScene runs first; it either plays the cinematic then
+    // transitions to OriginNodeScene, or skips straight to it.
+    scene:           [AG.CinematicScene, AG.OriginNodeScene],
     scale: {
         mode:      Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,

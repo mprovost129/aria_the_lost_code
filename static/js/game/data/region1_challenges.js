@@ -92,9 +92,10 @@ print("Power:", power_level, "Active:", is_active)`,
 `programmer_name = ___
 years_coding = ___
 has_coffee = ___
-favorite_number = ___`,
+favorite_number = ___
+print(type(programmer_name), type(years_coding), type(has_coffee), type(favorite_number))`,
 
-        expected_output: '',   // no print — validation is type-correctness only
+        expected_output: "<class 'str'> <class 'int'> <class 'bool'> <class 'float'>",
 
         required_keywords: ['"', '5', 'True', '3.14'],
         required_keywords_alt: ["'", '5', 'True', '3.14'],
@@ -128,21 +129,23 @@ print("__VALID__" if _ok else f"__INVALID__: got {[type(programmer_name).__name_
         prompt_code:
 `node_id = "Origin-01
 power = 10O
-is_connected = true`,
+is_connected = true
+print(node_id, power, is_connected)`,
 
-        expected_output: '',   // validation: three specific fixes
+        expected_output: 'Origin-01 100 True',
 
         required_keywords: ['"Origin-01"', '100', 'True'],
         required_keywords_alt: ["'Origin-01'", '100', 'True'],
 
-        // Validation: check all three fixes (no print in player's code)
+        // Validation: check all three fixes
         validation_code:
 `_ok = (
     node_id == "Origin-01" and
     power == 100 and
     is_connected == True
 )
-print("__VALID__" if _ok else "__INVALID__: one or more of the three fixes is still wrong")`,
+if not _ok: print("__INVALID__: one or more of the three fixes is still wrong")
+else: print("__VALID__")`,
 
         hint_text:        'Three errors. One is a missing closing quote. One is a letter O instead of zero. One is wrong capitalisation.',
         lesson_reference: 'Code Library: Variable Assignment',

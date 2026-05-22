@@ -66,3 +66,83 @@ class PlayerProfile(models.Model):
             self.chances -= 1
             self.save(update_fields=['chances', 'updated_at'])
         return self.chances > 0
+
+    @property
+    def has_full_access(self):
+        """
+        True if the player has a paid subscription (or is staff).
+        Region 1 is always free. Regions 2-7 require full access.
+        """
+        if self.user.is_staff:
+            return True
+        try:
+            return self.subscription.is_active
+        except Subscription.DoesNotExist:
+            return False
+
+
+class Subscription(models.Model):
+    """
+    Tracks paid access for a player.
+    Created by Stripe webhook on successful payment (Phase 2).
+    For now, staff can manually create/activate subscriptions.
+    """
+
+    PLAN_MONTHLY = 'monthly'
+    PLAN_ANNUAL  = 'annual'
+    PLAN_CHOICES = [
+        (PLAN_MONTHLY, 'Monthly'),
+        (PLAN_ANNUAL,  'Annual'),
+    ]
+
+    player     = models.OneToOneField(
+        PlayerProfile,
+        on_delete=models.CASCADE,
+        related_name='subscription',
+    )
+    plan       = models.CharField(max_length=20, choices=PLAN_CHOICES, default=PLAN_MONTHLY)
+    is_active  = models.BooleanField(default=False)
+    started_at = models.DateTimeField(null=True, blank=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+
+    # Stripe identifiers (populated in Phase 2 when Stripe is integrated)
+    stripe_customer_id      = models.CharField(max_length=100, blank=True)
+    stripe_subscription_id  = models.CharField(max_length=100, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Subscription'
+        verbose_name_plural = 'Subscriptions'
+
+    def __str__(self):
+        status = 'active' if self.is_active else 'inactive'
+        return f'{self.player} — {self.get_plan_display()} ({status})'
+
+
+class WaitlistEntry(models.Model):
+    """
+    Captures email addresses from players who hit the paywall.
+    Shown when they try to advance past Region 1 without a subscription.
+    Used to gauge demand and notify when paid plans launch.
+    """
+
+    email      = models.EmailField(unique=True)
+    user       = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='waitlist_entries',
+        help_text='The logged-in user who submitted the form, if any.',
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Waitlist Entry'
+        verbose_name_plural = 'Waitlist Entries'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.email

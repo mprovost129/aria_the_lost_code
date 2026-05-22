@@ -1,0 +1,539 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Upgrade — ARIA: The Lost Code{% endblock %}
+{% block meta_description %}Unlock all 7 regions of ARIA: The Lost Code.{% endblock %}
+
+{% block footer %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    html, body {
+        overflow-x: hidden;
+        background: #0d0d1a;
+        min-height: 100%;
+        margin: 0;
+        padding: 0;
+    }
+    body > header { display: none; }
+    body > main {
+        padding: 0;
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background: repeating-linear-gradient(
+            0deg, transparent, transparent 2px,
+            rgba(0, 255, 136, 0.012) 2px,
+            rgba(0, 255, 136, 0.012) 4px
+        );
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .pw-wrapper {
+        position: relative;
+        z-index: 1;
+        width: min(640px, 96vw);
+        padding: 2.5rem 0;
+    }
+
+    /* ── Brand ── */
+    .pw-brand {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    .pw-brand-icon {
+        font-size: 2.5rem;
+        display: block;
+        margin-bottom: 0.4rem;
+        filter: drop-shadow(0 0 12px rgba(0, 255, 136, 0.5));
+    }
+    .pw-brand-title {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.75rem;
+        color: #2a2a5a;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+    }
+
+    /* ── Main card ── */
+    .pw-card {
+        background: #080816;
+        border: 1px solid #1e1e4a;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+    }
+
+    /* ── ARIA message ── */
+    .pw-aria {
+        background: #0a0a1e;
+        border-bottom: 1px solid #1a1a3e;
+        padding: 1rem 1.25rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+    .pw-aria-avatar {
+        width: 36px; height: 36px; flex-shrink: 0;
+        border-radius: 50%;
+        background: #0d1e14;
+        border: 2px solid #00ff88;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1rem;
+        box-shadow: 0 0 8px rgba(0, 255, 136, 0.4);
+    }
+    .pw-aria-text {
+        color: #00ff88;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.82rem;
+        line-height: 1.65;
+        font-style: italic;
+        padding-top: 0.15rem;
+    }
+
+    /* ── Progress strip ── */
+    .pw-progress {
+        padding: 1.25rem 1.25rem 0;
+    }
+    .pw-progress-label {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.68rem;
+        color: #2a2a5a;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 0.6rem;
+        display: flex;
+        justify-content: space-between;
+    }
+    .pw-signal-track {
+        width: 100%;
+        height: 6px;
+        background: #111128;
+        border-radius: 3px;
+        overflow: hidden;
+    }
+    .pw-signal-fill {
+        height: 100%;
+        width: 14.3%;
+        background: linear-gradient(90deg, #006633, #00ff88);
+        border-radius: 3px;
+        box-shadow: 0 0 6px rgba(0, 255, 136, 0.4);
+    }
+    .pw-regions {
+        margin-top: 0.75rem;
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 0.4rem;
+    }
+    .pw-region-dot {
+        height: 28px;
+        background: #0e0e28;
+        border: 1px solid #1a1a3a;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.6rem;
+        color: #2a2a5a;
+        letter-spacing: 0.04em;
+    }
+    .pw-region-dot.unlocked {
+        background: #0d2218;
+        border-color: #00aa44;
+        color: #00ff88;
+    }
+    .pw-region-dot.locked {
+        opacity: 0.5;
+    }
+
+    /* ── Plans ── */
+    .pw-plans {
+        padding: 1.25rem;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.9rem;
+        margin-top: 0.5rem;
+    }
+    .pw-plan {
+        background: #060612;
+        border: 1px solid #2a2a5a;
+        border-radius: 8px;
+        padding: 1.1rem;
+        position: relative;
+        transition: border-color 0.2s;
+    }
+    .pw-plan:hover { border-color: #4a4a9a; }
+    .pw-plan.featured {
+        border-color: #00aa44;
+        background: #07140d;
+    }
+    .pw-plan-badge {
+        position: absolute;
+        top: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #00aa44;
+        color: #000;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.6rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        padding: 0.15rem 0.6rem;
+        border-radius: 20px;
+        white-space: nowrap;
+    }
+    .pw-plan-name {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.75rem;
+        color: #4a4a7a;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 0.5rem;
+    }
+    .pw-plan-price {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 1.6rem;
+        color: #c8c8ff;
+        font-weight: bold;
+        line-height: 1;
+    }
+    .pw-plan-period {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.72rem;
+        color: #3a3a6a;
+        margin-top: 0.2rem;
+        margin-bottom: 0.85rem;
+    }
+    .pw-plan-features {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 1rem;
+    }
+    .pw-plan-features li {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.75rem;
+        color: #5a5a8a;
+        line-height: 1.7;
+        padding-left: 1.1rem;
+        position: relative;
+    }
+    .pw-plan-features li::before {
+        content: '▸';
+        position: absolute;
+        left: 0;
+        color: #3a3a6a;
+    }
+    .pw-plan.featured .pw-plan-features li::before { color: #00aa44; }
+    .pw-plan-btn {
+        width: 100%;
+        padding: 0.55rem;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.82rem;
+        letter-spacing: 0.06em;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background 0.15s, border-color 0.15s;
+        border: 1px solid #2a2a6a;
+        background: #10103a;
+        color: #6666cc;
+    }
+    .pw-plan.featured .pw-plan-btn {
+        background: #0d2e1a;
+        color: #00ff88;
+        border-color: #2a6a2a;
+    }
+    .pw-plan.featured .pw-plan-btn:hover {
+        background: #133d22;
+        border-color: #00ff88;
+        box-shadow: 0 0 12px rgba(0, 255, 136, 0.25);
+    }
+    .pw-plan-btn:hover { background: #14144a; border-color: #4a4aaa; }
+    .pw-coming-soon {
+        font-size: 0.65rem;
+        opacity: 0.6;
+        display: block;
+        margin-top: 0.25rem;
+    }
+
+    /* ── Waitlist section ── */
+    .pw-waitlist {
+        padding: 0 1.25rem 1.25rem;
+        border-top: 1px solid #111128;
+        margin-top: 0.25rem;
+    }
+    .pw-waitlist-title {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.7rem;
+        color: #2a2a5a;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        padding-top: 1rem;
+        margin-bottom: 0.7rem;
+    }
+    .pw-waitlist-row {
+        display: flex;
+        gap: 0.6rem;
+    }
+    .pw-waitlist-input {
+        flex: 1;
+        background: #060612;
+        color: #c8c8ff;
+        border: 1px solid #2a2a5a;
+        border-radius: 5px;
+        padding: 0.55rem 0.75rem;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.88rem;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+    .pw-waitlist-input:focus { border-color: #00ff88; }
+    .pw-waitlist-input::placeholder { color: #2a2a4a; }
+    .pw-waitlist-btn {
+        background: #0d2e1a;
+        color: #00ff88;
+        border: 1px solid #2a6a2a;
+        border-radius: 5px;
+        padding: 0.55rem 1rem;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.82rem;
+        cursor: pointer;
+        transition: background 0.15s, border-color 0.15s;
+        white-space: nowrap;
+    }
+    .pw-waitlist-btn:hover {
+        background: #133d22;
+        border-color: #00ff88;
+    }
+    .pw-waitlist-confirm {
+        display: none;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.8rem;
+        color: #00ff88;
+        margin-top: 0.6rem;
+    }
+    .pw-waitlist-confirm.visible { display: block; }
+    .pw-waitlist-error {
+        display: none;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.78rem;
+        color: #ff6666;
+        margin-top: 0.4rem;
+    }
+    .pw-waitlist-error.visible { display: block; }
+
+    /* ── Footer ── */
+    .pw-footer {
+        text-align: center;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.72rem;
+        margin-top: 1rem;
+    }
+    .pw-footer a {
+        color: #3a3a7a;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+    .pw-footer a:hover { color: #00ff88; }
+    .pw-footer .sep { color: #1e1e4a; margin: 0 0.5rem; }
+</style>
+{% endblock %}
+
+
+{% block content %}
+<div class="pw-wrapper">
+
+    <div class="pw-brand">
+        <span class="pw-brand-icon">⚡</span>
+        <div class="pw-brand-title">ARIA: The Lost Code</div>
+    </div>
+
+    <div class="pw-card">
+
+        {# ARIA speaks #}
+        <div class="pw-aria">
+            <div class="pw-aria-avatar">⚡</div>
+            <div class="pw-aria-text">
+                You restored the Origin Node. Region 1 complete.<br>
+                Six more regions. Six more broken connections.<br>
+                I need you on the other side of this gate. Unlock full access to keep going.
+            </div>
+        </div>
+
+        {# Signal progress bar #}
+        <div class="pw-progress">
+            <div class="pw-progress-label">
+                <span>ARIA Signal Strength</span>
+                <span>14% — 1 / 7 Regions Restored</span>
+            </div>
+            <div class="pw-signal-track">
+                <div class="pw-signal-fill"></div>
+            </div>
+            <div class="pw-regions">
+                <div class="pw-region-dot unlocked" title="Region 1 — Complete">R1 ✓</div>
+                {% for i in "234567" %}
+                <div class="pw-region-dot locked" title="Region {{ i }} — Locked">R{{ i }} 🔒</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {# Plans #}
+        <div class="pw-plans">
+
+            <div class="pw-plan">
+                <div class="pw-plan-name">Monthly</div>
+                <div class="pw-plan-price">$9<span style="font-size:1rem;color:#3a3a6a">.99</span></div>
+                <div class="pw-plan-period">per month, cancel anytime</div>
+                <ul class="pw-plan-features">
+                    <li>All 7 Regions unlocked</li>
+                    <li>All challenges &amp; boss fights</li>
+                    <li>Full ARIA dialogue</li>
+                    <li>Memory Fragments &amp; Tools</li>
+                </ul>
+                <button class="pw-plan-btn" type="button" id="monthly-btn">
+                    ▶ Get Monthly
+                    <span class="pw-coming-soon">(launching soon)</span>
+                </button>
+            </div>
+
+            <div class="pw-plan featured">
+                <div class="pw-plan-badge">Best Value</div>
+                <div class="pw-plan-name">Annual</div>
+                <div class="pw-plan-price">$59<span style="font-size:1rem;color:#2a5a3a">.99</span></div>
+                <div class="pw-plan-period">per year — save 50%</div>
+                <ul class="pw-plan-features">
+                    <li>Everything in Monthly</li>
+                    <li>Early access to Region 2 beta</li>
+                    <li>Supporter badge in-game</li>
+                    <li>Priority support</li>
+                </ul>
+                <button class="pw-plan-btn" type="button" id="annual-btn">
+                    ▶ Get Annual
+                    <span class="pw-coming-soon">(launching soon)</span>
+                </button>
+            </div>
+
+        </div>
+
+        {# Waitlist #}
+        <div class="pw-waitlist">
+            <div class="pw-waitlist-title">
+                {% if joined %}
+                    ✓ You're on the list — we'll email you when plans launch.
+                {% else %}
+                    Not ready to pay yet? Get notified when plans launch:
+                {% endif %}
+            </div>
+
+            {% if not joined %}
+            <div class="pw-waitlist-row">
+                <input
+                    type="email"
+                    id="waitlist-email"
+                    class="pw-waitlist-input"
+                    placeholder="your@email.com"
+                    value="{{ user.email|default:'' }}"
+                    autocomplete="email"
+                >
+                <button type="button" class="pw-waitlist-btn" id="waitlist-btn">
+                    Notify Me
+                </button>
+            </div>
+            <div class="pw-waitlist-confirm" id="waitlist-confirm">
+                ✓ You're on the list. We'll email you when plans launch.
+            </div>
+            <div class="pw-waitlist-error" id="waitlist-error"></div>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <div class="pw-footer">
+        <a href="{% url 'game:play' %}">← Back to game</a>
+        <span class="sep">|</span>
+        <a href="{% url 'core:home' %}">Home</a>
+        {% if user.is_authenticated %}
+        <span class="sep">|</span>
+        <a href="{% url 'logout' %}">Sign out</a>
+        {% endif %}
+    </div>
+
+</div>
+
+<script>
+(function () {
+    const btn   = document.getElementById('waitlist-btn');
+    const input = document.getElementById('waitlist-email');
+    const ok    = document.getElementById('waitlist-confirm');
+    const err   = document.getElementById('waitlist-error');
+
+    if (!btn) return;  // already joined
+
+    // Plan buttons — placeholder until Stripe is integrated
+    ['monthly-btn', 'annual-btn'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('click', () => {
+            input?.focus();
+            input?.scrollIntoView({ behavior: 'smooth' });
+        });
+    });
+
+    btn.addEventListener('click', async () => {
+        const email = input.value.trim();
+        err.classList.remove('visible');
+
+        if (!email || !email.includes('@')) {
+            err.textContent = '⚠ Enter a valid email address.';
+            err.classList.add('visible');
+            return;
+        }
+
+        btn.disabled    = true;
+        btn.textContent = '…';
+
+        const csrfToken = document.cookie.split(';')
+            .find(s => s.trim().startsWith('csrftoken='))
+            ?.trim().split('=')[1] ?? '';
+
+        try {
+            const res  = await fetch('{% url "accounts:waitlist_join" %}', {
+                method:  'POST',
+                headers: {
+                    'Content-Type':   'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken':    csrfToken,
+                },
+                body: `email=${encodeURIComponent(email)}`,
+            });
+            const data = await res.json();
+
+            if (data.ok) {
+                ok.classList.add('visible');
+                btn.style.display   = 'none';
+                input.style.display = 'none';
+            } else {
+                err.textContent = `⚠ ${data.error}`;
+                err.classList.add('visible');
+                btn.disabled    = false;
+                btn.textContent = 'Notify Me';
+            }
+        } catch {
+            err.textContent = '⚠ Something went wrong. Try again.';
+            err.classList.add('visible');
+            btn.disabled    = false;
+            btn.textContent = 'Notify Me';
+        }
+    });
+})();
+</script>
+{% endblock %}

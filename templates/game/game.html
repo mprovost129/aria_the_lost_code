@@ -283,6 +283,56 @@
         text-transform: uppercase;
         letter-spacing: 0.08em;
     }
+    #cp-editor-label .blank-highlight {
+        color: #ff8800;
+        font-style: normal;
+    }
+    #cp-editor-label .blank-count {
+        color: #5a5a9a;
+        font-size: 0.68rem;
+        text-transform: none;
+        letter-spacing: 0;
+        margin-left: 0.5rem;
+    }
+
+    /* Expected output preview */
+    #cp-expected-hint {
+        display: none;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.78rem;
+        color: #4a6a4a;
+        background: #06100a;
+        border: 1px solid #1a3a1a;
+        border-left: 3px solid #2a6a2a;
+        border-radius: 0 4px 4px 0;
+        padding: 0.45rem 0.7rem;
+    }
+    #cp-expected-hint .expect-label {
+        color: #2a4a2a;
+        font-size: 0.68rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        display: block;
+        margin-bottom: 0.2rem;
+    }
+    #cp-expected-hint .expect-value {
+        color: #44aa66;
+    }
+
+    /* Bug fix instruction banner */
+    #cp-bugfix-banner {
+        display: none;
+        background: #1a0e06;
+        border: 1px solid #5a3300;
+        border-left: 3px solid #ff8800;
+        border-radius: 0 4px 4px 0;
+        padding: 0.45rem 0.7rem;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.78rem;
+        color: #cc7700;
+    }
+    #cp-bugfix-banner .bugfix-icon { margin-right: 0.4rem; }
+
     #cp-editor {
         width: 100%;
         min-height: 130px;
@@ -1314,8 +1364,14 @@
             {# ARIA intro line #}
             <div id="cp-aria-text"></div>
 
+            {# Bug-fix instruction banner (shown for bug_fix challenges) #}
+            <div id="cp-bugfix-banner">
+                <span class="bugfix-icon">🐛</span>
+                The code below contains bugs. Read every line carefully and fix them all.
+            </div>
+
             {# Code editor area #}
-            <div id="cp-editor-label">Your Code &mdash; replace every ___ with the correct value:</div>
+            <div id="cp-editor-label">Your Code:</div>
             <textarea
                 id="cp-editor"
                 spellcheck="false"
@@ -1323,6 +1379,12 @@
                 autocorrect="off"
                 autocapitalize="off"
             ></textarea>
+
+            {# Expected output preview — shown before submission for standard challenges #}
+            <div id="cp-expected-hint">
+                <span class="expect-label">▶ Your code should output:</span>
+                <span class="expect-value" id="cp-expected-value"></span>
+            </div>
 
             {# Lesson reference #}
             <div id="cp-lesson-ref" style="display:none;"></div>
@@ -1371,6 +1433,7 @@
 <script src="{% static 'js/game/data/region1_dialogue.js' %}"></script>
 <script src="{% static 'js/game/data/region1_shrines.js' %}"></script>
 <script src="{% static 'js/game/pyodide_runner.js' %}"></script>
+<script src="{% static 'js/game/scenes/CinematicScene.js' %}"></script>
 <script src="{% static 'js/game/scenes/OriginNodeScene.js' %}"></script>
 <script src="{% static 'js/game/challenge.js' %}"></script>
 <script src="{% static 'js/game/tablet.js' %}"></script>

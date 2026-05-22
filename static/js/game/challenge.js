@@ -36,6 +36,11 @@ class ChallengePanel {
         this.outputSection = document.getElementById('cp-output-section');
         this.outputEl      = document.getElementById('cp-output');
 
+        this.expectedHint  = document.getElementById('cp-expected-hint');
+        this.expectedValue = document.getElementById('cp-expected-value');
+        this.bugfixBanner  = document.getElementById('cp-bugfix-banner');
+        this.editorLabel   = document.getElementById('cp-editor-label');
+
         this.currentChallenge = null;
         this.hintShown        = false;
         this.attemptCount     = 0;
@@ -69,6 +74,26 @@ class ChallengePanel {
         this.editorEl.value       = challenge.prompt_code;
         this.refEl.textContent    = challenge.lesson_reference || '';
         this.refEl.style.display  = challenge.lesson_reference ? 'block' : 'none';
+
+        // ── Context-aware editor label ───────────────────────────────────
+        this._updateEditorLabel(challenge);
+
+        // ── Expected output preview ──────────────────────────────────────
+        const hasExpected = challenge.expected_output && challenge.expected_output.trim();
+        if (this.expectedHint) {
+            if (hasExpected) {
+                this.expectedValue.textContent = challenge.expected_output.trim();
+                this.expectedHint.style.display = 'block';
+            } else {
+                this.expectedHint.style.display = 'none';
+            }
+        }
+
+        // ── Bug-fix banner ───────────────────────────────────────────────
+        if (this.bugfixBanner) {
+            this.bugfixBanner.style.display =
+                challenge.type === 'bug_fix' ? 'block' : 'none';
+        }
 
         // Clear previous result and output
         this._clearResult();
@@ -110,13 +135,42 @@ class ChallengePanel {
             }
         });
 
-        // Ctrl+Enter to submit
         this.editorEl.addEventListener('keydown', (e) => {
+            // Ctrl+Enter / Cmd+Enter → submit
             if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
                 e.preventDefault();
                 this._submit();
+                return;
+            }
+            // Tab → insert 4 spaces (don't move focus)
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const start = this.editorEl.selectionStart;
+                const end   = this.editorEl.selectionEnd;
+                const val   = this.editorEl.value;
+                this.editorEl.value = val.substring(0, start) + '    ' + val.substring(end);
+                this.editorEl.selectionStart = this.editorEl.selectionEnd = start + 4;
             }
         });
+    }
+
+    _updateEditorLabel(challenge) {
+        if (!this.editorLabel) return;
+        if (challenge.type === 'fill_blank') {
+            const count = (challenge.prompt_code.match(/___/g) || []).length;
+            this.editorLabel.innerHTML =
+                `Your Code &mdash; replace each <span class="blank-highlight">___</span> with the correct value` +
+                (count > 0
+                    ? `<span class="blank-count">(${count} blank${count > 1 ? 's' : ''})</span>`
+                    : '') +
+                ':';
+        } else if (challenge.type === 'bug_fix') {
+            this.editorLabel.textContent = 'Your Code — edit below to fix the bug(s):';
+        } else if (challenge.type === 'boss') {
+            this.editorLabel.textContent = 'Your Solution — write your complete code below:';
+        } else {
+            this.editorLabel.textContent = 'Your Code:';
+        }
     }
 
     async _submit() {

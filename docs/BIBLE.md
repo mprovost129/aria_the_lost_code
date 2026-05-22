@@ -1193,4 +1193,101 @@ Run sequence on a fresh install:
 
 ---
 
+Layer 11: Registration, Cinematic, Visual Overhaul, Challenge UX, Subscription Gate
+Status: COMPLETE (2026-05-21)
+
+Registration
+  accounts/views.py     — RegisterForm (username, email, password1, password2)
+                          register() view: GET renders form, POST validates,
+                          creates User, auto-logs in, redirects to character_create
+  config/urls.py        — path('accounts/register/', name='register')
+  templates/registration/register.html
+                        — ARIA-themed card matching character creation aesthetic;
+                          password strength bar (5-level color + label);
+                          "Already have an account? Sign in" footer link
+  templates/registration/login.html
+                        — Fully restyled to match ARIA dark theme;
+                          ARIA greeting "Connection attempt detected";
+                          error shows single generic message not raw Django errors
+  templates/base.html   — Navbar: added Register + Sign In links for unauthenticated users
+
+Opening Cinematic
+  static/js/game/scenes/CinematicScene.js  (NEW)
+    Phaser scene. Runs before OriginNodeScene. Skipped on return visits
+    via localStorage 'aria_cinematic_seen' = '1'.
+    Sequence: office scene (3 monitors, desk, programmer silhouette) →
+              CRACK flash + blackout → power restored → ARIA terminal streams text →
+              [YES]/[NO] buttons → suck-in effect → fade to black → OriginNodeScene.
+    Skip: Space, Enter, or skip button in top-right corner at any time.
+  main.js               — scene array updated to [CinematicScene, OriginNodeScene]
+  game.html             — CinematicScene.js added before OriginNodeScene.js in load order
+
+Visual Overhaul
+  static/js/game/scenes/OriginNodeScene.js  (REWRITTEN)
+    _generateTileTextures(): All 11 tile types fully redrawn:
+      WALL — offset stone brick pattern
+      FLOOR — subtle cross-grid + corner dots
+      ROAD — PCB circuit trace with solder pads at intersections
+      SHRINE — dark green floor base (building drawn as overlay)
+      GATE — dual stone pillars + horizontal energy barrier beam
+      BOSS_CHAMBER — heavy columns + lintel + purple energy field + diamond sigil
+      TERMINAL — monitor casing, screen, scanlines, cursor, LED, stand
+      BOSS_BUG — warning stripe base (bug drawn as overlay)
+      ROAD_RESTORED — bright green circuit trace + glow pads
+      FLOOR_LIT — warm green grid + corner glow dots
+    _generatePlayerTextures(): Human silhouette in 32×32 texture:
+      Shadow ellipse, legs, torso, arms, neck, head (lighter tint), eyes, highlight.
+      setFlipX() on direction change — one texture, mirrored for left-facing.
+      Vertical bob tween during movement.
+    _renderShrineOverlays(): Draws a unified 64×68 temple building over each 2×2 shrine block:
+      Stone base platform, steps, columns with capitals, door arch with glow,
+      triangular gabled roof, lightning bolt sigil in gable. Gentle pulse tween.
+    _renderBossBugOverlays(): Draws actual insect sprite over boss_bug tile:
+      6 legs (angled outward), 2 antennae with tips, abdomen + stripes, thorax,
+      head, glowing yellow eyes with white glint. Boss has wider aura.
+      Idle wriggle + alpha pulse tweens. Fades out on boss_bug:clear event.
+    _createPlayer(): Replaced circle with humanoid image sprite + shadow ellipse.
+
+Challenge UX
+  challenge.js
+    _updateEditorLabel(): Dynamic label per challenge type:
+      fill_blank → "replace each ___ ... (N blanks)"
+      bug_fix    → "edit below to fix the bug(s)"
+      boss       → "write your complete solution"
+    Expected output preview (#cp-expected-hint): Shows "Your code should output: X"
+      for challenges with a non-empty expected_output. Hidden on submit.
+    Bug-fix banner (#cp-bugfix-banner): Orange left-bordered banner for bug_fix type.
+    Tab key in editor: inserts 4 spaces instead of moving focus.
+  region1_challenges.js
+    ch3: Added print(type(...)) line so players see type feedback in the output box.
+         expected_output updated to show the four type strings.
+    ch4: Added print(node_id, power, is_connected) — players see fix result immediately.
+         expected_output: 'Origin-01 100 True'
+  game.html  — Added #cp-expected-hint, #cp-bugfix-banner HTML elements + CSS
+
+Subscription / Waitlist Gate
+  accounts/models.py
+    Subscription model: OneToOne → PlayerProfile; plan (monthly/annual); is_active;
+      started_at, expires_at; stripe_customer_id, stripe_subscription_id (Phase 2).
+    WaitlistEntry model: email (unique), user (FK nullable), created_at.
+    PlayerProfile.has_full_access property: True for staff or active subscription.
+  accounts/admin.py   — Subscription (activate/deactivate actions), WaitlistEntry registered
+  accounts/views.py   — paywall() GET view; waitlist_join() POST (AJAX + form fallback)
+  accounts/urls.py    (NEW) — app_name='accounts'; /subscribe/ and /subscribe/waitlist/
+  config/urls.py      — path('accounts/', include('accounts.urls')) added
+  templates/accounts/paywall.html  (NEW)
+    ARIA-themed upgrade page: signal progress bar (14%), 7-region dot grid,
+    Monthly ($9.99) and Annual ($59.99 — "Best Value") plan cards,
+    AJAX waitlist email capture with confirm/error states.
+    All "Buy" buttons show "launching soon" — no Stripe integration yet.
+  accounts/migrations/0003_subscription_waitlistentry.py  (NEW)
+
+Freemium gating strategy (implemented):
+  Region 1 — always free (no gate check)
+  Regions 2-7 — check PlayerProfile.has_full_access; redirect to /subscribe/ if False
+  Staff users — bypass subscription check (has_full_access = True for is_staff)
+  Stripe Phase 2 — integrate dj-stripe; webhook sets Subscription.is_active = True on payment
+
+---
+
 End of Game Bible v1.0  |  ARIA: The Lost Code
