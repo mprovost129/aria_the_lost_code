@@ -244,6 +244,8 @@ class ShrineModal {
                 AG.events.emit('aria:speak', { text: ariaMsg });
                 AG.events.emit('shrine:complete', { shrineId: shrine.id, shrine });
             }
+            // Give the player a beat to read success, then close the shrine panel.
+            setTimeout(() => this.close(), 900);
         } else {
             btn.disabled    = false;
             btn.textContent = '▶ Run';

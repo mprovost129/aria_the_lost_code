@@ -43,7 +43,6 @@ class ChallengePanel {
 
         this.currentChallenge = null;
         this.hintShown        = false;
-        this.attemptCount     = 0;
         this.submitting       = false;
 
         this._bindEvents();
@@ -64,7 +63,6 @@ class ChallengePanel {
         this.currentChallenge = challenge;
         this.gatePos          = gatePos;
         this.hintShown        = false;
-        this.attemptCount     = 0;
 
         // Populate the panel
         this.titleEl.textContent  = challenge.title;
@@ -212,12 +210,15 @@ class ChallengePanel {
             this.submitBtn.textContent = '▶ Submit';
         }
 
-        this.attemptCount++;
+        const attemptMeta = await this._recordAttempt(this.currentChallenge, result.correct);
+        if (attemptMeta && typeof attemptMeta.chances === 'number') {
+            window.ARIA_GAME.events.emit('chance:set', { count: attemptMeta.chances });
+        }
 
         if (result.correct) {
-            this._onCorrect(result);
+            this._onCorrect(result, attemptMeta);
         } else {
-            this._onWrong(result);
+            this._onWrong(result, attemptMeta);
         }
     }
 
@@ -278,7 +279,7 @@ class ChallengePanel {
         };
     }
 
-    _onCorrect(result) {
+    _onCorrect(result, attemptMeta) {
         const AG = window.ARIA_GAME;
         const ch = this.currentChallenge;
 
@@ -287,6 +288,8 @@ class ChallengePanel {
 
         // Update gate progress and emit appropriate events
         setTimeout(() => {
+            // Close first so event-handler errors can never trap the panel open.
+            this.close();
             if (ch.category === 'gate' && this.gatePos) {
                 AG.events.emit('challenge:solved', {
                     challengeId: ch.id,
@@ -305,17 +308,20 @@ class ChallengePanel {
                     gatePos:     this.gatePos,
                 });
             }
-            this.close();
         }, 1200);
     }
 
-    _onWrong(result) {
+    _onWrong(result, attemptMeta) {
         const AG  = window.ARIA_GAME;
         const ch  = this.currentChallenge;
         const msg = result.message || 'That is not right. Review the concept and try again.';
 
+        const firstWrongFree = attemptMeta?.first_wrong_free === true;
+        const chanceLost = attemptMeta?.chance_lost === true;
+        const outOfChances = attemptMeta?.out_of_chances === true;
+
         // First wrong attempt: show hint automatically, no Chance deducted
-        if (this.attemptCount === 1) {
+        if (firstWrongFree) {
             this._showResult('error', `✗ ${msg}`);
             this._showHint(/*auto=*/true);
             AG.events.emit('aria:speak', { text: ch.aria_hint });
@@ -323,7 +329,49 @@ class ChallengePanel {
             // Second+ attempt: deduct a Chance
             this._showResult('error', `✗ ${msg}`);
             AG.events.emit('aria:speak', { text: ch.aria_fail });
-            AG.events.emit('chance:lose');
+            if (!attemptMeta) {
+                // Fallback when API unavailable - preserve legacy behavior.
+                AG.events.emit('chance:lose');
+            }
+        }
+
+        if (chanceLost && outOfChances) {
+            AG.events.emit('aria:speak', {
+                text: 'That was close. Very close. In the wrong direction. Go review your library and try again.',
+            });
+            setTimeout(() => this.close(), 2200);
+        }
+    }
+
+    _getCsrfToken() {
+        const c = document.cookie.split(';').find(s => s.trim().startsWith('csrftoken='));
+        return c ? decodeURIComponent(c.trim().split('=')[1]) : '';
+    }
+
+    async _recordAttempt(challenge, correct) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2500);
+        try {
+            const response = await fetch('/api/challenges/attempt/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': this._getCsrfToken(),
+                },
+                signal: controller.signal,
+                body: JSON.stringify({
+                    challenge_id: challenge.id,
+                    category: challenge.category || '',
+                    correct: !!correct,
+                }),
+            });
+            clearTimeout(timeoutId);
+            if (!response.ok) return null;
+            const data = await response.json();
+            return data?.ok ? data : null;
+        } catch (err) {
+            clearTimeout(timeoutId);
+            return null;
         }
     }
 

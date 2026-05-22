@@ -49,6 +49,9 @@ AG.bossBugDefeated = false;
 
 // Ejection flag - set when chances drop to 0; cleared on chance:restore
 AG.chancesEmpty = false;
+AG.completedShrines = new Set();
+AG._sceneReady = false;
+AG._pendingGameState = null;
 
 // ---------------------------------------------------------------------------
 // 3. Phaser boot
@@ -97,6 +100,11 @@ fetch('/api/player-state/')
             updateChancesDisplay(data.chances);
             if (data.chances === 0) AG.chancesEmpty = true;
         }
+        AG.cinematicSeen = Boolean(data.cinematic_seen);
+        if (data.game_state && typeof data.game_state === 'object') {
+            AG._pendingGameState = data.game_state;
+            _applyPersistedGameState();
+        }
     })
     .catch(() => { /* keep default 3 */ });
 
@@ -133,6 +141,16 @@ AG.events.on('aria:speak', ({ text }) => {
     }
 });
 
+AG.events.on('scene:ready', () => {
+    AG._sceneReady = true;
+    _applyPersistedGameState();
+});
+
+AG.events.on('cinematic:seen', () => {
+    AG.cinematicSeen = true;
+    _markCinematicSeen();
+});
+
 // ---------------------------------------------------------------------------
 // 9. HUD: Chances display + persistence helpers (Layer 9)
 // ---------------------------------------------------------------------------
@@ -158,6 +176,215 @@ function _syncChances(count) {
         },
         body: JSON.stringify({ chances: count }),
     }).catch(err => console.warn('[ARIA] Chances sync failed:', err));
+}
+
+const _progressQueue = [];
+let _progressFlushInFlight = false;
+const _progressDedupKeySet = new Set();
+const _PROGRESS_QUEUE_STORAGE_KEY = 'aria_progress_queue_v1';
+
+function _postProgress(url, payload) {
+    return fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': _getCsrfToken(),
+        },
+        body: JSON.stringify(payload || {}),
+    }).then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res;
+    });
+}
+
+function _collectGameStateSnapshot() {
+    const solved = [];
+    Object.entries(AG.gateState || {}).forEach(([, state]) => {
+        if (state?.solved instanceof Set) {
+            state.solved.forEach(id => solved.push(id));
+        }
+    });
+    const openGates = Object.entries(AG.gateState || {})
+        .filter(([, state]) => Boolean(state?.open))
+        .map(([gateKey]) => gateKey);
+    return {
+        solved_challenges: solved,
+        open_gates: openGates,
+        completed_shrines: Array.from(AG.completedShrines || []),
+        boss_bug_defeated: Boolean(AG.bossBugDefeated),
+        region_restored: Boolean(AG.regionRestored),
+    };
+}
+
+function _persistProgressQueue() {
+    try {
+        localStorage.setItem(_PROGRESS_QUEUE_STORAGE_KEY, JSON.stringify(_progressQueue));
+    } catch (_) {}
+}
+
+function _loadProgressQueue() {
+    try {
+        const raw = localStorage.getItem(_PROGRESS_QUEUE_STORAGE_KEY);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return;
+        parsed.forEach((item) => {
+            if (!item || typeof item.url !== 'string') return;
+            const payload = (item.payload && typeof item.payload === 'object') ? item.payload : {};
+            const key = `${item.url}|${JSON.stringify(payload)}`;
+            if (_progressDedupKeySet.has(key)) return;
+            _progressDedupKeySet.add(key);
+            _progressQueue.push({ url: item.url, payload, dedupKey: key });
+        });
+    } catch (_) {}
+}
+
+function _enqueueProgress(url, payload) {
+    const body = payload || {};
+    const key = `${url}|${JSON.stringify(body)}`;
+    if (_progressDedupKeySet.has(key)) return;
+    _progressDedupKeySet.add(key);
+    _progressQueue.push({ url, payload: body, dedupKey: key });
+    _persistProgressQueue();
+}
+
+function _flushProgressQueue() {
+    if (_progressFlushInFlight || _progressQueue.length === 0) return;
+    _progressFlushInFlight = true;
+
+    const item = _progressQueue[0];
+    _postProgress(item.url, item.payload)
+        .then(() => {
+            const sent = _progressQueue.shift();
+            if (sent?.dedupKey) _progressDedupKeySet.delete(sent.dedupKey);
+            _persistProgressQueue();
+        })
+        .catch(() => {
+            // Keep the event for retry; avoid noisy logs during transient offline periods.
+        })
+        .finally(() => {
+            _progressFlushInFlight = false;
+            if (_progressQueue.length > 0) setTimeout(_flushProgressQueue, 1200);
+        });
+}
+
+function _progressShrineComplete(shrineId) {
+    _postProgress('/api/progress/shrine-complete/', { shrine_id: shrineId })
+        .catch(() => {
+            _enqueueProgress('/api/progress/shrine-complete/', { shrine_id: shrineId });
+            _flushProgressQueue();
+        });
+}
+
+function _progressChallengeSolved(challengeId) {
+    _postProgress('/api/progress/challenge-solved/', { challenge_id: challengeId })
+        .catch(() => {
+            _enqueueProgress('/api/progress/challenge-solved/', { challenge_id: challengeId });
+            _flushProgressQueue();
+        });
+}
+
+function _progressGateOpen(gateKey) {
+    _postProgress('/api/progress/gate-open/', { gate_key: gateKey })
+        .catch(() => {
+            _enqueueProgress('/api/progress/gate-open/', { gate_key: gateKey });
+            _flushProgressQueue();
+        });
+}
+
+function _progressRegionRestored() {
+    _postProgress('/api/progress/region-restored/', { restored: true })
+        .catch(() => {
+            _enqueueProgress('/api/progress/region-restored/', { restored: true });
+            _flushProgressQueue();
+        });
+}
+
+function _markCinematicSeen() {
+    fetch('/api/cinematic/seen/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': _getCsrfToken() },
+    }).catch(err => console.warn('[ARIA] Cinematic seen sync failed:', err));
+}
+
+function _autosaveNow() {
+    const headers = {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': _getCsrfToken(),
+    };
+    const chancesBody = JSON.stringify({ chances: currentChances });
+    const gameStateBody = JSON.stringify(_collectGameStateSnapshot());
+
+    // keepalive lets the browser try to send even during unload/navigation
+    fetch('/api/chances/sync/', {
+        method: 'POST',
+        headers,
+        body: chancesBody,
+        keepalive: true,
+    }).catch(() => {});
+
+    fetch('/api/game-state/sync/', {
+        method: 'POST',
+        headers,
+        body: gameStateBody,
+        keepalive: true,
+    }).catch(() => {});
+}
+
+_loadProgressQueue();
+_flushProgressQueue();
+window.addEventListener('online', _flushProgressQueue);
+setInterval(_flushProgressQueue, 10000);
+setInterval(_autosaveNow, 30000);
+window.addEventListener('beforeunload', _autosaveNow);
+window.addEventListener('pagehide', _autosaveNow);
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') _autosaveNow();
+});
+
+function _applyPersistedGameState() {
+    const state = AG._pendingGameState;
+    if (!state) return;
+
+    const solvedChallenges = Array.isArray(state.solved_challenges) ? state.solved_challenges : [];
+    solvedChallenges.forEach((challengeId) => {
+        Object.entries(AG.GATE_CHALLENGES || {}).forEach(([gateKey, challengeIds]) => {
+            if (challengeIds.includes(challengeId)) {
+                AG.gateState[gateKey]?.solved?.add(challengeId);
+            }
+        });
+    });
+
+    const openGates = Array.isArray(state.open_gates) ? state.open_gates : [];
+    openGates.forEach((gateKey) => {
+        if (AG.gateState[gateKey]) AG.gateState[gateKey].open = true;
+    });
+
+    const completedShrines = Array.isArray(state.completed_shrines) ? state.completed_shrines : [];
+    AG.completedShrines = new Set(completedShrines);
+    _shrinePipCount = AG.completedShrines.size % 3;
+    _updateShrinePips(_shrinePipCount);
+    completedShrines.forEach((shrineId) => {
+        const shrine = AG.SHRINES?.[shrineId];
+        if (shrine) AG.tablet?.addCompletedShrine(shrine);
+    });
+
+    AG.bossBugDefeated = Boolean(state.boss_bug_defeated);
+    AG.regionRestored = Boolean(state.region_restored);
+
+    // Scene-specific visual updates only after the scene is ready.
+    if (AG._sceneReady) {
+        openGates.forEach((gateKey) => {
+            const [col, row] = gateKey.split(',').map(Number);
+            if (Number.isFinite(col) && Number.isFinite(row)) {
+                AG.events.emit('gate:open', { col, row });
+            }
+        });
+        if (AG.bossBugDefeated) {
+            const bugPos = (AG.MAPS.ORIGIN_NODE_OBJECTS.bossBug || [])[0];
+            if (bugPos) AG.events.emit('boss_bug:clear', { col: bugPos.col, row: bugPos.row });
+        }
+    }
 }
 
 function updateChancesDisplay(count) {
@@ -203,10 +430,15 @@ AG.events.on('chance:restore', () => {
     _syncChances(3);
 });
 
+AG.events.on('chance:set', ({ count }) => {
+    if (typeof count !== 'number') return;
+    updateChancesDisplay(count);
+    AG.chancesEmpty = count <= 0;
+});
+
 // ---------------------------------------------------------------------------
 // Shrine completion: bonus pip tracking + chance grant + tablet update
 // ---------------------------------------------------------------------------
-AG.completedShrines = new Set();
 let _shrinePipCount = 0;   // 0–2; hitting 3 grants a Chance and resets
 
 function _updateShrinePips(count) {
@@ -261,6 +493,22 @@ AG.events.on('shrine:complete', ({ shrineId, shrine }) => {
     } else {
         _updateShrinePips(_shrinePipCount);
     }
+
+    // Post-completion guidance line in the ARIA bar (unique per shrine).
+    const shrineFollowups = {
+        shrine1: 'Shrine of Variables complete. Good. Names give structure to chaos, and I need structure right now. Keep going.',
+        shrine2: 'Shrine of Strings complete. Clean text means fewer hidden mistakes. I can breathe a little easier - move to the next gate.',
+        shrine3: 'Shrine of Integers and Floats complete. Whole numbers, decimal numbers, no confusion. You are building real momentum now.',
+        shrine4: 'Shrine of Booleans complete. True. False. Clear decisions. That kind of certainty is exactly what this region was missing.',
+        shrine5: 'Shrine of Type Conversion complete. You can translate data between systems without breaking flow. That is advanced control.',
+        shrine6: 'Shrine of f-strings complete. Clear output, live values, no guesswork. Excellent work. We are ready for what comes next.',
+    };
+    const fallbackLine = `You completed ${shrine?.name || 'that shrine'}. Keep moving - you will need this on the path ahead.`;
+    AG.events.emit('aria:speak', {
+        text: shrineFollowups[shrineId] || fallbackLine,
+    });
+
+    _progressShrineComplete(shrineId);
 });
 
 // ---------------------------------------------------------------------------
@@ -382,6 +630,7 @@ AG.events.on('challenge:solved', ({ challengeId, gatePos }) => {
         // All challenges for this gate solved → open it
         state.open = true;
         AG.events.emit('gate:open', { col: gatePos.col, row: gatePos.row });
+        _progressGateOpen(gateKey);
         AG.events.emit('aria:speak', {
             text: 'Gate open. Signal restored on this path. Keep moving.',
         });
@@ -392,6 +641,7 @@ AG.events.on('challenge:solved', ({ challengeId, gatePos }) => {
             text: `Good. ${remaining} more challenge${remaining > 1 ? 's' : ''} on this gate.`,
         });
     }
+    _progressChallengeSolved(challengeId);
 });
 
 // ---------------------------------------------------------------------------
@@ -408,12 +658,14 @@ AG.events.on('boss_bug:solved', () => {
     AG.events.emit('aria:speak', {
         text: 'Bug defeated. Chances restored. The Boss Chamber is open.',
     });
+    _progressChallengeSolved(AG.BOSS_BUG_CHALLENGE);
 });
 
 // ---------------------------------------------------------------------------
 // 10. Boss Challenge complete - trigger ripple wave, then show completion card
 // ---------------------------------------------------------------------------
 AG.events.on('boss:solved', () => {
+    _progressChallengeSolved(AG.BOSS_CHALLENGE);
     AG.events.emit('aria:speak', {
         text: 'The Origin Node is restored. Signal expanding. Region 2 unlocked. We are just getting started.',
     });
@@ -429,6 +681,7 @@ AG.events.on('boss:solved', () => {
 // region:restored fires from OriginNodeScene after the full ripple wave
 // has played out.  Show the completion card.
 AG.events.on('region:restored', () => {
+    AG.regionRestored = true;
     const overlay = document.getElementById('region-complete-overlay');
     const fill    = document.getElementById('rc-signal-fill');
     if (!overlay) return;
@@ -446,6 +699,7 @@ AG.events.on('region:restored', () => {
             });
         });
     }
+    _progressRegionRestored();
 });
 
 // Continue button - dismiss the overlay and speak a closing line

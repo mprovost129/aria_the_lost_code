@@ -44,6 +44,12 @@ class PlayerProfile(models.Model):
 
     # Once the opening cinematic has played once, this is set so it can be skipped.
     cinematic_seen = models.BooleanField(default=False)
+    game_state = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text='Persistent frontend state (solved gates/challenges, shrine completions, boss flags).',
+    )
+    game_state_version = models.PositiveSmallIntegerField(default=1)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -41,7 +41,8 @@ class CinematicScene extends Phaser.Scene {
         const H = this.scale.height;
 
         // ── Skip logic ──────────────────────────────────────────────────────
-        if (localStorage.getItem('aria_cinematic_seen') === '1') {
+        const seenByProfile = Boolean(window.ARIA_GAME && window.ARIA_GAME.cinematicSeen === true);
+        if (seenByProfile || localStorage.getItem('aria_cinematic_seen') === '1') {
             this._skipToGame();
             return;
         }
@@ -445,6 +446,9 @@ class CinematicScene extends Phaser.Scene {
 
     _finishCinematic() {
         localStorage.setItem('aria_cinematic_seen', '1');
+        if (window.ARIA_GAME && window.ARIA_GAME.events) {
+            window.ARIA_GAME.events.emit('cinematic:seen');
+        }
 
         // Fade to black then start game
         this.tweens.add({

@@ -2439,4 +2439,140 @@ Challenge panel routing (challenge.js):
 
 ---
 
+Layer 14: Persistence Hardening, Event Progress APIs, Autosave, and Completion UX
+Status: COMPLETE (2026-05-22)
+
+This layer converted Region 1 progression from mostly client-memory state into durable account-backed state with event-driven writes, offline-safe retry behavior, and improved challenge/shrine completion UX.
+
+Backend data model updates
+  accounts/models.py
+    PlayerProfile.game_state (JSONField): persistent progression payload.
+    PlayerProfile.game_state_version (PositiveSmallIntegerField, default 1): schema versioning for forward-compatible upgrades.
+  New migrations:
+    accounts/migrations/0004_playerprofile_game_state.py
+    accounts/migrations/0005_playerprofile_game_state_version.py
+
+Canonical game_state payload (v1)
+  {
+    version: 1,
+    solved_challenges: string[],
+    open_gates: string[],              // "col,row" keys
+    completed_shrines: string[],       // shrine ids, e.g. "shrine3"
+    boss_bug_defeated: boolean,
+    region_restored: boolean,
+    challenge_attempts: { [id]: int }  // per-challenge attempt counts
+  }
+
+Server APIs (game/urls.py + game/views.py)
+  Existing and expanded:
+    GET  /api/player-state/
+      Returns chances, cinematic_seen, and normalized game_state.
+      Auto-upgrades stale game_state_version to current schema.
+    POST /api/chances/sync/
+      Persists chances with sanity clamp.
+    POST /api/game-state/sync/
+      Full snapshot sync endpoint (kept as compatibility/fallback path).
+      Preserves challenge_attempts if omitted by payload.
+      Sets current_region to Region 1 when region_restored=true.
+    POST /api/cinematic/seen/
+      Persists account-level cinematic_seen flag.
+
+  Challenge attempt authority:
+    POST /api/challenges/attempt/
+      Body: { challenge_id, correct, category }
+      Enforces first-wrong-free + second+-wrong-costs-one Chance.
+      Prevents chances from dropping below 0.
+      On boss_bug success, restores chances to full (3).
+      Persists challenge_attempts and solved_challenges in game_state.
+
+  New event progress endpoints (idempotent progression writes):
+    POST /api/progress/shrine-complete/   { shrine_id }
+    POST /api/progress/challenge-solved/  { challenge_id }
+    POST /api/progress/gate-open/         { gate_key }
+    POST /api/progress/region-restored/   { restored: true }
+
+Frontend persistence flow (static/js/game/main.js)
+  Hydration:
+    On load, /api/player-state initializes:
+      chances, cinematicSeen, gate solved/open state, completed shrines,
+      boss bug defeated state, and region restored state.
+
+  Event-driven writes:
+    shrine:complete      -> /api/progress/shrine-complete/
+    challenge:solved     -> /api/progress/challenge-solved/
+    gate open transition -> /api/progress/gate-open/
+    region:restored      -> /api/progress/region-restored/
+    cinematic:seen       -> /api/cinematic/seen/
+
+  Retry queue:
+    Failed progress events enqueue locally (ordered queue).
+    Queue dedup key = url + JSON payload to avoid duplicate enqueues.
+    Queue replays on:
+      browser online event
+      10s interval worker tick
+    Queue is persisted to localStorage key:
+      aria_progress_queue_v1
+    Queue is restored and replayed after refresh/reload.
+
+Autosave behavior (main.js)
+  Added best-effort autosave to minimize accidental progress loss:
+    Every 30s:
+      POST /api/chances/sync/
+      POST /api/game-state/sync/
+    On lifecycle exits/backgrounding:
+      beforeunload
+      pagehide
+      visibilitychange(hidden)
+    Uses fetch keepalive for unload-time sends where supported.
+
+Challenge and shrine completion UX polish
+  challenge.js
+    Success flow now closes Challenge panel before solved-event emission.
+    This prevents downstream handler failures from leaving the panel stuck open.
+    Added timeout guard (AbortController, 2500ms) to /api/challenges/attempt/
+    calls so network stalls do not trap the player in the panel.
+
+  shrine.js
+    Shrine challenge success now auto-closes Shrine modal after short delay (~900ms).
+
+  main.js
+    Added unique per-shrine ARIA follow-up completion lines (shrine1â€“shrine6),
+    replacing repeated generic messaging.
+    Tone now tracks ARIA's Region 1 emotional progression:
+      early shrines more tense/fragile,
+      later shrines more confident/authoritative.
+
+Account-level cinematic sync
+  templates/game/game.html
+    Injects profile cinematic flag into ARIA_GAME bootstrap.
+  static/js/game/scenes/CinematicScene.js
+    Skip logic now checks profile cinematicSeen OR localStorage fallback.
+    Completing cinematic emits cinematic:seen event for server persistence.
+
+Testing coverage (game/tests.py)
+  Added backend tests for progression integrity:
+    first wrong attempt is free
+    second wrong attempt loses a Chance
+    chances never go below zero
+    boss bug success restores chances to 3
+    game_state_version legacy upgrade on player_state read
+    sync_game_state preserves challenge_attempts when omitted
+    region_restored sync sets current_region
+    progress/shrine-complete dedup behavior
+    progress/challenge-solved state write
+    progress/gate-open state write
+    progress/region-restored state write + current_region mapping
+
+Operational notes
+  load_region1.py remains legacy content-loading scaffolding and is not the runtime
+  source of truth for Region 1 challenge/shrine behavior.
+  Runtime source-of-truth remains the Region 1 JS data + event pipeline:
+    static/js/game/data/region1_challenges.js
+    static/js/game/data/region1_shrines.js
+    static/js/game/main.js
+    static/js/game/challenge.js
+    static/js/game/shrine.js
+
+---
+
 End of Game Bible v1.0  |  ARIA: The Lost Code
