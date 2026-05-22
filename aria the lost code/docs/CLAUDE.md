@@ -1,1 +1,0 @@
-See BIBLE.md for all information.

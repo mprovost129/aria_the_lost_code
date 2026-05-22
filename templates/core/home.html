@@ -920,12 +920,30 @@ updateHUD();
    WEB AUDIO - ELECTRICAL SPARKS
    ═══════════════════════════════════════════════════ */
 var AC = null, soundOn = false, sparkTimer = null;
+var sparkClip = null, lastSparkClipAt = 0;
 var flashEl  = document.getElementById('spark-flash');
 var toggleEl = document.getElementById('sound-toggle');
 
 function ac() {
     if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
     return AC;
+}
+
+function playSparkClip() {
+    if (!soundOn) return;
+    var nowMs = Date.now();
+    if (nowMs - lastSparkClipAt < 18000) return;
+    if (!sparkClip) {
+        sparkClip = new Audio("{% static 'audio/electric-spark.mp3' %}");
+        sparkClip.preload = 'auto';
+        sparkClip.volume = 0.32;
+    }
+    try {
+        sparkClip.currentTime = 0;
+        var playPromise = sparkClip.play();
+        if (playPromise && typeof playPromise.catch === 'function') playPromise.catch(function () {});
+        lastSparkClipAt = nowMs;
+    } catch (e) {}
 }
 
 function noise(dur) {
@@ -1015,6 +1033,7 @@ function arcFlash() {
     g2.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
     osc.connect(g2); g2.connect(a.destination);
     osc.start(now); osc.stop(now + 0.35);
+    if (Math.random() < 0.55) playSparkClip();
 }
 
 function flash(intense) {
@@ -1069,6 +1088,10 @@ if (toggleEl) {
         } else {
             soundOn = false;
             clearTimeout(sparkTimer);
+            if (sparkClip) {
+                sparkClip.pause();
+                sparkClip.currentTime = 0;
+            }
             toggleEl.textContent = '🔇';
             toggleEl.title = 'Enable sound effects';
         }
