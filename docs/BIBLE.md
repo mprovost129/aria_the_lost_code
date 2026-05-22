@@ -2573,6 +2573,16 @@ Operational notes
     static/js/game/challenge.js
     static/js/game/shrine.js
 
+Progression audit command
+  Added management command:
+    python manage.py progression_audit
+    python manage.py progression_audit --strict
+  Purpose:
+    Verifies backend progression constants (valid shrine ids, challenge ids,
+    and gate keys) remain in sync with live Region 1 frontend data files.
+  Strict mode:
+    Returns non-zero exit on mismatch for CI/pre-deploy checks.
+
 ---
 
 End of Game Bible v1.0  |  ARIA: The Lost Code

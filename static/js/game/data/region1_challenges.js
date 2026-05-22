@@ -423,14 +423,12 @@ print("__VALID__" if _ok else "__INVALID__: check your data types - string, inte
 // ---------------------------------------------------------------------------
 
 window.ARIA_GAME.GATE_CHALLENGES = {
-    // Top road (left → right) — one challenge each, matching the shrine before the gate
-    '7,5':   ['ch1'],   // Gate 1 — after Shrine 1 (Variables)      — variable/string fill
-    '12,5':  ['ch2'],   // Gate 2 — after Shrine 2 (Strings)         — integer/boolean fill
-    '17,5':  ['ch3'],   // Gate 3 — after Shrine 3 (Integers/Floats) — identify data types
-    // Bottom road (right → left) — same pattern
-    '18,11': ['ch4'],   // Gate 4 — after Shrine 4 (Booleans)        — fix broken variable (incl. bool)
-    '13,11': ['ch9'],   // Gate 5 — after Shrine 5 (Type Conversion) — type conversion fill
-    '8,11':  ['ch5'],   // Gate 6 — after Shrine 6 (f-strings)       — string formatting; blocks Boss
+    '8,8':   ['ch1'],
+    '14,7':  ['ch2'],
+    '23,7':  ['ch3'],
+    '23,13': ['ch4'],
+    '15,14': ['ch9'],
+    '26,16': ['ch5'],
 };
 
 // Boss Bug and Boss Chamber have their own mappings

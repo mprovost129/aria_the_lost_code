@@ -9,6 +9,13 @@ from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 from django.views.generic import TemplateView
 
+from .progression_constants import (
+    VALID_CHALLENGE_IDS,
+    VALID_GATE_KEYS,
+    VALID_PICKUP_IDS,
+    VALID_SHRINE_IDS,
+)
+
 
 # ---------------------------------------------------------------------------
 # API: player state (Layer 9 - Chances persistence)
@@ -22,6 +29,7 @@ DEFAULT_GAME_STATE = {
     'boss_bug_defeated': False,
     'region_restored': False,
     'challenge_attempts': {},
+    'collected_pickups': [],
 }
 
 
@@ -42,6 +50,7 @@ def _normalise_game_state(payload):
         'boss_bug_defeated': bool(payload.get('boss_bug_defeated', False)),
         'region_restored': bool(payload.get('region_restored', False)),
         'challenge_attempts': {},
+        'collected_pickups': _clean_str_list(payload.get('collected_pickups')),
     }
     raw_attempts = payload.get('challenge_attempts', {})
     if isinstance(raw_attempts, dict):
@@ -56,9 +65,34 @@ def _normalise_game_state(payload):
     return state
 
 
+def _filter_and_heal_game_state(state):
+    """
+    Remove unknown IDs from persisted state to guard against tampered payloads
+    and stale/legacy data drift.
+    """
+    filtered = _normalise_game_state(state)
+    filtered['completed_shrines'] = sorted({
+        s for s in filtered.get('completed_shrines', []) if s in VALID_SHRINE_IDS
+    })
+    filtered['solved_challenges'] = sorted({
+        c for c in filtered.get('solved_challenges', []) if c in VALID_CHALLENGE_IDS
+    })
+    filtered['open_gates'] = sorted({
+        g for g in filtered.get('open_gates', []) if g in VALID_GATE_KEYS
+    })
+    filtered['collected_pickups'] = sorted({
+        p for p in filtered.get('collected_pickups', []) if p in VALID_PICKUP_IDS
+    })
+    attempts = filtered.get('challenge_attempts', {})
+    filtered['challenge_attempts'] = {
+        cid: count for cid, count in attempts.items() if cid in VALID_CHALLENGE_IDS
+    }
+    return filtered
+
+
 def _save_profile_state(profile, state, set_region_if_restored=False):
     """Persist normalised state + version, optionally syncing current_region."""
-    profile.game_state = state
+    profile.game_state = _filter_and_heal_game_state(state)
     profile.game_state_version = DEFAULT_GAME_STATE['version']
     update_fields = ['game_state', 'game_state_version', 'updated_at']
 
@@ -84,8 +118,12 @@ def player_state(request):
     """
     try:
         profile = request.user.profile
-        if profile.game_state_version < DEFAULT_GAME_STATE['version']:
-            profile.game_state = _normalise_game_state(profile.game_state or DEFAULT_GAME_STATE)
+        normalised = _filter_and_heal_game_state(profile.game_state or DEFAULT_GAME_STATE)
+        if (
+            profile.game_state_version < DEFAULT_GAME_STATE['version']
+            or normalised != (profile.game_state or {})
+        ):
+            profile.game_state = normalised
             profile.game_state_version = DEFAULT_GAME_STATE['version']
             profile.save(update_fields=['game_state', 'game_state_version', 'updated_at'])
         return JsonResponse({
@@ -93,7 +131,7 @@ def player_state(request):
             'has_profile':    True,
             'display_name':   profile.display_name,
             'cinematic_seen': bool(profile.cinematic_seen),
-            'game_state':     _normalise_game_state(profile.game_state or DEFAULT_GAME_STATE),
+            'game_state':     _filter_and_heal_game_state(profile.game_state or DEFAULT_GAME_STATE),
         })
     except ObjectDoesNotExist:
         # No profile yet - player has not started the game
@@ -145,6 +183,9 @@ def sync_game_state(request):
     if 'challenge_attempts' not in data:
         existing = _normalise_game_state(profile.game_state or DEFAULT_GAME_STATE)
         state['challenge_attempts'] = existing.get('challenge_attempts', {})
+    if 'collected_pickups' not in data:
+        existing = _normalise_game_state(profile.game_state or DEFAULT_GAME_STATE)
+        state['collected_pickups'] = existing.get('collected_pickups', [])
     _save_profile_state(profile, state, set_region_if_restored=True)
     return JsonResponse({'ok': True, 'game_state': state})
 
@@ -189,6 +230,8 @@ def record_challenge_attempt(request):
     challenge_id = str(data.get('challenge_id', '')).strip()
     if not challenge_id:
         return JsonResponse({'ok': False, 'error': 'challenge_id required'}, status=400)
+    if challenge_id not in VALID_CHALLENGE_IDS:
+        return JsonResponse({'ok': False, 'error': 'invalid challenge_id'}, status=400)
 
     correct = bool(data.get('correct', False))
     category = str(data.get('category', '')).strip()
@@ -248,6 +291,8 @@ def progress_shrine_complete(request):
     shrine_id = str(data.get('shrine_id', '')).strip()
     if not shrine_id:
         return JsonResponse({'ok': False, 'error': 'shrine_id required'}, status=400)
+    if shrine_id not in VALID_SHRINE_IDS:
+        return JsonResponse({'ok': False, 'error': 'invalid shrine_id'}, status=400)
 
     state = _normalise_game_state(profile.game_state or DEFAULT_GAME_STATE)
     completed = set(state.get('completed_shrines', []))
@@ -273,6 +318,8 @@ def progress_challenge_solved(request):
     challenge_id = str(data.get('challenge_id', '')).strip()
     if not challenge_id:
         return JsonResponse({'ok': False, 'error': 'challenge_id required'}, status=400)
+    if challenge_id not in VALID_CHALLENGE_IDS:
+        return JsonResponse({'ok': False, 'error': 'invalid challenge_id'}, status=400)
 
     state = _normalise_game_state(profile.game_state or DEFAULT_GAME_STATE)
     solved = set(state.get('solved_challenges', []))
@@ -298,6 +345,8 @@ def progress_gate_open(request):
     gate_key = str(data.get('gate_key', '')).strip()
     if not gate_key:
         return JsonResponse({'ok': False, 'error': 'gate_key required'}, status=400)
+    if gate_key not in VALID_GATE_KEYS:
+        return JsonResponse({'ok': False, 'error': 'invalid gate_key'}, status=400)
 
     state = _normalise_game_state(profile.game_state or DEFAULT_GAME_STATE)
     gates = set(state.get('open_gates', []))
@@ -319,6 +368,33 @@ def progress_region_restored(request):
     state = _normalise_game_state(profile.game_state or DEFAULT_GAME_STATE)
     state['region_restored'] = True
     _save_profile_state(profile, state, set_region_if_restored=True)
+    return JsonResponse({'ok': True, 'game_state': state})
+
+
+@login_required
+@require_http_methods(['POST'])
+def progress_pickup_collected(request):
+    """POST /api/progress/pickup-collected/ body:{ pickup_id }"""
+    try:
+        profile = request.user.profile
+    except ObjectDoesNotExist:
+        return JsonResponse({'ok': False, 'error': 'No profile'}, status=400)
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError as exc:
+        return JsonResponse({'ok': False, 'error': str(exc)}, status=400)
+
+    pickup_id = str(data.get('pickup_id', '')).strip()
+    if not pickup_id:
+        return JsonResponse({'ok': False, 'error': 'pickup_id required'}, status=400)
+    if pickup_id not in VALID_PICKUP_IDS:
+        return JsonResponse({'ok': False, 'error': 'invalid pickup_id'}, status=400)
+
+    state = _normalise_game_state(profile.game_state or DEFAULT_GAME_STATE)
+    pickups = set(state.get('collected_pickups', []))
+    pickups.add(pickup_id)
+    state['collected_pickups'] = sorted(pickups)
+    _save_profile_state(profile, state)
     return JsonResponse({'ok': True, 'game_state': state})
 
 

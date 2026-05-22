@@ -23,6 +23,7 @@ class OriginNodeScene extends Phaser.Scene {
 
         this.tileImages     = {};   // 'col,row' → Phaser Image (for live swaps)
         this._bugOverlays   = {};   // 'col,row' → bug Graphics object (boss bug only)
+        this._pickupSprites = {};   // pickupId -> Graphics
 
         // Click-to-move: queue of {col, row} steps to walk
         this._moveQueue       = [];
@@ -32,6 +33,7 @@ class OriginNodeScene extends Phaser.Scene {
         this._roamingBugs  = [];
         this._nextBugId    = 0;
         this._bugAttacking = false;   // prevents double-trigger while panel is open
+        this._cameraZoom   = 1;
     }
 
     // -------------------------------------------------------------------------
@@ -48,6 +50,7 @@ class OriginNodeScene extends Phaser.Scene {
         this._renderMap(AG);
         this._renderShrineOverlays(AG);
         this._renderBossBugOverlays(AG);
+        this._renderChancePickups(AG);
         this._createPlayer(AG);
         this._setupCamera(AG);
         this._setupInput(AG);
@@ -455,6 +458,77 @@ class OriginNodeScene extends Phaser.Scene {
         });
     }
 
+    _renderChancePickups(AG) {
+        const pickups = window.ARIA_GAME.MAPS.ORIGIN_NODE_OBJECTS?.chancePickups || [];
+        const collected = AG.collectedPickups || new Set();
+        pickups.forEach((pickup) => {
+            if (!pickup?.id || collected.has(pickup.id)) return;
+            this._spawnChancePickupSprite(pickup.id, pickup.col, pickup.row, AG.TILE_SIZE);
+        });
+    }
+
+    _spawnChancePickupSprite(pickupId, col, row, tileSize) {
+        const cx = col * tileSize + tileSize / 2;
+        const cy = row * tileSize + tileSize / 2;
+        const g = this.add.graphics().setDepth(7);
+
+        g.fillStyle(0xff3355, 0.95);
+        g.fillCircle(cx - 4, cy - 2, 4.6);
+        g.fillCircle(cx + 4, cy - 2, 4.6);
+        g.fillTriangle(cx - 9, cy, cx + 9, cy, cx, cy + 10);
+        g.lineStyle(1, 0xff99aa, 0.8);
+        g.strokeCircle(cx - 4, cy - 2, 4.6);
+        g.strokeCircle(cx + 4, cy - 2, 4.6);
+        g.strokeTriangle(cx - 9, cy, cx + 9, cy, cx, cy + 10);
+
+        this.tweens.add({
+            targets: g,
+            y: { from: -2, to: 2 },
+            duration: 750,
+            ease: 'Sine.easeInOut',
+            yoyo: true,
+            repeat: -1,
+        });
+        this.tweens.add({
+            targets: g,
+            alpha: { from: 0.8, to: 1.0 },
+            duration: 900,
+            ease: 'Sine.easeInOut',
+            yoyo: true,
+            repeat: -1,
+        });
+
+        this._pickupSprites[pickupId] = g;
+    }
+
+    _collectChancePickup(pickupId) {
+        const sprite = this._pickupSprites[pickupId];
+        if (!sprite) return;
+        delete this._pickupSprites[pickupId];
+        this.tweens.add({
+            targets: sprite,
+            alpha: 0,
+            duration: 180,
+            onComplete: () => {
+                try { sprite.destroy(); } catch (_) {}
+            },
+        });
+    }
+
+    _checkChancePickup(playerCol, playerRow, AG) {
+        const pickups = window.ARIA_GAME.MAPS.ORIGIN_NODE_OBJECTS?.chancePickups || [];
+        const collected = AG.collectedPickups || new Set();
+        for (const pickup of pickups) {
+            if (!pickup?.id) continue;
+            if (collected.has(pickup.id)) continue;
+            if (pickup.col === playerCol && pickup.row === playerRow) {
+                this._collectChancePickup(pickup.id);
+                AG.events.emit('pickup:collected', { pickupId: pickup.id });
+                return;
+            }
+        }
+    }
+
     // -------------------------------------------------------------------------
     // Roaming bug system
     // -------------------------------------------------------------------------
@@ -679,7 +753,19 @@ class OriginNodeScene extends Phaser.Scene {
         const mapH = map.length    * S;
 
         this.cameras.main.setBounds(0, 0, mapW, mapH);
+        this.cameras.main.setRoundPixels(true);
         this.cameras.main.startFollow(this.player, true, 0.12, 0.12);
+
+        const viewportW = this.cameras.main.width;
+        const viewportH = this.cameras.main.height;
+        const fitZoom = Math.min(viewportW / mapW, viewportH / mapH);
+        const zoomMin = Number.isFinite(AG.CAMERA_ZOOM_MIN) ? AG.CAMERA_ZOOM_MIN : 0.55;
+        const zoomMax = Number.isFinite(AG.CAMERA_ZOOM_MAX) ? AG.CAMERA_ZOOM_MAX : 1.4;
+        const computedStart = Math.min(1, fitZoom * 1.08);
+        const startZoom = Number.isFinite(computedStart)
+            ? Phaser.Math.Clamp(computedStart, zoomMin, zoomMax)
+            : 1;
+        this._setCameraZoom(startZoom, AG);
     }
 
     // -------------------------------------------------------------------------
@@ -734,6 +820,31 @@ class OriginNodeScene extends Phaser.Scene {
             this._moveQueue = path;
             if (!this._processingQueue) {
                 this._drainMoveQueue();
+            }
+        });
+
+        this.input.on('wheel', (pointer, _objs, _dx, dy, _dz, event) => {
+            if (event && typeof event.preventDefault === 'function') event.preventDefault();
+            if (this.inputLocked) return;
+            if (dy > 0) {
+                this._setCameraZoom(this._cameraZoom - AG.CAMERA_ZOOM_STEP, AG);
+            } else if (dy < 0) {
+                this._setCameraZoom(this._cameraZoom + AG.CAMERA_ZOOM_STEP, AG);
+            }
+        });
+
+        this.input.keyboard.on('keydown', (event) => {
+            if (!event || this.inputLocked) return;
+            const active = document.activeElement;
+            if (active && (active.tagName === 'TEXTAREA' || active.tagName === 'INPUT')) return;
+
+            const key = String(event.key || '').toLowerCase();
+            if (key === '+' || key === '=' || key === 'add') {
+                this._setCameraZoom(this._cameraZoom + AG.CAMERA_ZOOM_STEP, AG);
+            } else if (key === '-' || key === '_' || key === 'subtract') {
+                this._setCameraZoom(this._cameraZoom - AG.CAMERA_ZOOM_STEP, AG);
+            } else if (key === '0') {
+                this._setCameraZoom(1, AG);
             }
         });
     }
@@ -851,6 +962,19 @@ class OriginNodeScene extends Phaser.Scene {
         }
     }
 
+    _setCameraZoom(nextZoom, AG) {
+        const zoomMin = Number.isFinite(AG?.CAMERA_ZOOM_MIN) ? AG.CAMERA_ZOOM_MIN : 0.55;
+        const zoomMax = Number.isFinite(AG?.CAMERA_ZOOM_MAX) ? AG.CAMERA_ZOOM_MAX : 1.4;
+        const zoomStep = Number.isFinite(AG?.CAMERA_ZOOM_STEP) ? AG.CAMERA_ZOOM_STEP : 0.1;
+        if (!Number.isFinite(AG?.CAMERA_ZOOM_STEP)) {
+            AG.CAMERA_ZOOM_STEP = zoomStep;
+        }
+        const safeZoom = Number.isFinite(nextZoom) ? nextZoom : 1;
+        const clamped = Phaser.Math.Clamp(safeZoom, zoomMin, zoomMax);
+        this._cameraZoom = clamped;
+        this.cameras.main.setZoom(Math.max(0.001, clamped));
+    }
+
     _isPassable(col, row) {
         const map = window.ARIA_GAME.MAPS.ORIGIN_NODE;
         const AG  = window.ARIA_GAME;
@@ -935,6 +1059,7 @@ class OriginNodeScene extends Phaser.Scene {
         // Roaming bug events
         AG.events.on('player:moved', ({ col, row }) => {
             this._checkRoamingBugProximity(col, row, AG);
+            this._checkChancePickup(col, row, AG);
         });
         AG.events.on('roaming_bug:defeated', ({ id }) => {
             this._despawnRoamingBug(id, AG);
@@ -966,6 +1091,10 @@ class OriginNodeScene extends Phaser.Scene {
             const col = shrine.cols[0];
             const row = shrine.rows[0];
             this._drawShrineComplete(col, row);
+        });
+
+        AG.events.on('pickups:sync', ({ collected }) => {
+            (collected || []).forEach((pickupId) => this._collectChancePickup(pickupId));
         });
     }
 

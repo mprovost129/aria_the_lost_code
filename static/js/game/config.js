@@ -19,6 +19,9 @@ const AG = window.ARIA_GAME;
 
 AG.TILE_SIZE = 32;          // pixels per tile (square)
 AG.MOVE_DURATION = 120;     // ms for tile-to-tile movement tween
+AG.CAMERA_ZOOM_MIN = 0.55;  // zoomed out
+AG.CAMERA_ZOOM_MAX = 1.4;   // zoomed in
+AG.CAMERA_ZOOM_STEP = 0.1;
 
 // ---------------------------------------------------------------------------
 // Tile type registry

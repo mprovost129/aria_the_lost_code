@@ -20,4 +20,5 @@ urlpatterns = [
     path('api/progress/challenge-solved/', views.progress_challenge_solved, name='progress_challenge_solved'),
     path('api/progress/gate-open/', views.progress_gate_open, name='progress_gate_open'),
     path('api/progress/region-restored/', views.progress_region_restored, name='progress_region_restored'),
+    path('api/progress/pickup-collected/', views.progress_pickup_collected, name='progress_pickup_collected'),
 ]

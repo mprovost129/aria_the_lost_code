@@ -7,12 +7,12 @@
  * opens the correct content.
  *
  * Shrine positions (origin_node.js):
- *   Shrine 1 (Variables):       cols  5– 6, rows 3–4   (above top road)
- *   Shrine 2 (Strings):         cols  9–10, rows 3–4   (above top road)
- *   Shrine 3 (Integers/Floats): cols 13–14, rows 3–4   (above top road)
- *   Shrine 4 (Booleans):        cols 20–21, rows 12–13 (below bottom road)
- *   Shrine 5 (Type Conversion): cols 15–16, rows 12–13 (below bottom road)
- *   Shrine 6 (f-strings):       cols 10–11, rows 12–13 (below bottom road)
+ *   Shrine 1 (Variables):       cols  4– 5, rows  8– 9
+ *   Shrine 2 (Strings):         cols 11–12, rows  5– 6
+ *   Shrine 3 (Integers/Floats): cols 19–20, rows  5– 6
+ *   Shrine 4 (Booleans):        cols 27–28, rows 12–13
+ *   Shrine 5 (Type Conversion): cols 18–19, rows 14–15
+ *   Shrine 6 (f-strings):       cols 10–11, rows 14–15
  *
  * Topic section types:
  *   { type: 'text', content: '…' }       — HTML supported
@@ -30,8 +30,8 @@ window.ARIA_GAME.SHRINES = {
         name:         'Shrine of Variables',
         aria_intro:   'The terminals are dark because they have forgotten who they are. Learn to name things. Everything in code starts there.',
         aria_complete: 'Variable assignment confirmed. The terminals have names again. That is how all of this begins.',
-        cols:       [5, 6],
-        rows:       [3, 4],
+        cols:       [4, 5],
+        rows:       [8, 9],
         topics: [
             {
                 id:    'variables-assignment',
@@ -146,8 +146,8 @@ print("__PASS__")`,
         name:         'Shrine of Strings',
         aria_intro:   'Text. Strings. Quote marks. One of those things that looks simple until you forget to close the quote. Then nothing works and the error message is unhelpful. Study carefully.',
         aria_complete: 'Strings repaired. No unclosed quotes, no mismatched delimiters. The network can read the output now.',
-        cols:       [9, 10],
-        rows:       [3, 4],
+        cols:       [11, 12],
+        rows:       [5, 6],
         topics: [
             {
                 id:    'strings',
@@ -273,8 +273,8 @@ print("__PASS__")`,
         name:         'Shrine of Numbers',
         aria_intro:   'Numbers. Two kinds. One without a decimal point, one with. Simple distinction with significant consequences. The letter O and the number zero look identical in most fonts. I mention this for reasons that will become apparent.',
         aria_complete: 'Integer and float, correct types, actual math working. The power systems are responding. Good.',
-        cols:       [13, 14],
-        rows:       [3, 4],
+        cols:       [19, 20],
+        rows:       [5, 6],
         topics: [
             {
                 id:    'integers-floats',
@@ -410,7 +410,7 @@ print("__PASS__")`,
         name:         'Shrine of Booleans',
         aria_intro:   'True or False. Exactly two options. No middle ground, no maybe, no it depends. I find this deeply satisfying. You will too once you understand how much of programming comes down to yes or no.',
         aria_complete: 'Boolean states confirmed. True and False, not maybe. The status board is reading correctly.',
-        cols:       [20, 21],
+        cols:       [27, 28],
         rows:       [12, 13],
         topics: [
             {
@@ -530,8 +530,8 @@ print("__PASS__")`,
         name:         'Shrine of Conversion',
         aria_intro:   'Type conversion. This is where the four data types stop being separate silos and start working together. Also where most beginner bugs are born. Read this one carefully.',
         aria_complete: 'Type conversion complete. Data arriving clean, calculations running. That one required actual understanding.',
-        cols:       [15, 16],
-        rows:       [12, 13],
+        cols:       [18, 19],
+        rows:       [14, 15],
         topics: [
             {
                 id:    'type-conversion',
@@ -678,7 +678,7 @@ print("__PASS__")`,
         aria_complete: 'f-string formatted correctly. All four values in the output. ARIA signal strength is improving.',
         aria_intro: 'You have learned to store things. Now learn to say them clearly. A terminal that cannot communicate is just an expensive box. Gate 3 will ask you to write my announcement. Make it sound good.',
         cols:       [10, 11],
-        rows:       [12, 13],
+        rows:       [14, 15],
         topics: [
             {
                 id:    'fstrings',

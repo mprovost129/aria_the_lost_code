@@ -1,11 +1,20 @@
 import json
+import re
+from pathlib import Path
 
 from django.contrib.auth import get_user_model
+from django.conf import settings
 from django.test import TestCase
 from django.urls import reverse
 
 from accounts.models import PlayerProfile
 from game.models import Region
+from game.progression_constants import (
+    VALID_CHALLENGE_IDS,
+    VALID_GATE_KEYS,
+    VALID_PICKUP_IDS,
+    VALID_SHRINE_IDS,
+)
 
 
 User = get_user_model()
@@ -90,6 +99,7 @@ class GameStateSyncTests(TestCase):
         self.challenge_solved_url = reverse('game:progress_challenge_solved')
         self.gate_open_url = reverse('game:progress_gate_open')
         self.region_restored_url = reverse('game:progress_region_restored')
+        self.pickup_collected_url = reverse('game:progress_pickup_collected')
         self.region1 = Region.objects.create(
             name='The Origin Node',
             slug='origin-node-tests',
@@ -111,7 +121,7 @@ class GameStateSyncTests(TestCase):
             self.sync_url,
             data=json.dumps({
                 'solved_challenges': ['ch1'],
-                'open_gates': ['7,5'],
+                'open_gates': ['8,8'],
                 'completed_shrines': ['shrine1'],
                 'boss_bug_defeated': False,
                 'region_restored': False,
@@ -129,7 +139,7 @@ class GameStateSyncTests(TestCase):
             self.sync_url,
             data=json.dumps({
                 'solved_challenges': ['ch8'],
-                'open_gates': ['7,5', '12,5', '17,5', '18,11', '13,11', '8,11'],
+                'open_gates': ['8,8', '14,7', '23,7', '23,13', '15,14', '26,16'],
                 'completed_shrines': ['shrine1', 'shrine2', 'shrine3', 'shrine4', 'shrine5', 'shrine6'],
                 'boss_bug_defeated': True,
                 'region_restored': True,
@@ -165,13 +175,13 @@ class GameStateSyncTests(TestCase):
         )
         self.client.post(
             self.gate_open_url,
-            data=json.dumps({'gate_key': '7,5'}),
+            data=json.dumps({'gate_key': '8,8'}),
             content_type='application/json',
         )
         self.profile.refresh_from_db()
         state = self.profile.game_state
         self.assertIn('ch2', state.get('solved_challenges', []))
-        self.assertIn('7,5', state.get('open_gates', []))
+        self.assertIn('8,8', state.get('open_gates', []))
 
     def test_progress_region_restored_marks_region_and_current_region(self):
         res = self.client.post(
@@ -183,3 +193,102 @@ class GameStateSyncTests(TestCase):
         self.profile.refresh_from_db()
         self.assertTrue(self.profile.game_state.get('region_restored'))
         self.assertEqual(self.profile.current_region_id, self.region1.id)
+
+    def test_invalid_progress_ids_are_rejected(self):
+        res1 = self.client.post(
+            self.shrine_complete_url,
+            data=json.dumps({'shrine_id': 'shrine999'}),
+            content_type='application/json',
+        )
+        res2 = self.client.post(
+            self.challenge_solved_url,
+            data=json.dumps({'challenge_id': 'evil_ch'}),
+            content_type='application/json',
+        )
+        res3 = self.client.post(
+            self.gate_open_url,
+            data=json.dumps({'gate_key': '999,999'}),
+            content_type='application/json',
+        )
+        res4 = self.client.post(
+            self.pickup_collected_url,
+            data=json.dumps({'pickup_id': 'fake_heart'}),
+            content_type='application/json',
+        )
+        self.assertEqual(res1.status_code, 400)
+        self.assertEqual(res2.status_code, 400)
+        self.assertEqual(res3.status_code, 400)
+        self.assertEqual(res4.status_code, 400)
+
+    def test_progress_pickup_collected_adds_unique_pickup(self):
+        first = sorted(VALID_PICKUP_IDS)[0]
+        self.client.post(
+            self.pickup_collected_url,
+            data=json.dumps({'pickup_id': first}),
+            content_type='application/json',
+        )
+        self.client.post(
+            self.pickup_collected_url,
+            data=json.dumps({'pickup_id': first}),
+            content_type='application/json',
+        )
+        self.profile.refresh_from_db()
+        pickups = self.profile.game_state.get('collected_pickups', [])
+        self.assertEqual(pickups, [first])
+
+    def test_player_state_heals_invalid_saved_entries(self):
+        self.profile.game_state = {
+            'version': 1,
+            'solved_challenges': ['ch1', 'fake_ch'],
+            'open_gates': ['8,8', '1,1'],
+            'completed_shrines': ['shrine1', 'shrineX'],
+            'boss_bug_defeated': False,
+            'region_restored': False,
+            'challenge_attempts': {'ch1': 2, 'bad_ch': 9},
+            'collected_pickups': [sorted(VALID_PICKUP_IDS)[0], 'heart_fake'],
+        }
+        self.profile.save(update_fields=['game_state'])
+
+        res = self.client.get(self.player_state_url)
+        self.assertEqual(res.status_code, 200)
+        gs = res.json()['game_state']
+        self.assertEqual(gs['solved_challenges'], ['ch1'])
+        self.assertEqual(gs['open_gates'], ['8,8'])
+        self.assertEqual(gs['completed_shrines'], ['shrine1'])
+        self.assertEqual(gs['challenge_attempts'], {'ch1': 2})
+        self.assertEqual(gs['collected_pickups'], [sorted(VALID_PICKUP_IDS)[0]])
+
+
+class ProgressionConstantParityTests(TestCase):
+    """
+    Guardrail: backend progression constants must stay in sync with
+    Region 1 frontend runtime data files.
+    """
+
+    def _read_repo_file(self, relative_path):
+        base = Path(settings.BASE_DIR)
+        return (base / relative_path).read_text(encoding='utf-8')
+
+    def test_challenge_ids_match_frontend_region1_data(self):
+        src = self._read_repo_file('static/js/game/data/region1_challenges.js')
+        js_ids = set(re.findall(r'^\s*(ch[0-9]+(?:_v[0-9]+)?)\s*:\s*\{', src, flags=re.MULTILINE))
+        self.assertEqual(js_ids, VALID_CHALLENGE_IDS)
+
+    def test_gate_keys_match_frontend_region1_data(self):
+        src = self._read_repo_file('static/js/game/data/region1_challenges.js')
+        # Narrow to GATE_CHALLENGES object to avoid unrelated coordinate-like strings.
+        start = src.find('window.ARIA_GAME.GATE_CHALLENGES')
+        self.assertNotEqual(start, -1, 'GATE_CHALLENGES block not found in region1_challenges.js')
+        block = src[start:start + 2000]
+        js_gates = set(re.findall(r"'(\d+,\d+)'\s*:", block))
+        self.assertEqual(js_gates, VALID_GATE_KEYS)
+
+    def test_shrine_ids_match_frontend_region1_data(self):
+        src = self._read_repo_file('static/js/game/data/region1_shrines.js')
+        js_shrines = set(re.findall(r'^\s*(shrine[1-6])\s*:\s*\{', src, flags=re.MULTILINE))
+        self.assertEqual(js_shrines, VALID_SHRINE_IDS)
+
+    def test_pickup_ids_match_frontend_map_data(self):
+        src = self._read_repo_file('static/js/game/maps/origin_node.js')
+        js_pickups = set(re.findall(r"id:\s*'([^']+)'", src))
+        self.assertEqual(js_pickups, VALID_PICKUP_IDS)

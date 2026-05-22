@@ -52,6 +52,7 @@ AG.chancesEmpty = false;
 AG.completedShrines = new Set();
 AG._sceneReady = false;
 AG._pendingGameState = null;
+AG.collectedPickups = new Set();
 
 // ---------------------------------------------------------------------------
 // 3. Phaser boot
@@ -213,6 +214,7 @@ function _collectGameStateSnapshot() {
         completed_shrines: Array.from(AG.completedShrines || []),
         boss_bug_defeated: Boolean(AG.bossBugDefeated),
         region_restored: Boolean(AG.regionRestored),
+        collected_pickups: Array.from(AG.collectedPickups || []),
     };
 }
 
@@ -300,6 +302,14 @@ function _progressRegionRestored() {
         });
 }
 
+function _progressPickupCollected(pickupId) {
+    _postProgress('/api/progress/pickup-collected/', { pickup_id: pickupId })
+        .catch(() => {
+            _enqueueProgress('/api/progress/pickup-collected/', { pickup_id: pickupId });
+            _flushProgressQueue();
+        });
+}
+
 function _markCinematicSeen() {
     fetch('/api/cinematic/seen/', {
         method: 'POST',
@@ -371,6 +381,7 @@ function _applyPersistedGameState() {
 
     AG.bossBugDefeated = Boolean(state.boss_bug_defeated);
     AG.regionRestored = Boolean(state.region_restored);
+    AG.collectedPickups = new Set(Array.isArray(state.collected_pickups) ? state.collected_pickups : []);
 
     // Scene-specific visual updates only after the scene is ready.
     if (AG._sceneReady) {
@@ -384,6 +395,7 @@ function _applyPersistedGameState() {
             const bugPos = (AG.MAPS.ORIGIN_NODE_OBJECTS.bossBug || [])[0];
             if (bugPos) AG.events.emit('boss_bug:clear', { col: bugPos.col, row: bugPos.row });
         }
+        AG.events.emit('pickups:sync', { collected: Array.from(AG.collectedPickups) });
     }
 }
 
@@ -434,6 +446,21 @@ AG.events.on('chance:set', ({ count }) => {
     if (typeof count !== 'number') return;
     updateChancesDisplay(count);
     AG.chancesEmpty = count <= 0;
+});
+
+AG.events.on('pickup:collected', ({ pickupId }) => {
+    if (!pickupId) return;
+    if (AG.collectedPickups.has(pickupId)) return;
+    AG.collectedPickups.add(pickupId);
+    const next = Math.min(currentChances + 1, 3);
+    updateChancesDisplay(next);
+    _syncChances(currentChances);
+    _progressPickupCollected(pickupId);
+    AG.events.emit('aria:speak', {
+        text: next >= 3
+            ? 'Chance token secured. Chances are already full.'
+            : 'Chance token recovered. Save it for the hard gates.',
+    });
 });
 
 // ---------------------------------------------------------------------------
