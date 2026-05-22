@@ -25,7 +25,7 @@ window.ARIA_GAME.DIALOGUE = window.ARIA_GAME.DIALOGUE || {};
 // ---------------------------------------------------------------------------
 window.ARIA_GAME.DIALOGUE.REGION1_ZONES = [
 
-    // ── Learning Shrine 1 (Variables & Data Types) ── col 5-6, row 3-4
+    // ── Shrine 1: Variables (cols 5–6, rows 3–4) ──
     {
         id:     'approach_shrine1',
         col:    5.5,  row: 3.5,
@@ -47,6 +47,17 @@ window.ARIA_GAME.DIALOGUE.REGION1_ZONES = [
         ],
     },
 
+    // ── Shrine 2: Strings (cols 9–10, rows 3–4) ──
+    {
+        id:     'approach_shrine2',
+        col:    9.5,  row: 3.5,
+        radius: 2,
+        lines: [
+            'Shrine of Strings. Text, quote marks, concatenation.',
+            'A string that looks like a number is still a string. The gate does not care how it looks. It cares what it is.',
+        ],
+    },
+
     // ── Challenge Gate 2 (col 12, row 5) ──
     {
         id:     'approach_gate2',
@@ -58,13 +69,46 @@ window.ARIA_GAME.DIALOGUE.REGION1_ZONES = [
         ],
     },
 
-    // ── Learning Shrine 2 (String Formatting) ── col 9-10, row 8-9
+    // ── Shrine 3: Integers and Floats (cols 13–14, rows 3–4) ──
     {
-        id:     'approach_shrine2',
+        id:     'approach_shrine3',
+        col:    13.5, row: 3.5,
+        radius: 2,
+        lines: [
+            'Shrine of Numbers. Integers and floats.',
+            'The letter O and the number zero look identical in most fonts. I mention this now so you are not surprised when it matters.',
+        ],
+    },
+
+    // ── Shrine 4: Booleans (cols 17–18, rows 3–4) ──
+    {
+        id:     'approach_shrine4',
+        col:    17.5, row: 3.5,
+        radius: 2,
+        lines: [
+            'Shrine of Booleans. True or False. That is it. No grey area.',
+            'The capitalization is not a suggestion. Python will reject lowercase true and false without hesitation.',
+        ],
+    },
+
+    // ── Shrine 5: Type Conversion (cols 15–16, rows 7–8) ──
+    {
+        id:     'approach_shrine5',
+        col:    15.5, row: 7.5,
+        radius: 2,
+        lines: [
+            'Shrine of Conversion. This is where the data types start working together.',
+            'Most type errors in beginner code come from values arriving in one type and being used as another. This shrine explains how to fix that.',
+        ],
+    },
+
+    // ── Shrine 6: f-strings (cols 9–10, rows 8–9) ──
+    {
+        id:     'approach_shrine6',
         col:    9.5,  row: 8.5,
         radius: 2,
         lines: [
-            'Another shrine. String formatting.',
+            'Shrine of Expression. f-strings.',
             'If the third gate gives you trouble, this is where you should have come first. Just noting that.',
         ],
     },

@@ -747,7 +747,7 @@ This creates a natural study loop: read the lesson, attempt the practice, return
 V1 Practice Area Scope
 Version 1 of the Practice Area will include all Region 1 challenges only, matching the V1 game content.
 
-All 9 Region 1 challenges available as standalone Practice exercises
+All 8 Region 1 challenges available as standalone Practice exercises
 Basic challenge browser with concept and type filters
 Minimal challenge interface with hint and show solution options
 ARIA hint avatar with Region 1 specific hint dialogue
@@ -761,7 +761,7 @@ Version 1 of ARIA: The Lost Code will focus on establishing the core game loop c
 V1 Includes
 Full cinematic opening sequence
 Character creation with name input and gender selection
-Region 1: The Origin Node, fully playable with 6 shrines, 6 gates, roaming bug, boss bug, and boss challenge
+Region 1: The Origin Node, fully playable with all shrines, gates, and boss challenge
 Basic Tablet UI with Script, Library, and Chances tabs
 ARIA dialogue for Region 1
 Chances system with 3 starting chances
@@ -1113,13 +1113,11 @@ Learn to Code Section: Region 1 Content Map
 
 The standalone Learn to Code section mirrors the shrine content in web page format outside the game. Each shrine topic becomes a lesson page ending with a direct link to the relevant Practice Area challenges. The content is identical but the presentation is different: no ARIA narrative, no game context, just clean educational content.
 
-- Lesson 1: Variables and Assignment      -> Challenge 1 (Gate 1)
-- Lesson 2: Strings                       -> Challenge 2 (Gate 2)
-- Lesson 3: Integers and Floats           -> Challenge 3 (Gate 3)
-- Lesson 4: Booleans                      -> Challenge 4 (Gate 4)
-- Lesson 5: Type Conversion               -> Challenge 9 (Gate 5)
-- Lesson 6: String Formatting (f-strings) -> Challenge 5 (Gate 6)
-- Lesson 7: Lists                         -> Boss Challenge and Region 5 preview
+- Lesson 1: Variables and Assignment      -> Challenges 1 and 2
+- Lesson 2: Data Types                    -> Challenges 1, 2, and 3
+- Lesson 3: Type Conversion               -> Challenge 4 and Boss Bug
+- Lesson 4: String Formatting (f-strings) -> Challenge 5
+- Lesson 5: Lists                         -> Boss Challenge and Region 5 preview
 
 Every challenge gate references the corresponding lesson page when the player asks for a hint. The lesson page is the authoritative source. The shrine is the in-world version of the same content. Both must always be in sync.
 
@@ -1800,32 +1798,21 @@ Tile Type Registry (Origin Node)
 
 Origin Node Map Layout
 Dimensions: 25 columns x 18 rows = 800 x 576 pixels (no camera scrolling required)
-Road structure: Snake path (not a loop)
-  Top road:         row 5, columns 2 to 22 (left to right, spawn at col 2)
-  Right connector:  column 22, rows 5 to 11 (descends from top road to bottom road)
-  Bottom road:      row 11, columns 2 to 22 (right to left, ends at boss chamber)
+Road structure: Rectangular loop
+  Top road:    row 5, columns 4 to 21
+  Left road:   column 4, rows 5 to 10
+  Bottom road: row 10, columns 4 to 21
+  Right road:  column 21, rows 5 to 10
 
-Player progresses: left along top road -> right connector -> right along bottom road -> boss area
-
-Top road (left to right, row 5):
-  Player spawn:  col 2
-  Shrine 1:      cols 5-6, rows 3-4  (above road)   -> Variables and Assignment
-  Gate 1:        col 7,  row 5
-  Shrine 2:      cols 9-10, rows 3-4 (above road)   -> Strings
-  Gate 2:        col 12, row 5
-  Shrine 3:      cols 13-14, rows 3-4 (above road)  -> Integers and Floats
-  Gate 3:        col 17, row 5
-  Right connector begins at col 22
-
-Bottom road (right to left, row 11):
-  Shrine 4:      cols 20-21, rows 12-13 (below road) -> Booleans
-  Gate 4:        col 18, row 11
-  Shrine 5:      cols 15-16, rows 12-13 (below road) -> Type Conversion
-  Gate 5:        col 13, row 11
-  Shrine 6:      cols 10-11, rows 12-13 (below road) -> f-strings
-  Gate 6:        col 8,  row 11  (final gate, blocks boss area)
-  Boss Bug:      col 6,  row 11
-  Boss Chamber:  cols 2-3, row 11
+Key positions (column, row):
+  Player spawn:  (7, 7) inside the road loop
+  Shrine 1:      (5-6, 3-4) upper left, teaches Variables and Data Types
+  Gate 1:        (7, 5) on top road, requires Challenges 1 and 2
+  Gate 2:        (12, 5) on top road, requires Challenges 3 and 4
+  Shrine 2:      (9-10, 8-9) inside loop, teaches String Formatting
+  Gate 3:        (13, 8) inside loop lower area, requires Challenge 5
+  Boss Bug:      (18, 5) on top road, guards Boss Chamber
+  Boss Chamber:  (22-23, 5-6) far right, contains Boss Challenge
 
 Visual tile colors (prototype, will be replaced by pixel art in post-V1):
   WALL:         #0d0d1a  (near-black blue)
@@ -2358,84 +2345,6 @@ No changes required to:
   main.js                - _identifyShrine() uses cols.includes + rows.includes,
                            disambiguates all 6 shrines without modification
   game.html              - all three files already in load order
-
----
-
-Layer 13: Six Gates, Roaming Bug System, Boss Bug Hardening
-Status: COMPLETE (2026-05-22)
-
-This layer redesigned the Region 1 challenge architecture around a strict shrine-then-gate linear path, added a living roaming bug system with proximity triggering and respawn, scaled roaming bug difficulty to shrine progress, and enforced the boss bug as always-hardest.
-
-Map redesign (origin_node.js):
-  Road structure changed from rectangular loop to snake path:
-    Top road (row 5, left to right): spawn at col 2, shrines 1-3 above road (rows 3-4),
-      Gate 1 at col 7, Gate 2 at col 12, Gate 3 at col 17, right connector at col 22
-    Right connector (col 22, rows 5-11): descends to bottom road
-    Bottom road (row 11, right to left): shrines 4-6 below road (rows 12-13),
-      Gate 4 at col 18, Gate 5 at col 13, Gate 6 at col 8,
-      Boss Bug at col 6, Boss Chamber at cols 2-3
-  Spawn moved to col 2, row 5 (top road start)
-  ORIGIN_NODE_OBJECTS updated: all 6 shrines, 6 gates, bossBug, bossChamber
-
-Shrine repositioning (region1_shrines.js):
-  shrine4: cols [20,21], rows [12,13]
-  shrine5: cols [15,16], rows [12,13]
-  shrine6: cols [10,11], rows [12,13]
-  shrine1, shrine2, shrine3: unchanged at rows 3-4
-
-Challenge data (region1_challenges.js):
-  Boss bug hardening: removed ch7_v0, ch7_v1 variants. ch7 is always the hardest snippet.
-    Boss bug is always AG.CHALLENGES['ch7'], never resolved via CHALLENGE_VARIANTS.
-  Gate challenge simplification: removed ch4_v0, ch4_v1, ch4_v2. Gates are fixed, not adaptive.
-  New challenge ch9: "Convert the Values" (Gate 5 - Type Conversion)
-    Type: fill_blank, category: gate
-    Prompt: three variables in wrong types (string, float, int), player supplies int(), str(), bool()
-    Expected output: '42 98.6 True'
-    Validation: sentinel mode, isinstance() checks for all three variables
-  New roaming bug variants ch6_v1, ch6_v2, ch6_v3 (tiers 1-3):
-    ch6_v1 (requires shrine1): two-variable assignment and print, tests string knowledge
-    ch6_v2 (requires shrine1+shrine2): string+integer combination, type mismatch error
-    ch6_v3 (requires shrine1+shrine2+shrine3): multi-variable snippet with type errors
-  CHALLENGE_VARIANTS updated: ch6 now has 4 entries (base + 3 tiers). ch4 and ch7 removed.
-  GATE_CHALLENGES updated: 6 keys, one per gate:
-    '7,5'->ch1, '12,5'->ch2, '17,5'->ch3, '18,11'->ch4, '13,11'->ch9, '8,11'->ch5
-  BOSS_BUG_CHALLENGE = 'ch7' unchanged
-
-Roaming bug system (OriginNodeScene.js):
-  Bugs are Phaser Graphics objects, not map tiles. Managed in this._roamingBugs array.
-  this._roamingBugs, this._nextBugId, this._bugAttacking added to constructor.
-  _initRoamingBugs(AG): spawns first bug 3 seconds after scene creation.
-  _randomBugSpawnPos(minDist): returns a random FLOOR/ROAD/SPAWN tile at least minDist
-    tiles (Manhattan) from the player. Returns null if no valid position found.
-  _spawnRoamingBug(col, row, AG): creates a Graphics circle sprite with bob and fade-in tweens,
-    draws a faint 3-tile danger ring around the bug. Adds entry to _roamingBugs.
-  _despawnRoamingBug(id, AG): fades out and destroys bug graphics, resets _bugAttacking=false,
-    schedules _spawnRoamingBug at a new random position after 60000ms.
-  _checkRoamingBugProximity(playerCol, playerRow, AG): called on every player:moved event.
-    Skips if _bugAttacking or inputLocked. Manhattan distance <= ATTACK_RADIUS (3) triggers
-    roaming_bug:attack event with the bug's id.
-  _listenToBus additions:
-    player:moved -> _checkRoamingBugProximity
-    roaming_bug:defeated -> _despawnRoamingBug
-    challenge:close -> resets _bugAttacking=false (allows re-trigger if still in range)
-  _restoreRegion: ORIGIN changed to col 3, row 11 (boss chamber, bottom road)
-
-Challenge routing (main.js):
-  _resolveChallenge(id): looks up CHALLENGE_VARIANTS[id]; walks variant list from index 0
-    and advances as long as all required shrines in v.requires_shrines are in AG.completedShrines.
-    Returns the AG.CHALLENGES entry for the resolved id. Used for gate interactions and roaming bug.
-  roaming_bug:attack handler (section 6b): calls _resolveChallenge('ch6') and opens
-    challengePanel with { type: 'roaming_bug', bugId: id } as gatePos.
-  challenge:solved routing: if gatePos.type === 'roaming_bug', emits roaming_bug:defeated
-    with bugId and speaks dismissal line. Gate branch unchanged.
-  Gate interaction: uses _resolveChallenge(nextId) for all gates (future-proof; only ch6 currently
-    has variants, so all gate challenges resolve directly to their base id).
-  Boss bug: AG.challengePanel.open(AG.CHALLENGES[AG.BOSS_BUG_CHALLENGE], null) — direct lookup,
-    no resolution, always hardest.
-
-Challenge panel routing (challenge.js):
-  roaming_bug category: emits challenge:solved with this.gatePos (carries {type, bugId})
-    so the main.js handler can extract the bugId and emit roaming_bug:defeated correctly.
 
 ---
 

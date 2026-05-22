@@ -115,6 +115,14 @@ class ChallengePanel {
         this.overlay.classList.remove('open');
         this.currentChallenge = null;
 
+        // Clear the ARIA banner so it doesn't show stale text on next open
+        const banner     = document.getElementById('cp-aria-banner');
+        const bannerText = document.getElementById('cp-aria-banner-text');
+        if (banner && bannerText) {
+            bannerText.textContent = '';
+            banner.classList.remove('has-text');
+        }
+
         // Resume game movement
         AG.events.emit('challenge:close');
     }
@@ -290,7 +298,12 @@ class ChallengePanel {
             } else if (ch.category === 'boss_chamber') {
                 AG.events.emit('boss:solved');
             } else if (ch.category === 'roaming_bug') {
-                AG.events.emit('bug:defeated', { challengeId: ch.id });
+                // Route through challenge:solved so main.js can despawn the bug
+                // and schedule respawn. gatePos carries { type:'roaming_bug', bugId }.
+                AG.events.emit('challenge:solved', {
+                    challengeId: ch.id,
+                    gatePos:     this.gatePos,
+                });
             }
             this.close();
         }, 1200);

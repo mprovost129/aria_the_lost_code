@@ -121,18 +121,6 @@
         box-shadow: none;
     }
 
-    /* Shrine-earned bonus chance dot — amber tint to distinguish from base chances */
-    .chance-dot.shrine-earned {
-        background: #cc8822;
-        box-shadow: 0 0 6px rgba(200, 140, 34, 0.6);
-        border: 1px solid #ffaa33;
-    }
-    .chance-dot.shrine-earned.lost {
-        background: #1e1a0e;
-        box-shadow: none;
-        border-color: #2a2010;
-    }
-
     /* Flicker animation when a chance is lost (Layer 9) */
     @keyframes chance-lost-flicker {
         0%   { opacity: 1;   }
@@ -143,46 +131,6 @@
         100% { opacity: 1;   }
     }
     .chance-dot.flicker { animation: chance-lost-flicker 0.55s ease forwards; }
-
-    /* ── Shrine bonus pip HUD ── */
-    #shrine-bonus-hud {
-        flex-shrink: 0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 3px;
-    }
-    .shrine-bonus-label {
-        font-family: 'Courier New', Courier, monospace;
-        font-size: 0.48rem;
-        color: #4a3a10;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        line-height: 1;
-    }
-    .shrine-bonus-pips {
-        display: flex;
-        gap: 3px;
-    }
-    .shrine-pip {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: #1a1208;
-        border: 1px solid #2a2010;
-        transition: background 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-    }
-    .shrine-pip.lit {
-        background: #ffaa33;
-        border-color: #ffcc55;
-        box-shadow: 0 0 5px rgba(255, 170, 51, 0.7);
-    }
-    @keyframes shrine-pip-convert {
-        0%   { transform: scale(1);   background: #ffaa33; }
-        40%  { transform: scale(1.6); background: #ffee88; box-shadow: 0 0 10px rgba(255,238,136,0.9); }
-        100% { transform: scale(1);   background: #1a1208; }
-    }
-    .shrine-pip.converting { animation: shrine-pip-convert 0.5s ease forwards; }
 
     /* ── Tablet button ── */
     #tablet-btn {
@@ -1212,71 +1160,6 @@
         padding-left: 1.15rem;
     }
     .lib-list li { margin-bottom: 0.1rem; }
-
-    /* ── Library: section dividers ─────────────────────────────────────── */
-    .lib-section-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0.4rem 0;
-        margin-bottom: 0.5rem;
-        border-bottom: 1px solid #1a1a3a;
-    }
-    .lib-section-title {
-        font-family: 'Courier New', Courier, monospace;
-        font-size: 0.7rem;
-        color: #44448a;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-    }
-    #shrine-count-badge {
-        font-family: 'Courier New', Courier, monospace;
-        font-size: 0.65rem;
-        color: #3a3a6a;
-    }
-    .lib-empty-note {
-        font-family: 'Courier New', Courier, monospace;
-        font-size: 0.75rem;
-        color: #2a2a4a;
-        font-style: italic;
-        margin: 0 0 0.75rem;
-    }
-    #tab-shrines-section { margin-bottom: 1rem; }
-
-    /* Completed shrine cards in the library */
-    .shrine-lib-card {
-        background: #0a100a;
-        border: 1px solid #1a3a1a;
-        border-radius: 6px;
-        margin-bottom: 0.65rem;
-        overflow: hidden;
-    }
-    .shrine-lib-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0.45rem 0.75rem;
-        background: #080e08;
-        border-bottom: 1px solid #1a3a1a;
-    }
-    .shrine-lib-name {
-        font-family: 'Courier New', Courier, monospace;
-        font-size: 0.82rem;
-        font-weight: bold;
-        color: #00cc55;
-    }
-    .shrine-lib-badge {
-        font-family: 'Courier New', Courier, monospace;
-        font-size: 0.62rem;
-        color: #ffcc44;
-        letter-spacing: 0.06em;
-    }
-    .shrine-lib-body {
-        padding: 0.6rem 0.75rem;
-    }
-    .shrine-lib-body .lib-text  { color: #88aa88; }
-    .shrine-lib-body .lib-code  { background: #040d04; border-color: #0d2a0d; color: #aaddaa; }
-    .shrine-lib-body .lib-list  { color: #88aa88; }
 
     /* ── ARIA tab - chances ─────────────────────────────────────────────── */
     .tablet-chances-row {

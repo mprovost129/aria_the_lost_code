@@ -22,11 +22,16 @@ class OriginNodeScene extends Phaser.Scene {
         this.inputLocked = false;
 
         this.tileImages     = {};   // 'col,row' → Phaser Image (for live swaps)
-        this._bugOverlays   = {};   // 'col,row' → bug Graphics object
+        this._bugOverlays   = {};   // 'col,row' → bug Graphics object (boss bug only)
 
         // Click-to-move: queue of {col, row} steps to walk
-        this._moveQueue     = [];
+        this._moveQueue       = [];
         this._processingQueue = false;
+
+        // Roaming bug state: each entry is { id, col, row, graphics, tweens[] }
+        this._roamingBugs  = [];
+        this._nextBugId    = 0;
+        this._bugAttacking = false;   // prevents double-trigger while panel is open
     }
 
     // -------------------------------------------------------------------------
@@ -47,6 +52,7 @@ class OriginNodeScene extends Phaser.Scene {
         this._setupCamera(AG);
         this._setupInput(AG);
         this._listenToBus(AG);
+        this._initRoamingBugs(AG);
 
         AG.events.emit('scene:ready', { scene: 'OriginNodeScene' });
         AG.events.emit('aria:speak', {
@@ -450,6 +456,171 @@ class OriginNodeScene extends Phaser.Scene {
     }
 
     // -------------------------------------------------------------------------
+    // Roaming bug system
+    // -------------------------------------------------------------------------
+
+    /**
+     * Spawn the initial roaming bug 3 seconds after the scene loads so the
+     * player has a moment to orient before the first threat appears.
+     */
+    _initRoamingBugs(AG) {
+        this.time.delayedCall(3000, () => {
+            const pos = this._randomBugSpawnPos(5);
+            if (pos) this._spawnRoamingBug(pos.col, pos.row, AG);
+        });
+    }
+
+    /**
+     * Pick a random floor or road tile at least `minDist` tiles (Manhattan)
+     * from the player's current position.  Returns { col, row } or null.
+     */
+    _randomBugSpawnPos(minDist = 5) {
+        const AG  = window.ARIA_GAME;
+        const map = window.ARIA_GAME.MAPS.ORIGIN_NODE;
+        const OK  = [AG.TILE.FLOOR, AG.TILE.ROAD, AG.TILE.SPAWN];
+
+        const candidates = [];
+        for (let row = 1; row < map.length - 1; row++) {
+            for (let col = 1; col < map[row].length - 1; col++) {
+                if (!OK.includes(map[row][col])) continue;
+                const dist = Math.abs(col - this.tileX) + Math.abs(row - this.tileY);
+                if (dist < minDist) continue;
+                candidates.push({ col, row });
+            }
+        }
+        if (!candidates.length) return null;
+        return candidates[Math.floor(Math.random() * candidates.length)];
+    }
+
+    /**
+     * Spawn a roaming bug at (col, row), draw its sprite, register it in
+     * this._roamingBugs, and start its idle tweens.
+     */
+    _spawnRoamingBug(col, row, AG) {
+        const S  = AG.TILE_SIZE;
+        const id = this._nextBugId++;
+        const cx = col * S + S / 2;
+        const cy = row * S + S / 2;
+        const R  = 8;
+
+        const g = this.add.graphics().setDepth(6);
+        g.alpha = 0;    // will fade in
+
+        // ── Legs ──────────────────────────────────────────────────────────
+        g.lineStyle(1, 0xff4400, 0.9);
+        [-50, -15, 25].forEach(angle => {
+            const rad = Phaser.Math.DegToRad(angle);
+            const len = 10;
+            g.lineBetween(cx - R * 0.6, cy + angle * 0.15,
+                          cx - R * 0.6 - Math.cos(rad) * len,
+                          cy + angle * 0.15 - Math.sin(rad) * len);
+            g.lineBetween(cx + R * 0.6, cy + angle * 0.15,
+                          cx + R * 0.6 + Math.cos(rad) * len,
+                          cy + angle * 0.15 - Math.sin(rad) * len);
+        });
+
+        // ── Antennae ──────────────────────────────────────────────────────
+        g.lineStyle(1, 0xff6600, 0.9);
+        g.lineBetween(cx - 4, cy - R, cx - 9, cy - R - 9);
+        g.lineBetween(cx + 4, cy - R, cx + 9, cy - R - 9);
+        g.fillStyle(0xff4400, 1);
+        g.fillCircle(cx - 9, cy - R - 9, 1.5);
+        g.fillCircle(cx + 9, cy - R - 9, 1.5);
+
+        // ── Abdomen ───────────────────────────────────────────────────────
+        g.fillStyle(0xcc2200, 1);
+        g.fillEllipse(cx, cy + R * 0.4, R * 1.6, R * 1.3);
+        g.lineStyle(1, 0xff4400, 0.6);
+        [1, 2].forEach(i => {
+            g.lineBetween(cx - R * 0.7, cy + R * 0.4 - 3 + i * 4,
+                          cx + R * 0.7, cy + R * 0.4 - 3 + i * 4);
+        });
+
+        // ── Body + head ───────────────────────────────────────────────────
+        g.fillStyle(0xdd2800, 1);
+        g.fillEllipse(cx, cy - R * 0.1, R * 1.2, R * 1.0);
+        g.fillStyle(0xee3300, 1);
+        g.fillCircle(cx, cy - R, R * 0.7);
+        g.fillStyle(0xffcc00, 1);
+        g.fillCircle(cx - 3, cy - R - 1, 2);
+        g.fillCircle(cx + 3, cy - R - 1, 2);
+        g.fillStyle(0xffffff, 0.8);
+        g.fillCircle(cx - 2.5, cy - R - 1.5, 1);
+        g.fillCircle(cx + 3.5, cy - R - 1.5, 1);
+        g.lineStyle(1, 0xff6644, 0.5);
+        g.strokeEllipse(cx, cy - R * 0.1, R * 1.2, R * 1.0);
+
+        // ── Danger-radius ring (faint, shows attack range) ────────────────
+        g.lineStyle(1, 0xff2200, 0.15);
+        g.strokeCircle(cx, cy, 3 * S);   // 3-tile attack radius hint
+
+        // ── Tweens ────────────────────────────────────────────────────────
+        const bobTween = this.tweens.add({
+            targets: g, y: { from: -2, to: 2 },
+            duration: 500, ease: 'Sine.easeInOut', yoyo: true, repeat: -1,
+        });
+
+        // Fade in, then switch to idle pulse
+        this.tweens.add({
+            targets: g, alpha: 1, duration: 600, ease: 'Cubic.easeOut',
+            onComplete: () => {
+                this.tweens.add({
+                    targets: g, alpha: { from: 0.85, to: 1.0 },
+                    duration: 900, ease: 'Sine.easeInOut', yoyo: true, repeat: -1,
+                });
+            },
+        });
+
+        const bug = { id, col, row, graphics: g, tweens: [bobTween] };
+        this._roamingBugs.push(bug);
+        return bug;
+    }
+
+    /**
+     * Fade out and destroy a roaming bug, then schedule a respawn after 60 s.
+     */
+    _despawnRoamingBug(id, AG) {
+        const idx = this._roamingBugs.findIndex(b => b.id === id);
+        if (idx === -1) return;
+
+        const bug = this._roamingBugs.splice(idx, 1)[0];
+        this._bugAttacking = false;
+
+        bug.tweens.forEach(t => { try { t.stop(); } catch (_) {} });
+
+        this.tweens.add({
+            targets: bug.graphics, alpha: 0, duration: 400,
+            onComplete: () => { try { bug.graphics.destroy(); } catch (_) {} },
+        });
+
+        // Respawn at a new random location after 60 seconds
+        this.time.delayedCall(60000, () => {
+            if (!this.scene || !this.scene.isActive('OriginNodeScene')) return;
+            const pos = this._randomBugSpawnPos(5);
+            if (pos) this._spawnRoamingBug(pos.col, pos.row, AG);
+        });
+    }
+
+    /**
+     * Called on every player:moved event.  If the player steps within 3 tiles
+     * of any roaming bug, emit roaming_bug:attack to trigger the challenge.
+     */
+    _checkRoamingBugProximity(playerCol, playerRow, AG) {
+        if (this._bugAttacking) return;     // challenge already open
+        if (this.inputLocked)   return;     // another overlay is open
+
+        const ATTACK_RADIUS = 3;
+        for (const bug of this._roamingBugs) {
+            const dist = Math.abs(playerCol - bug.col) + Math.abs(playerRow - bug.row);
+            if (dist <= ATTACK_RADIUS) {
+                this._bugAttacking = true;
+                AG.events.emit('roaming_bug:attack', { id: bug.id });
+                return;
+            }
+        }
+    }
+
+    // -------------------------------------------------------------------------
     // Tile swap
     // -------------------------------------------------------------------------
 
@@ -523,6 +694,21 @@ class OriginNodeScene extends Phaser.Scene {
             left:  Phaser.Input.Keyboard.KeyCodes.A,
             down:  Phaser.Input.Keyboard.KeyCodes.S,
             right: Phaser.Input.Keyboard.KeyCodes.D,
+        });
+
+        // When a text field (shrine editor, challenge textarea, etc.) gains focus,
+        // stop Phaser from calling preventDefault() on keyboard events — otherwise
+        // captured keys like Space, W, A, S, D never reach the input element.
+        const kb = this.input.keyboard;
+        window.addEventListener('focusin', (e) => {
+            if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') {
+                kb.disableGlobalCapture();
+            }
+        });
+        window.addEventListener('focusout', (e) => {
+            if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') {
+                kb.enableGlobalCapture();
+            }
         });
 
         // Click / tap to move
@@ -640,6 +826,10 @@ class OriginNodeScene extends Phaser.Scene {
     // -------------------------------------------------------------------------
 
     _handleKeyboardMovement() {
+        // Don't steal keypresses from text inputs (shrine challenge editor, etc.)
+        const active = document.activeElement;
+        if (active && (active.tagName === 'TEXTAREA' || active.tagName === 'INPUT')) return;
+
         const { cursors, wasd } = this;
         let dx = 0, dy = 0;
 
@@ -737,8 +927,17 @@ class OriginNodeScene extends Phaser.Scene {
             this.input.keyboard.disableGlobalCapture();
         });
         AG.events.on('challenge:close', () => {
-            this.inputLocked = false;
+            this.inputLocked  = false;
+            this._bugAttacking = false;   // allow re-trigger if player is still in range
             this.input.keyboard.enableGlobalCapture();
+        });
+
+        // Roaming bug events
+        AG.events.on('player:moved', ({ col, row }) => {
+            this._checkRoamingBugProximity(col, row, AG);
+        });
+        AG.events.on('roaming_bug:defeated', ({ id }) => {
+            this._despawnRoamingBug(id, AG);
         });
 
         AG.events.on('gate:open', ({ col, row }) => {
@@ -762,6 +961,57 @@ class OriginNodeScene extends Phaser.Scene {
         AG.events.on('region:restore', () => {
             this._restoreRegion(AG);
         });
+
+        AG.events.on('shrine:complete', ({ shrine }) => {
+            const col = shrine.cols[0];
+            const row = shrine.rows[0];
+            this._drawShrineComplete(col, row);
+        });
+    }
+
+    /** Overlay a golden "completed" glow on top of a shrine building. */
+    _drawShrineComplete(col, row) {
+        const S  = window.ARIA_GAME.TILE_SIZE;
+        const cx = col * S + S;
+        const cy = row * S + S;
+        const W  = S * 2;
+        const H  = S * 2 + 4;
+
+        // Gold ambient glow (behind the shrine building, depth just above tiles)
+        const glow = this.add.graphics().setDepth(4);
+        glow.fillStyle(0xffaa22, 0.18);
+        glow.fillCircle(cx, cy, W * 1.1);
+
+        // Gold overlay on the building (on top of the green shrine, depth 6)
+        const g = this.add.graphics().setDepth(6);
+
+        // Roof triangle — replace green with gold
+        g.fillStyle(0xffaa22, 0.55);
+        g.fillTriangle(cx, cy - H / 2, cx - W / 2 - 4, cy - H / 2 + 16, cx + W / 2 + 4, cy - H / 2 + 16);
+        g.lineStyle(2, 0xffdd55, 1);
+        g.strokeTriangle(cx, cy - H / 2, cx - W / 2 - 4, cy - H / 2 + 16, cx + W / 2 + 4, cy - H / 2 + 16);
+
+        // Gold border on the outer wall
+        g.lineStyle(1, 0xffcc44, 0.7);
+        g.strokeRect(cx - W / 2, cy - H / 2 + 14, W, H - 26);
+
+        // Gold tint on the display screen
+        g.fillStyle(0xffaa22, 0.1);
+        g.fillRect(cx - 10, cy - H / 2 + 32, 20, H - 56);
+
+        // ✓ checkmark above the shrine roof
+        this.add.text(cx, cy - H / 2 - 6, '✓', {
+            fontFamily: 'Courier New, Courier, monospace',
+            fontSize:   '13px',
+            color:      '#ffdd55',
+            stroke:     '#000000',
+            strokeThickness: 3,
+        }).setOrigin(0.5, 1).setDepth(7);
+
+        // Soft gold outline glow ring
+        const ring = this.add.graphics().setDepth(4);
+        ring.lineStyle(2, 0xffcc44, 0.4);
+        ring.strokeCircle(cx, cy, W * 0.88);
     }
 
     // -------------------------------------------------------------------------
@@ -791,7 +1041,7 @@ class OriginNodeScene extends Phaser.Scene {
             },
         });
 
-        const ORIGIN = { col: 22, row: 5 };
+        const ORIGIN = { col: 3, row: 11 };   // boss chamber (end of the path)
         const tilesToRestore = [];
 
         for (let row = 0; row < map.length; row++) {

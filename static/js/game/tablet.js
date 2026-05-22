@@ -119,10 +119,11 @@ class Tablet {
         this._hintsList    = document.getElementById('tab-aria-hints-list');
 
         // State
-        this._activeTab = 'challenge';
-        this._hints     = [];   // { text, title } - hints received this session
-        this._chances   = 3;
-        this._onKeyDown = null; // bound in open()
+        this._activeTab       = 'challenge';
+        this._hints           = [];   // { text, title } - hints received this session
+        this._chances         = 3;
+        this._onKeyDown       = null; // bound in open()
+        this._completedShrines = [];  // shrine objects, in completion order
 
         this._buildLibrary();
         this._bindEvents();
@@ -184,6 +185,15 @@ class Tablet {
     }
 
     /**
+     * Add a completed shrine to the Library tab.
+     * @param {object} shrine - from AG.SHRINES
+     */
+    addCompletedShrine(shrine) {
+        this._completedShrines.push(shrine);
+        this._renderShrineCards();
+    }
+
+    /**
      * Log a hint in the ARIA tab.
      * @param {{ text: string, title: string }} data
      */
@@ -232,6 +242,35 @@ class Tablet {
                 <div class="tablet-hint-text">${h.text}</div>
             </div>
         `).join('');
+    }
+
+    _renderShrineCards() {
+        const container = document.getElementById('tab-shrine-cards');
+        const badge     = document.getElementById('shrine-count-badge');
+        if (!container) return;
+
+        if (badge) badge.textContent = `${this._completedShrines.length} / 6`;
+
+        if (this._completedShrines.length === 0) {
+            container.innerHTML = '<p class="lib-empty-note">Complete a shrine challenge to unlock its full lesson here.</p>';
+            return;
+        }
+
+        container.innerHTML = this._completedShrines.map(shrine => {
+            // Render all sections except shrine_challenge (challenge itself stays in the shrine)
+            const sections = shrine.topics.flatMap(t =>
+                t.sections.filter(s => s.type !== 'shrine_challenge')
+            );
+            const body = sections.map(s => this._buildSection(s)).join('');
+            return `
+<div class="shrine-lib-card">
+    <div class="shrine-lib-header">
+        <span class="shrine-lib-name">${shrine.name}</span>
+        <span class="shrine-lib-badge">✓ Complete</span>
+    </div>
+    <div class="shrine-lib-body">${body}</div>
+</div>`;
+        }).join('');
     }
 
     _buildLibrary() {

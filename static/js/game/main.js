@@ -120,6 +120,17 @@ AG.events.on('pyodide:ready', () => {
 // ---------------------------------------------------------------------------
 AG.events.on('aria:speak', ({ text }) => {
     AG.dialogue.say(text);
+
+    // Mirror to the challenge panel ARIA banner while the panel is open,
+    // so ARIA's speech is never hidden behind the overlay backdrop.
+    const banner     = document.getElementById('cp-aria-banner');
+    const bannerText = document.getElementById('cp-aria-banner-text');
+    const panelOpen  = document.getElementById('challenge-overlay')
+                           ?.classList.contains('open');
+    if (banner && bannerText && panelOpen) {
+        bannerText.textContent = text;
+        banner.classList.add('has-text');
+    }
 });
 
 // ---------------------------------------------------------------------------
@@ -193,6 +204,87 @@ AG.events.on('chance:restore', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Shrine completion: bonus pip tracking + chance grant + tablet update
+// ---------------------------------------------------------------------------
+AG.completedShrines = new Set();
+let _shrinePipCount = 0;   // 0–2; hitting 3 grants a Chance and resets
+
+function _updateShrinePips(count) {
+    document.querySelectorAll('.shrine-pip').forEach((pip, i) => {
+        pip.classList.toggle('lit', i < count);
+    });
+    // Update label brightness to signal progress
+    const label = document.querySelector('.shrine-bonus-label');
+    if (label) label.style.color = count > 0 ? '#aa7720' : '';
+}
+
+function _grantShrineBonusChance() {
+    // Animate the three pips "converting" into a chance dot
+    const pips = document.querySelectorAll('.shrine-pip');
+    pips.forEach((pip, i) => {
+        setTimeout(() => {
+            pip.classList.add('converting');
+            setTimeout(() => {
+                pip.classList.remove('converting', 'lit');
+            }, 500);
+        }, i * 80);
+    });
+
+    setTimeout(() => {
+        // Add a new amber-tinted chance dot to the HUD
+        const dot = document.createElement('div');
+        dot.className = 'chance-dot shrine-earned';
+        document.getElementById('hud-chances').appendChild(dot);
+
+        updateChancesDisplay(currentChances + 1);
+        _syncChances(currentChances);
+
+        AG.events.emit('aria:speak', {
+            text: 'Shrine bonus granted. Chances increased. Do not waste it.',
+        });
+    }, pips.length * 80 + 200);
+}
+
+AG.events.on('shrine:complete', ({ shrineId, shrine }) => {
+    if (AG.completedShrines.has(shrineId)) return;   // already counted
+    AG.completedShrines.add(shrineId);
+
+    // Tell the tablet to show this shrine's lesson content
+    AG.tablet?.addCompletedShrine(shrine);
+
+    // Advance pip counter
+    _shrinePipCount++;
+    if (_shrinePipCount >= 3) {
+        _shrinePipCount = 0;
+        _updateShrinePips(0);
+        _grantShrineBonusChance();
+    } else {
+        _updateShrinePips(_shrinePipCount);
+    }
+});
+
+// ---------------------------------------------------------------------------
+// 6b. Roaming Bug attack
+//     Emitted by OriginNodeScene when the player walks within 3 tiles of a
+//     roaming bug.  Opens the bug challenge using the appropriate difficulty
+//     tier for the player's current shrine progress.
+// ---------------------------------------------------------------------------
+AG.events.on('roaming_bug:attack', ({ id }) => {
+    if (AG.chancesEmpty) {
+        AG.events.emit('aria:speak', {
+            text: 'A bug is closing in. No chances remaining. You need to restore them first.',
+        });
+        return;
+    }
+
+    const challenge = _resolveChallenge('ch6');
+    if (!challenge) return;
+
+    // Pass the bug's id as context so challenge:solved can route the defeat event
+    AG.challengePanel.open(challenge, { type: 'roaming_bug', bugId: id });
+});
+
+// ---------------------------------------------------------------------------
 // 7. Routing: aria:interact → correct challenge
 // ---------------------------------------------------------------------------
 AG.events.on('aria:interact', ({ tileId, col, row }) => {
@@ -257,7 +349,7 @@ function _handleGateInteraction(col, row) {
     const nextId = challengeIds.find(id => !state.solved.has(id));
     if (!nextId) return;   // all solved, gate should already be open
 
-    const challenge = AG.CHALLENGES[nextId];
+    const challenge = _resolveChallenge(nextId);
     if (!challenge) return;
 
     AG.challengePanel.open(challenge, { col, row });
@@ -265,10 +357,21 @@ function _handleGateInteraction(col, row) {
 
 // ---------------------------------------------------------------------------
 // 8. challenge:solved → advance gate progress, open gate if complete
+//    Also handles roaming bug defeats.
 // ---------------------------------------------------------------------------
 AG.events.on('challenge:solved', ({ challengeId, gatePos }) => {
     if (!gatePos) return;
 
+    // ── Roaming bug defeated ─────────────────────────────────────────────
+    if (gatePos.type === 'roaming_bug') {
+        AG.events.emit('roaming_bug:defeated', { id: gatePos.bugId });
+        AG.events.emit('aria:speak', {
+            text: 'Bug eliminated. It will find its way back. Keep moving.',
+        });
+        return;
+    }
+
+    // ── Gate challenge ───────────────────────────────────────────────────
     const gateKey = `${gatePos.col},${gatePos.row}`;
     const state   = AG.gateState[gateKey];
     if (!state) return;
@@ -382,6 +485,32 @@ function _identifyShrine(col, row) {
         if (s.cols.includes(col) && s.rows.includes(row)) return s;
     }
     return null;
+}
+
+/**
+ * Resolve the appropriate difficulty tier for a challenge based on how many
+ * shrines the player has completed.
+ *
+ * Walks CHALLENGE_VARIANTS[id] in order and keeps upgrading to the next tier
+ * as long as every required shrine has been completed.  Falls back to the
+ * base challenge object (AG.CHALLENGES[id]) if no variant list exists.
+ *
+ * @param  {string} id  - canonical challenge id (e.g. 'ch4', 'ch7')
+ * @returns {object}    - the resolved challenge definition
+ */
+function _resolveChallenge(id) {
+    const variants = AG.CHALLENGE_VARIANTS?.[id];
+    if (!variants || variants.length === 0) return AG.CHALLENGES[id];
+
+    const completed = AG.completedShrines || new Set();
+    let resolvedId  = variants[0].id;   // baseline — always eligible
+
+    for (const v of variants) {
+        const allMet = (v.requires_shrines || []).every(s => completed.has(s));
+        if (allMet) resolvedId = v.id;
+    }
+
+    return AG.CHALLENGES[resolvedId];
 }
 
 // ---------------------------------------------------------------------------
