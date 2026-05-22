@@ -30,7 +30,11 @@ DEFAULT_GAME_STATE = {
     'region_restored': False,
     'challenge_attempts': {},
     'collected_pickups': [],
+    'code_shards': 0,
+    'shop_purchases': {},
+    'side_challenges_completed': [],
 }
+
 
 
 def _normalise_game_state(payload):
@@ -42,6 +46,11 @@ def _normalise_game_state(payload):
             return []
         return [str(v) for v in value if isinstance(v, (str, int, float))]
 
+    try:
+        code_shards = int(payload.get('code_shards', 0) or 0)
+    except (TypeError, ValueError):
+        code_shards = 0
+
     state = {
         'version': 1,
         'solved_challenges': _clean_str_list(payload.get('solved_challenges')),
@@ -51,6 +60,9 @@ def _normalise_game_state(payload):
         'region_restored': bool(payload.get('region_restored', False)),
         'challenge_attempts': {},
         'collected_pickups': _clean_str_list(payload.get('collected_pickups')),
+        'code_shards': max(0, min(9999, code_shards)),
+        'shop_purchases': payload.get('shop_purchases') if isinstance(payload.get('shop_purchases'), dict) else {},
+        'side_challenges_completed': _clean_str_list(payload.get('side_challenges_completed')),
     }
     raw_attempts = payload.get('challenge_attempts', {})
     if isinstance(raw_attempts, dict):
@@ -83,6 +95,9 @@ def _filter_and_heal_game_state(state):
     filtered['collected_pickups'] = sorted({
         p for p in filtered.get('collected_pickups', []) if p in VALID_PICKUP_IDS
     })
+    filtered['side_challenges_completed'] = sorted(set(filtered.get('side_challenges_completed', [])))
+    filtered['code_shards'] = max(0, min(9999, int(filtered.get('code_shards', 0) or 0)))
+    filtered['shop_purchases'] = filtered.get('shop_purchases') if isinstance(filtered.get('shop_purchases'), dict) else {}
     attempts = filtered.get('challenge_attempts', {})
     filtered['challenge_attempts'] = {
         cid: count for cid, count in attempts.items() if cid in VALID_CHALLENGE_IDS
@@ -183,9 +198,15 @@ def sync_game_state(request):
     if 'challenge_attempts' not in data:
         existing = _normalise_game_state(profile.game_state or DEFAULT_GAME_STATE)
         state['challenge_attempts'] = existing.get('challenge_attempts', {})
+    existing = _normalise_game_state(profile.game_state or DEFAULT_GAME_STATE)
     if 'collected_pickups' not in data:
-        existing = _normalise_game_state(profile.game_state or DEFAULT_GAME_STATE)
         state['collected_pickups'] = existing.get('collected_pickups', [])
+    if 'code_shards' not in data:
+        state['code_shards'] = existing.get('code_shards', 0)
+    if 'shop_purchases' not in data:
+        state['shop_purchases'] = existing.get('shop_purchases', {})
+    if 'side_challenges_completed' not in data:
+        state['side_challenges_completed'] = existing.get('side_challenges_completed', [])
     _save_profile_state(profile, state, set_region_if_restored=True)
     return JsonResponse({'ok': True, 'game_state': state})
 

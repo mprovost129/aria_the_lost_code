@@ -11,7 +11,7 @@ VALID_SHRINE_IDS = {
 }
 
 VALID_CHALLENGE_IDS = {
-    'ch1', 'ch2', 'ch3', 'ch4', 'ch5', 'ch6', 'ch6_v1', 'ch6_v2', 'ch6_v3', 'ch7', 'ch8', 'ch9',
+    'ch1', 'ch2', 'ch3', 'ch4', 'ch5', 'ch6', 'ch6_v1', 'ch6_v2', 'ch6_v3', 'ch7', 'ch8', 'ch9', 'ch10', 'ch11',
 }
 
 VALID_GATE_KEYS = {
@@ -19,5 +19,5 @@ VALID_GATE_KEYS = {
 }
 
 VALID_PICKUP_IDS = {
-    'heart_01', 'heart_02', 'heart_03', 'heart_04', 'heart_05', 'heart_06',
+    'tablet', 'heart_01', 'heart_02', 'heart_03', 'heart_04', 'heart_05', 'heart_06',
 }

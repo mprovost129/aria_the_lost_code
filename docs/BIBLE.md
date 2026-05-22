@@ -625,15 +625,31 @@ Reward: 1 Chance Fragment on defeat
 ARIA: "Syntax Gnat. Missing quote mark. Squash it fast."
 
 Challenge 7: Boss Bug, Gate to Boss Chamber
-Type: Boss Bug battle, multi-error
+Type: Boss Bug battle, six-error comprehensive debug
 Location: Entrance to Origin Node Boss Chamber
 Concept: All Region 1 data types and syntax
 Lesson Reference: Full Code Library: Region 1
 
-node_name = Origin Nodepower_remaining = "87"backup_active = Falseprint(f"Node: {node_name}, Power: {power_remaining}")
-Expected fixes: node_name needs quotes around Origin Node, power_remaining should be integer 87 not string "87"
+region_name = Origin Node
+node_label = "Root Shrine
+power_core = 10O
+shield_active = true
+energy_text = "87"
+boost = 13
+total_energy = energy_text + boost
+print("{region_name} | {node_label} | Power {power_core} | Shield {shield_active} | Energy {total_energy}")
+
+Expected fixes:
+- Variables shrine: Origin Node must be assigned as a string value.
+- Strings shrine: Root Shrine needs a closing quote mark.
+- Integers/Floats shrine: 10O must become 100; the final character is a zero, not the letter O.
+- Booleans shrine: true must become True.
+- Type Conversion shrine: energy_text must be converted before math: int(energy_text) + boost.
+- f-strings shrine: the final print must be an f-string so the placeholders resolve.
+
+Expected output: Origin Node | Root Shrine | Power 100 | Shield True | Energy 100
 Reward: Full Chance restoration on defeat
-ARIA: "This one has two errors hiding in it. Take your time. We are close to the Boss Chamber."
+ARIA: "This is not a random glitch. Six intentional bugs are woven through one script - one from each shrine. I can count what remains, but I will not mark the lines for you."
 
 Challenge 8: Boss Challenge, Who Are You
 Type: Partial open code with scaffolding
@@ -1069,7 +1085,10 @@ The roaming bug challenge (ch6) scales with how many shrines the player has comp
   Shrine 1+2+3 complete: ch6_v3, multi-variable snippet with type and value errors
 
 Boss Bug Difficulty
-Challenge 7 is always the hardest variant. No scaling. The snippet contains two errors across four lines covering string syntax, integer assignment, and boolean capitalization. If the player reaches the boss without studying the shrines, the challenge will reflect that gap. This is intentional.
+Challenge 7 is always the hardest variant. No scaling. The snippet contains six intentional errors across one coherent script. Each error comes from one Region 1 shrine: variables, strings, integers/floats, booleans, type conversion, and f-strings. If the player reaches the boss without studying the shrines, the challenge will reflect that gap. This is intentional.
+
+Boss Bug Feedback Rule
+After each submission, ARIA reports only how many errors remain. She does not identify the lines. Example: "Six errors found. You fixed four. Two remain. Keep looking." This preserves the debugging challenge while preventing the player from feeling lost.
 
 Difficulty Progression
 - Challenge 1: Pure fill-in-the-blank. Structure given. Player supplies values.
@@ -1079,8 +1098,86 @@ Difficulty Progression
 - Challenge 9: Fill-in-the-blank with function calls. Player supplies the correct conversion functions.
 - Challenge 5: f-string writing. Player constructs the formatted string from scratch.
 - Challenge 6: Single-error bug fix triggered by proximity. Difficulty scales with shrine progress.
-- Challenge 7: Multi-error bug fix. Two errors hidden in four lines. Always the hardest snippet.
+- Challenge 7: Multi-error bug fix. Six intentional errors hidden in one coherent script. Always the hardest snippet.
 - Challenge 8: Boss. All concepts. Partially open code. Player names themselves and writes the f-string.
+
+
+
+---
+
+## Challenge Tier System, Strategic Currency, and Intentional Bug Evolution
+
+### Locked Tab Behavior
+- All three gate tabs must be passed to open a full Challenge Gate.
+- Players may freely attempt tabs in any order.
+- Failure tracking is per tab, not per whole gate.
+- The first wrong answer on a tab is free and triggers an ARIA hint.
+- The second and later wrong answers on that same tab cost one Chance.
+- If the player runs out of Chances and is ejected, completed tabs stay completed. Only incomplete tabs reset.
+
+### Strategic Currency: Code Shards
+Code Shards are the recommended Region 1 strategic currency. They should be earned through mastery, not grinding.
+
+Earn sources:
+- Defeat roaming bugs.
+- Clear gate tabs with few or no mistakes.
+- Complete side challenges tied to concepts already learned.
+- Earn Silver or Gold clears on Challenge Gates.
+- Defeat Boss Bugs.
+
+Suggested clear tiers:
+- Bronze Clear: pass the challenge. Reward normal progress and a small Code Shard payout.
+- Silver Clear: pass with no manual hint used. Reward bonus Code Shards and a minor collectible.
+- Gold Clear: pass perfectly on the first submission. Reward the largest Code Shard payout, badge progress, and possible cosmetic/lore unlocks.
+
+Shop Terminal purchases must not let players buy their way past learning. The shop should sell support, expression, and optional depth, not answers.
+
+Recommended shop inventory:
+- ARIA Hint Token: unlocks an extra general hint that explains the concept but does not give the answer.
+- Trace Pulse: briefly highlights the category of bug in a bug-fix challenge, such as string, boolean, or type conversion, without marking the exact line.
+- Chance Fragment: collect three fragments to restore one Chance.
+- Memory Log: optional ARIA lore fragment or lost system message.
+- Cosmetic Signal Trail: changes the player trail effect.
+- Terminal Theme: changes editor appearance.
+- Map Ping: marks one optional side challenge or collectible room on the map.
+- Practice Reroll: swaps a standalone practice prompt for another prompt from the same concept.
+
+Hard rule: Code Shards cannot directly buy gate completion, boss completion, or final answers.
+
+### Side Challenge Doctrine
+Side challenges must be about concepts the player has already learned. They should reinforce mastery, not introduce brand-new mechanics before the shrine teaches them.
+
+Good side challenge formats:
+- Bug Hunt: identify and fix a known error pattern from a completed shrine.
+- Output Prediction: read a short script and choose or enter what it prints.
+- Rebuild the Line: reconstruct a broken line from available pieces.
+- Speed Debug: fix a familiar bug pattern under light pressure.
+- Match Type to Value: connect values to str, int, float, bool, or conversion functions.
+- Corrupted Terminal Log: repair a small narrative code snippet using prior concepts.
+
+Side challenges should reward Code Shards, lore, cosmetic unlock progress, or Chance Fragments. They should never block main progression in V1.
+
+### Intentional Bug Evolution
+Bugs begin as simple syntax corruption, but the story should slowly reveal that some bugs are intentional. ARIA remains helpful, honest, and narrative throughout. She does not become the villain.
+
+Evolution path:
+- Region 1: Bugs look accidental: quotes, capitalization, bad values, missing f-string markers.
+- Region 2: Bugs begin to look patterned, especially in conditionals and loops.
+- Region 3: Bugs appear to protect parts of the system rather than merely break them.
+- Region 4: Bugs behave like traps, using the player's assumptions against them.
+- Region 5: Some bugs are decoys hiding deeper logic failures.
+- Region 6: Bugs suggest an outside or buried intelligence is actively rewriting the code.
+- Region 7: The player learns the original corruption was not random. The final debug is both technical and narrative.
+
+ARIA's role:
+- ARIA stays the player's guide and emotional anchor.
+- ARIA can be uncertain, worried, or surprised, but she should not intentionally mislead the player.
+- When bugs become intentional, ARIA frames them as evidence: "That was placed there," not "I hid that from you."
+
+### Boss Bug 3 Fixes Applied in Current Build
+- Boss Bug upgraded from two errors to six errors, one from each Region 1 shrine.
+- Boss Bug now gives remaining-error feedback after submission without revealing lines.
+- Boss Bug now supports the intentional-bug narrative: the pattern is deliberate, while ARIA remains helpful.
 
 Validation Philosophy
 Region 1 validation compares the output of the player's code against the expected output stored in the database. This handles most valid variations automatically.
@@ -2582,6 +2679,120 @@ Progression audit command
     and gate keys) remain in sync with live Region 1 frontend data files.
   Strict mode:
     Returns non-zero exit on mismatch for CI/pre-deploy checks.
+
+---
+
+## Implementation Pack: Code Shards, Shop Terminal, Side Challenge Scaffolding, and Intentional Bugs
+
+Date: 2026-05-22
+
+### Purpose
+
+This pack turns the challenge-tier system into a fuller game loop instead of only a pass/fail learning flow. The goal is to keep ARIA: The Lost Code feeling like a game first: repair corruption, earn strategic currency, spend it on limited support, and discover optional mastery checks tied directly to concepts the player has already learned.
+
+### Locked Design Decisions
+
+1. Code Shards are the primary strategic currency for Region 1.
+2. Code Shards reward repair, mastery, and optional side challenges.
+3. The shop may sell support, recovery, cosmetics, and lore access, but it must never sell direct answers.
+4. Side challenges must be about concepts already taught by shrines and gates.
+5. Bugs begin as corruption but evolve into intentional, adaptive defenses.
+6. ARIA remains helpful and narrative. She is not the villain. Her role is guide, observer, and emotional anchor.
+
+### Implemented Runtime Changes
+
+#### Code Shards
+
+Code Shards were added to persistent frontend/backend game state. The current value is stored inside `PlayerProfile.game_state` under `code_shards`, allowing the economy to evolve without a database migration.
+
+Runtime files changed:
+
+- `game/views.py`
+  - Added `code_shards`, `shop_purchases`, and `side_challenges_completed` to `DEFAULT_GAME_STATE`.
+  - Updated state normalization and filtering so those values survive save/load.
+  - Updated game-state sync so missing economy fields preserve existing saved values.
+
+- `static/js/game/main.js`
+  - Added `AG.codeShards`, `AG.rewardedChallenges`, `AG.shopPurchases`, and `AG.sideChallengesCompleted`.
+  - Added Code Shard HUD update logic.
+  - Added first-clear reward protection so solved challenges do not pay repeatedly.
+  - Added reward values by challenge category:
+    - Gate challenge: 10 Code Shards
+    - Roaming bug: 6 Code Shards
+    - Side challenge: 18+ Code Shards
+    - Boss Bug: 35 Code Shards
+    - Boss Chamber: 50 Code Shards
+
+- `templates/game/game.html`
+  - Added Code Shards HUD display beside the Chances HUD.
+  - Added a first Shop Terminal panel to the in-game menu.
+
+#### Shop Terminal v1
+
+The first implemented shop purchase is:
+
+- Extra Chance: costs 20 Code Shards
+
+Rules:
+
+- The shop sells support, not answers.
+- Extra Chance can raise the current chance count up to 6.
+- Purchase state is synced through the existing game-state autosave flow.
+- This is intentionally small for v1 so the economy can be tuned after playtesting.
+
+Future shop candidates:
+
+- ARIA hint token
+- reveal one corrupted line
+- retry shield
+- terminal theme cosmetic
+- lore archive unlock
+- map ping for optional side challenge
+
+#### Side Challenge Scaffolding
+
+Optional side challenge data was added to Region 1. These are not meant to block main progression. Their purpose is mastery, confidence, and Code Shard rewards.
+
+Runtime files changed:
+
+- `static/js/game/data/region1_challenges.js`
+  - Added `ch10`: Side Challenge - Output Prediction
+  - Added `ch11`: Side Challenge - Type Repair
+
+- `game/progression_constants.py`
+  - Added `ch10` and `ch11` to backend valid challenge IDs so they are accepted by the progression API.
+
+Side challenge doctrine:
+
+- They test what the player already learned.
+- They should use alternate formats: output prediction, bug hunt, repair sprint, memory rebuild, or concept lock.
+- They reward Code Shards and optional lore.
+- They should not become required gates.
+
+#### Intentional Bug Evolution
+
+The Boss Bug design now explicitly frames Region 1 corruption as intentional. This is the beginning of the enemy-design arc:
+
+- Region 1: bugs look like corruption, but the Boss Bug proves there is pattern and intent.
+- Region 2: bugs begin reacting to player fixes.
+- Region 3: bugs adapt around expected player behavior.
+- Region 4+: some bugs are revealed as defensive systems, not accidents.
+
+ARIA remains helpful. She can be uncertain, damaged, or blocked from knowing everything, but she should not become secretly evil.
+
+### Implementation Notes
+
+The current pack intentionally avoids overbuilding. It establishes a working economy foundation and the first shop item while keeping the code simple enough to playtest. The next best step is to place side challenge interactables into the map and route them into the challenge panel as optional encounters.
+
+### Next Build Pack
+
+Recommended next pack:
+
+1. Add side challenge map interactables.
+2. Add side challenge completion tracking and one-time reward payout.
+3. Add a real shop terminal tile in the world, not only the menu panel.
+4. Add one environmental code puzzle where a door, bridge, or light system is fixed through code.
+5. Add balancing constants for reward amounts and shop prices so they are not hardcoded inside event handlers.
 
 ---
 

@@ -233,6 +233,15 @@ class ChallengePanel {
      * @returns {{ correct: boolean, message?: string, stdout?: string }}
      */
     async _validate(code, challenge, runner) {
+        const bugProgress = this._countUnfixedBugs(challenge, code);
+        if (bugProgress && bugProgress.remaining > 0) {
+            return {
+                correct: false,
+                message: this._buildBugProgressMessage(bugProgress),
+                bugProgress,
+            };
+        }
+
         const { stdout, error } = await runner.run(
             code,
             challenge.validation_code || '',
@@ -418,6 +427,33 @@ class ChallengePanel {
         if (!this.outputSection || !this.outputEl) return;
         this.outputEl.textContent        = '';
         this.outputSection.style.display = 'none';
+    }
+
+    _countUnfixedBugs(challenge, code) {
+        if (!challenge || !Array.isArray(challenge.bug_checks) || challenge.bug_checks.length === 0) {
+            return null;
+        }
+
+        const remainingChecks = challenge.bug_checks.filter((check) => {
+            try {
+                const regex = new RegExp(check.pattern, 'm');
+                return !regex.test(code);
+            } catch (err) {
+                return true;
+            }
+        });
+
+        return {
+            total: challenge.bug_checks.length,
+            fixed: challenge.bug_checks.length - remainingChecks.length,
+            remaining: remainingChecks.length,
+        };
+    }
+
+    _buildBugProgressMessage(progress) {
+        if (!progress) return 'Check the script and try again.';
+        const noun = progress.remaining === 1 ? 'error remains' : 'errors remain';
+        return `${progress.total} errors found. You fixed ${progress.fixed}. ${progress.remaining} ${noun}. Keep looking.`;
     }
 
     _typeLabel(type) {

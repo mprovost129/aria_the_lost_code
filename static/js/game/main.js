@@ -22,6 +22,12 @@ window.ARIA_GAME = window.ARIA_GAME || {};
 // ---------------------------------------------------------------------------
 AG.events = new Phaser.Events.EventEmitter();
 
+function _setTabletButtonVisible(visible) {
+    const btn = document.getElementById('tablet-btn');
+    if (!btn) return;
+    btn.hidden = !visible;
+}
+
 // ---------------------------------------------------------------------------
 // 2. Dialogue system (Layer 8)
 //    Created before Phaser boots so the very first aria:speak from the scene
@@ -53,6 +59,11 @@ AG.completedShrines = new Set();
 AG._sceneReady = false;
 AG._pendingGameState = null;
 AG.collectedPickups = new Set();
+AG.codeShards = 0;
+AG.rewardedChallenges = new Set();
+AG.sideChallengesCompleted = new Set();
+AG.shopPurchases = {};
+AG.introComplete = false;   // true after ARIA gate opens (tablet collected + panel dismissed)
 
 // ---------------------------------------------------------------------------
 // 3. Phaser boot
@@ -144,6 +155,7 @@ AG.events.on('aria:speak', ({ text }) => {
 
 AG.events.on('scene:ready', () => {
     AG._sceneReady = true;
+    _setTabletButtonVisible(Boolean(AG.collectedPickups?.has('tablet')));
     _applyPersistedGameState();
 });
 
@@ -215,6 +227,9 @@ function _collectGameStateSnapshot() {
         boss_bug_defeated: Boolean(AG.bossBugDefeated),
         region_restored: Boolean(AG.regionRestored),
         collected_pickups: Array.from(AG.collectedPickups || []),
+        code_shards: AG.codeShards || 0,
+        shop_purchases: AG.shopPurchases || {},
+        side_challenges_completed: Array.from(AG.sideChallengesCompleted || []),
     };
 }
 
@@ -352,6 +367,8 @@ document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') _autosaveNow();
 });
 
+document.addEventListener('DOMContentLoaded', _wireShopTerminal);
+
 function _applyPersistedGameState() {
     const state = AG._pendingGameState;
     if (!state) return;
@@ -382,6 +399,20 @@ function _applyPersistedGameState() {
     AG.bossBugDefeated = Boolean(state.boss_bug_defeated);
     AG.regionRestored = Boolean(state.region_restored);
     AG.collectedPickups = new Set(Array.isArray(state.collected_pickups) ? state.collected_pickups : []);
+    AG.codeShards = Number.isFinite(Number(state.code_shards)) ? Math.max(0, Number(state.code_shards)) : 0;
+    AG.shopPurchases = (state.shop_purchases && typeof state.shop_purchases === 'object') ? state.shop_purchases : {};
+    AG.sideChallengesCompleted = new Set(Array.isArray(state.side_challenges_completed) ? state.side_challenges_completed : []);
+    AG.rewardedChallenges = new Set(solvedChallenges);
+    updateCodeShardsDisplay(AG.codeShards);
+
+    // Returning player who already completed the intro — open the gate immediately
+    if (AG.collectedPickups.has('tablet')) {
+        AG.introComplete = true;
+        _setTabletButtonVisible(true);
+        if (AG._sceneReady) {
+            AG.events.emit('aria_gate:open');
+        }
+    }
 
     // Scene-specific visual updates only after the scene is ready.
     if (AG._sceneReady) {
@@ -397,6 +428,68 @@ function _applyPersistedGameState() {
         }
         AG.events.emit('pickups:sync', { collected: Array.from(AG.collectedPickups) });
     }
+}
+
+
+function updateCodeShardsDisplay(count) {
+    AG.codeShards = Math.max(0, Number(count) || 0);
+    const el = document.getElementById('code-shards-count');
+    if (el) el.textContent = AG.codeShards;
+
+    const buyBtn = document.getElementById('buy-extra-chance-btn');
+    if (buyBtn) buyBtn.disabled = AG.codeShards < 20;
+}
+
+function _syncGameStateNow() {
+    _postProgress('/api/game-state/sync/', _collectGameStateSnapshot())
+        .catch(() => {
+            _enqueueProgress('/api/game-state/sync/', _collectGameStateSnapshot());
+            _flushProgressQueue();
+        });
+}
+
+function _grantCodeShards(amount, reasonText) {
+    const reward = Math.max(0, Number(amount) || 0);
+    if (!reward) return;
+    updateCodeShardsDisplay((AG.codeShards || 0) + reward);
+    _syncGameStateNow();
+    if (reasonText) {
+        AG.events.emit('aria:speak', { text: `${reasonText} +${reward} Code Shards.` });
+    }
+}
+
+function _challengeShardReward(challenge) {
+    if (!challenge) return 0;
+    if (typeof challenge.shard_reward === 'number') return challenge.shard_reward;
+    if (challenge.category === 'boss_bug') return 35;
+    if (challenge.category === 'boss_chamber') return 50;
+    if (challenge.category === 'side_challenge') return 18;
+    if (challenge.category === 'gate') return 10;
+    if (challenge.category === 'roaming_bug') return 6;
+    return 0;
+}
+
+function _spendCodeShards(cost) {
+    const price = Math.max(0, Number(cost) || 0);
+    if ((AG.codeShards || 0) < price) return false;
+    updateCodeShardsDisplay(AG.codeShards - price);
+    _syncGameStateNow();
+    return true;
+}
+
+function _wireShopTerminal() {
+    const buyBtn = document.getElementById('buy-extra-chance-btn');
+    if (!buyBtn) return;
+    buyBtn.addEventListener('click', () => {
+        if (!_spendCodeShards(20)) {
+            AG.events.emit('aria:speak', { text: 'Not enough Code Shards. Clear gates or side challenges first.' });
+            return;
+        }
+        updateChancesDisplay(Math.min(currentChances + 1, 6));
+        _syncChances(currentChances);
+        AG.events.emit('aria:speak', { text: 'Shop purchase complete. Extra Chance added. No answers sold here.' });
+    });
+    updateCodeShardsDisplay(AG.codeShards || 0);
 }
 
 function updateChancesDisplay(count) {
@@ -448,8 +541,27 @@ AG.events.on('chance:set', ({ count }) => {
     AG.chancesEmpty = count <= 0;
 });
 
+// ---------------------------------------------------------------------------
+// Tablet pickup → open intro panel
+// ---------------------------------------------------------------------------
+AG.events.on('tablet:pickup', () => {
+    _setTabletButtonVisible(true);
+    AG.introPanel?.open();
+});
+
+// ARIA gate opened (emitted by ARIAIntroPanel._close after last line dismissed)
+AG.events.on('aria_gate:open', () => {
+    AG.introComplete = true;
+    _setTabletButtonVisible(true);
+    if (!AG.collectedPickups.has('tablet')) {
+        AG.collectedPickups.add('tablet');
+        _progressPickupCollected('tablet');
+    }
+});
+
 AG.events.on('pickup:collected', ({ pickupId }) => {
     if (!pickupId) return;
+    if (pickupId === 'tablet') return;   // handled by aria_gate:open
     if (AG.collectedPickups.has(pickupId)) return;
     AG.collectedPickups.add(pickupId);
     const next = Math.min(currentChances + 1, 3);
@@ -635,6 +747,11 @@ function _handleGateInteraction(col, row) {
 //    Also handles roaming bug defeats.
 // ---------------------------------------------------------------------------
 AG.events.on('challenge:solved', ({ challengeId, gatePos }) => {
+    const challenge = _resolveChallenge(challengeId) || AG.CHALLENGES?.[challengeId];
+    if (!AG.rewardedChallenges.has(challengeId)) {
+        AG.rewardedChallenges.add(challengeId);
+        _grantCodeShards(_challengeShardReward(challenge), 'Clean repair logged.');
+    }
     if (!gatePos) return;
 
     // ── Roaming bug defeated ─────────────────────────────────────────────
@@ -675,6 +792,10 @@ AG.events.on('challenge:solved', ({ challengeId, gatePos }) => {
 // 9. Boss Bug defeated
 // ---------------------------------------------------------------------------
 AG.events.on('boss_bug:solved', () => {
+    if (!AG.rewardedChallenges.has(AG.BOSS_BUG_CHALLENGE)) {
+        AG.rewardedChallenges.add(AG.BOSS_BUG_CHALLENGE);
+        _grantCodeShards(_challengeShardReward(AG.CHALLENGES?.[AG.BOSS_BUG_CHALLENGE]), 'Boss Bug pattern broken.');
+    }
     AG.bossBugDefeated = true;
     AG.events.emit('chance:restore');   // full Chance restoration per Bible
     // Find the boss bug tile position from the map objects
@@ -692,6 +813,10 @@ AG.events.on('boss_bug:solved', () => {
 // 10. Boss Challenge complete - trigger ripple wave, then show completion card
 // ---------------------------------------------------------------------------
 AG.events.on('boss:solved', () => {
+    if (!AG.rewardedChallenges.has(AG.BOSS_CHALLENGE)) {
+        AG.rewardedChallenges.add(AG.BOSS_CHALLENGE);
+        _grantCodeShards(_challengeShardReward(AG.CHALLENGES?.[AG.BOSS_CHALLENGE]), 'Origin Node restored.');
+    }
     _progressChallengeSolved(AG.BOSS_CHALLENGE);
     AG.events.emit('aria:speak', {
         text: 'The Origin Node is restored. Signal expanding. Region 2 unlocked. We are just getting started.',
@@ -752,6 +877,9 @@ if (rcContinueBtn) {
 
 // Instantiate ShrineModal - DOM must be ready
 AG.shrineModal = new AG.ShrineModal();
+
+// Instantiate ARIAIntroPanel - DOM must be ready (intro overlay added in game.html)
+AG.introPanel = new AG.ARIAIntroPanel();
 
 /**
  * Identify which shrine a given tile belongs to by matching against the
@@ -858,8 +986,10 @@ AG.events.on('player:moved', ({ col, row }) => {
     const D = AG.DIALOGUE;
     if (!D) return;
 
-    // (a) First-move narrative - appended, not interrupting
-    if (!_firstMoveFired) {
+    // (a) First-move narrative - appended, not interrupting.
+    //     Only fires once the player has exited the intro corridor (row >= 7
+    //     means they've passed through the ARIA gate into the main region).
+    if (!_firstMoveFired && row >= 7) {
         _firstMoveFired = true;
         const lines = D.REGION1_EVENTS?.first_steps;
         if (lines) AG.dialogue.append(lines);

@@ -144,6 +144,64 @@
     }
     .chance-dot.flicker { animation: chance-lost-flicker 0.55s ease forwards; }
 
+    /* ── Code Shards HUD / shop currency ── */
+    #code-shards-hud {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        min-width: 72px;
+        padding: 0.22rem 0.5rem;
+        border: 1px solid #20425a;
+        border-radius: 999px;
+        background: #071724;
+        color: #7ee7ff;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.78rem;
+        box-shadow: 0 0 8px rgba(126, 231, 255, 0.12);
+    }
+    #code-shards-hud .shard-icon { color: #7ee7ff; }
+    #code-shards-count { font-weight: 700; }
+
+    .gm-shop-panel {
+        margin-top: 0.9rem;
+        padding: 0.85rem;
+        border: 1px solid #203850;
+        border-radius: 10px;
+        background: rgba(7, 23, 36, 0.75);
+        color: #cfefff;
+        font-family: 'Courier New', Courier, monospace;
+    }
+    .gm-shop-title {
+        font-size: 0.8rem;
+        color: #7ee7ff;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 0.45rem;
+    }
+    .gm-shop-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.45rem 0;
+        border-top: 1px solid rgba(126, 231, 255, 0.12);
+    }
+    .gm-shop-copy { font-size: 0.72rem; line-height: 1.3; color: #9dcadd; }
+    .gm-shop-btn {
+        flex-shrink: 0;
+        background: #0c2638;
+        border: 1px solid #2f6f92;
+        color: #bff4ff;
+        border-radius: 8px;
+        padding: 0.35rem 0.55rem;
+        cursor: pointer;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.68rem;
+    }
+    .gm-shop-btn:hover { border-color: #7ee7ff; color: #ffffff; }
+    .gm-shop-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
     /* ── Shrine bonus pip HUD ── */
     #shrine-bonus-hud {
         flex-shrink: 0;
@@ -778,6 +836,98 @@
        REGION COMPLETE OVERLAY  (Layer 6 - region restored card)
        Appears after the ripple wave finishes and region:restored fires.
     ═══════════════════════════════════════════════════════════════════════ */
+
+    /* ── ARIA Intro Panel (tablet pickup sequence) ── */
+    #aria-intro-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.88);
+        z-index: 250;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    #aria-intro-overlay.hidden {
+        display: none;
+    }
+    #aria-intro-card {
+        background: #07070f;
+        border: 1px solid #00ccaa;
+        border-radius: 10px;
+        padding: 2rem 1.75rem 1.5rem;
+        width: min(520px, 92vw);
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+        box-shadow:
+            0 0 40px rgba(0, 200, 170, 0.2),
+            0 0 80px rgba(0, 200, 170, 0.08);
+    }
+    #aria-intro-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        border-bottom: 1px solid #0a2820;
+        padding-bottom: 0.75rem;
+    }
+    #aria-intro-portrait {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: #0c2820;
+        border: 2px solid #00ccaa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        flex-shrink: 0;
+        box-shadow: 0 0 12px rgba(0, 200, 170, 0.4);
+        animation: aria-glow-pulse 2.2s ease-in-out infinite;
+    }
+    @keyframes aria-glow-pulse {
+        0%, 100% { box-shadow: 0 0 12px rgba(0, 200, 170, 0.4); }
+        50%       { box-shadow: 0 0 22px rgba(0, 200, 170, 0.75); }
+    }
+    #aria-intro-title {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.72rem;
+        color: #00ccaa;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
+    #aria-intro-line {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.96rem;
+        line-height: 1.65;
+        color: #c8ffe0;
+        min-height: 3.6rem;
+    }
+    #aria-intro-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    #aria-intro-counter {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.7rem;
+        color: #00ccaa;
+        opacity: 0.6;
+    }
+    #aria-intro-continue {
+        background: transparent;
+        border: 1px solid #00ccaa;
+        border-radius: 5px;
+        color: #00ccaa;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.82rem;
+        padding: 0.45rem 1.1rem;
+        cursor: pointer;
+        transition: background 0.15s, color 0.15s;
+    }
+    #aria-intro-continue:hover {
+        background: #00ccaa;
+        color: #07070f;
+    }
 
     #region-complete-overlay {
         position: fixed;
@@ -1813,6 +1963,11 @@
 
         <span id="pyodide-status" title="Python runtime status">🐍 loading…</span>
 
+        <div id="code-shards-hud" title="Code Shards earned from clean fixes and side challenges">
+            <span class="shard-icon">◆</span>
+            <span id="code-shards-count">0</span>
+        </div>
+
         <div id="hud-chances" title="Chances remaining">
             <div class="chance-dot" data-chance="1"></div>
             <div class="chance-dot" data-chance="2"></div>
@@ -1829,7 +1984,7 @@
             </div>
         </div>
 
-        <button id="tablet-btn" type="button">📟 Tablet</button>
+        <button id="tablet-btn" type="button" hidden>📟 Tablet</button>
 
         <button id="game-menu-btn" type="button" title="Menu (Esc)">☰ Menu</button>
     </div>
@@ -1847,6 +2002,17 @@
                 <div id="gm-username">{{ user.username }}</div>
             </div>
             <button id="gm-close-btn" type="button" title="Back to game (Esc)">✕</button>
+        </div>
+
+        <div class="gm-shop-panel" aria-label="Shop Terminal">
+            <div class="gm-shop-title">Shop Terminal</div>
+            <div class="gm-shop-row">
+                <div>
+                    <strong>Extra Chance</strong>
+                    <div class="gm-shop-copy">Spend Code Shards for one extra attempt buffer. No direct answers sold.</div>
+                </div>
+                <button id="buy-extra-chance-btn" class="gm-shop-btn" type="button">Buy · 20 ◆</button>
+            </div>
         </div>
 
         <div id="gm-autosave-badge">
@@ -1987,6 +2153,21 @@
     </div>
 </div>
 
+{# ── ARIA Intro Panel (tablet pickup sequence) ── #}
+<div id="aria-intro-overlay" class="hidden">
+    <div id="aria-intro-card">
+        <div id="aria-intro-header">
+            <div id="aria-intro-portrait">🤖</div>
+            <span id="aria-intro-title">ARIA — Emergency Broadcast</span>
+        </div>
+        <div id="aria-intro-line"></div>
+        <div id="aria-intro-footer">
+            <span id="aria-intro-counter"></span>
+            <button id="aria-intro-continue">Skip</button>
+        </div>
+    </div>
+</div>
+
 {# ── Region Complete Overlay (Layer 6) ── #}
 <div id="region-complete-overlay">
     <div id="region-complete-card">
@@ -2124,6 +2305,7 @@ window.ARIA_GAME.cinematicSeen = {% if profile and profile.cinematic_seen %}true
 <script src="{% static 'js/game/challenge.js' %}"></script>
 <script src="{% static 'js/game/tablet.js' %}"></script>
 <script src="{% static 'js/game/shrine.js' %}"></script>
+<script src="{% static 'js/game/intro_panel.js' %}"></script>
 <script src="{% static 'js/game/dialogue.js' %}"></script>
 <script src="{% static 'js/game/main.js' %}"></script>
 

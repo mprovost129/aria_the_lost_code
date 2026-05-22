@@ -346,23 +346,51 @@ print("__VALID__")`,
         difficulty:  'intermediate',
 
         prompt_code:
-`node_name = Origin Node
-power_remaining = "87"
-backup_active = False
-print(f"Node: {node_name}, Power: {power_remaining}")`,
+`region_name = Origin Node
+node_label = "Root Shrine
+power_core = 10O
+shield_active = true
+energy_text = "87"
+boost = 13
+total_energy = energy_text + boost
+print("{region_name} | {node_label} | Power {power_core} | Shield {shield_active} | Energy {total_energy}")`,
 
-        expected_output: 'Node: Origin Node, Power: 87',
+        expected_output: 'Origin Node | Root Shrine | Power 100 | Shield True | Energy 100',
 
-        required_keywords: ['"Origin Node"', '87'],
-        required_keywords_alt: ["'Origin Node'", '87'],
+        // Boss Bug static analysis: one intentional error from each Region 1 shrine.
+        // The challenge panel uses these checks to tell the player how many errors remain
+        // without revealing exact lines.
+        bug_checks: [
+            { id: 'variables',       label: 'Variables shrine',          pattern: String.raw`region_name\s*=\s*["']Origin Node["']` },
+            { id: 'strings',         label: 'Strings shrine',            pattern: String.raw`node_label\s*=\s*["']Root Shrine["']` },
+            { id: 'numbers',         label: 'Integers/Floats shrine',    pattern: String.raw`power_core\s*=\s*100\b` },
+            { id: 'booleans',        label: 'Booleans shrine',           pattern: String.raw`shield_active\s*=\s*True\b` },
+            { id: 'type_conversion', label: 'Type Conversion shrine',    pattern: String.raw`total_energy\s*=\s*int\(\s*energy_text\s*\)\s*\+\s*boost` },
+            { id: 'f_strings',       label: 'f-strings shrine',          pattern: String.raw`print\s*\(\s*f["'][\s\S]*\{region_name\}[\s\S]*\{node_label\}[\s\S]*\{power_core\}[\s\S]*\{shield_active\}[\s\S]*\{total_energy\}[\s\S]*["']\s*\)` },
+        ],
 
-        hint_text:        'Two errors. One value is missing quotes. One value has the wrong type.',
+        required_keywords: ['"Origin Node"', '"Root Shrine"', '100', 'True', 'int(energy_text)', 'f"'],
+        required_keywords_alt: ["'Origin Node'", "'Root Shrine'", '100', 'True', 'int(energy_text)', "f'"],
+
+        validation_code:
+`_ok = (
+    region_name == "Origin Node" and
+    node_label == "Root Shrine" and
+    power_core == 100 and
+    shield_active is True and
+    energy_text == "87" and
+    boost == 13 and
+    total_energy == 100
+)
+print("__VALID__" if _ok else "__INVALID__: all six shrine bugs must be fixed before the Boss Chamber opens")`,
+
+        hint_text:        'Six errors. One from each shrine: variable assignment, string quotes, zero vs letter O, boolean capitalization, type conversion, and f-string formatting.',
         lesson_reference: 'Code Library: Region 1 - All Concepts',
 
-        aria_intro:   'This one has two errors hiding in it. Take your time. We are close to the Boss Chamber.',
-        aria_hint:    'node_name needs quote marks - it is a string. power_remaining should be the integer 87, not the string "87".',
-        aria_success: 'Both errors found. Full Chance restoration. The Boss Chamber is open.',
-        aria_fail:    'Two errors, not one. Look at both the name and the power level carefully.',
+        aria_intro:   'This is not a random glitch. Six intentional bugs are woven through one script - one from each shrine. I can count what remains, but I will not mark the lines for you.',
+        aria_hint:    'Search systematically: name value, quote marks, number value, boolean capitalization, type conversion before math, and f before the final formatted string.',
+        aria_success: 'All six intentional bugs removed. Full Chance restoration. The Boss Chamber is open.',
+        aria_fail:    'The pattern is intentional. Do not chase one line forever. Sweep the script shrine by shrine.',
     },
 
     // ── BOSS CHALLENGE ─────────────────────────────────────────────────────
@@ -415,6 +443,62 @@ print("__VALID__" if _ok else "__INVALID__: check your data types - string, inte
         aria_success: 'The Origin Node is restored. Signal expanding. Region 2 unlocked. We are just getting started.',
         aria_fail:    'Not complete yet. All four types, and an f-string with at least two variables inside curly braces.',
     },
+
+    // ── SIDE CHALLENGES: OPTIONAL MASTERY CHECKS ───────────────────────────
+    // These are intentionally about concepts already taught by Region 1 shrines.
+    // They should reward Code Shards/lore, not block main progression.
+
+    ch10: {
+        id:          'ch10',
+        title:       'Side Challenge - Output Prediction',
+        type:        'open_code',
+        category:    'side_challenge',
+        difficulty:  'beginner',
+        shard_reward: 18,
+
+        prompt_code:
+`name = "ARIA"
+level = 1
+print(f"{name} restored level {level}")`,
+
+        expected_output: 'ARIA restored level 1',
+        hint_text:        'Read the f-string exactly. Curly braces are replaced with the current variable values.',
+        lesson_reference: 'Code Library: Variables + f-strings',
+
+        aria_intro:   'Optional side signal detected. Predict what this code prints. This tests what you already repaired.',
+        aria_hint:    'Replace {name} with ARIA and {level} with 1.',
+        aria_success: 'Side signal stabilized. Code Shards awarded.',
+        aria_fail:    'Trace the variables first, then read the f-string left to right.',
+    },
+
+    ch11: {
+        id:          'ch11',
+        title:       'Side Challenge - Type Repair',
+        type:        'bug_fix',
+        category:    'side_challenge',
+        difficulty:  'beginner',
+        shard_reward: 20,
+
+        prompt_code:
+`stored_energy = "40"
+bonus_energy = 2
+final_energy = stored_energy + bonus_energy
+print(final_energy)`,
+
+        expected_output: '42',
+        validation_code:
+`_ok = final_energy == 42 and isinstance(final_energy, int)
+print("__VALID__" if _ok else "__INVALID__: convert the stored text before adding")`,
+
+        hint_text:        'stored_energy is text. Convert it with int() before adding bonus_energy.',
+        lesson_reference: 'Code Library: Type Conversion',
+
+        aria_intro:   'Optional side signal detected. The system stored a number as text. Repair the calculation.',
+        aria_hint:    'Use int(stored_energy) + bonus_energy.',
+        aria_success: 'Side signal stabilized. Code Shards awarded.',
+        aria_fail:    'The value looks like a number, but quotes make it a string.',
+    },
+
 };
 
 // ---------------------------------------------------------------------------

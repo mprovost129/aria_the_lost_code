@@ -40,6 +40,9 @@ AG.TILE = Object.freeze({
     // Post-restoration tile variants (applied during Layer 6 completion sequence)
     ROAD_RESTORED: 9,   // passable - bright green circuit trace, world is alive
     FLOOR_LIT:     10,  // passable - slightly warm floor, region is restored
+    // Intro room tiles
+    TABLET_ITEM:   11,  // passable floor item - triggers intro sequence when stepped on
+    ARIA_GATE:     12,  // impassable - opened by ARIA after tablet pickup, not by challenge
 });
 
 // Tiles the player cannot step on
@@ -50,6 +53,7 @@ AG.IMPASSABLE_TILES = [
     AG.TILE.BOSS_CHAMBER,
     AG.TILE.TERMINAL,
     AG.TILE.BOSS_BUG,
+    AG.TILE.ARIA_GATE,   // locked until ARIA opens it after tablet pickup
 ];
 
 // Tiles that emit an 'interact' event when the player bumps them
@@ -76,6 +80,8 @@ AG.TILE_COLORS = {
     [AG.TILE.SPAWN]:         0x1a1a2e,
     [AG.TILE.ROAD_RESTORED]: 0x0a2218,   // deep green - alive circuit board
     [AG.TILE.FLOOR_LIT]:     0x1a2a1e,   // slightly warm green - region is breathing
+    [AG.TILE.TABLET_ITEM]:   0x1a1a2e,   // same as floor, item drawn as overlay
+    [AG.TILE.ARIA_GATE]:     0x081814,   // dark teal - ARIA gate (friendly, not red)
 };
 
 // Accent / border colors for each tile type
@@ -99,4 +105,8 @@ AG.TILE_LABELS = {
     [AG.TILE.GATE]:         'Challenge Gate',
     [AG.TILE.BOSS_CHAMBER]: 'Boss Chamber',
     [AG.TILE.BOSS_BUG]:     'Bug Encountered!',
+    [AG.TILE.ARIA_GATE]:    'ARIA Signal Gate',
 };
+
+// Position of the intro room ARIA gate - used by scene and main.js
+AG.ARIA_GATE_POS = { col: 2, row: 5 };

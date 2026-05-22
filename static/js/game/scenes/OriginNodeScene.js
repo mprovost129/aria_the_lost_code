@@ -242,6 +242,58 @@ class OriginNodeScene extends Phaser.Scene {
             [[0,0],[S,0],[0,S],[S,S]].forEach(([px,py]) => g.fillCircle(px, py, 2));
         });
 
+        tex(`tile_${AG.TILE.TABLET_ITEM}`, (g, S) => {
+            // Floor base
+            g.fillStyle(0x1a1a2e, 1);
+            g.fillRect(0, 0, S, S);
+            g.lineStyle(1, 0x131325, 1);
+            g.lineBetween(0, S/2, S, S/2);
+            g.lineBetween(S/2, 0, S/2, S);
+            // Ambient glow under device
+            g.fillStyle(0x00ccff, 0.1);
+            g.fillCircle(S/2, S/2, 10);
+            // Tablet body
+            g.fillStyle(0x1a3352, 1);
+            g.fillRoundedRect(S/2 - 7, S/2 - 5, 14, 11, 2);
+            // Screen
+            g.fillStyle(0x00ccff, 0.85);
+            g.fillRoundedRect(S/2 - 5, S/2 - 3, 10, 7, 1);
+            // Scanline
+            g.lineStyle(1, 0xaaeeff, 0.45);
+            g.lineBetween(S/2 - 4, S/2, S/2 + 4, S/2);
+            // Border glow
+            g.lineStyle(1, 0x00ccff, 0.7);
+            g.strokeRoundedRect(S/2 - 7, S/2 - 5, 14, 11, 2);
+        });
+
+        tex(`tile_${AG.TILE.ARIA_GATE}`, (g, S) => {
+            g.fillStyle(0x061210, 1);
+            g.fillRect(0, 0, S, S);
+            g.fillStyle(0x0c2820, 1);
+            g.fillRect(0, 0, 8, S);
+            g.lineStyle(1, 0x00ccaa, 0.8);
+            g.lineBetween(8, 0, 8, S);
+            g.fillStyle(0x0c2820, 1);
+            g.fillRect(S-8, 0, 8, S);
+            g.lineStyle(1, 0x00ccaa, 0.8);
+            g.lineBetween(S-9, 0, S-9, S);
+            g.fillStyle(0x00ccaa, 1);
+            [4, S/2, S-4].forEach(py => {
+                g.fillCircle(4, py, 1.5);
+                g.fillCircle(S-4, py, 1.5);
+            });
+            g.fillStyle(0x00aa88, 1);
+            g.fillRect(8, S/2 - 2, S-16, 4);
+            g.lineStyle(1, 0x00ddbb, 0.45);
+            g.lineBetween(8, S/2 - 6, S-8, S/2 - 6);
+            g.lineBetween(8, S/2 + 6, S-8, S/2 + 6);
+            g.fillStyle(0x00bbaa, 1);
+            g.fillRect(4, 0, S-8, 4);
+            g.fillRect(4, S-4, S-8, 4);
+            g.lineStyle(1, 0x00ccaa, 0.6);
+            g.strokeRect(0, 0, S, S);
+        });
+
         g.destroy();
     }
 
@@ -529,19 +581,42 @@ class OriginNodeScene extends Phaser.Scene {
         }
     }
 
+    _checkTabletPickup(playerCol, playerRow, AG) {
+        const tabletPos = window.ARIA_GAME.MAPS.ORIGIN_NODE_OBJECTS?.tabletItem;
+        if (!tabletPos) return;
+        if (AG.collectedPickups?.has('tablet')) return;
+        if (playerCol === tabletPos.col && playerRow === tabletPos.row) {
+            // Replace the tablet tile with plain floor so it's visually gone
+            this.updateTile(tabletPos.col, tabletPos.row, AG.TILE.FLOOR);
+            AG.events.emit('tablet:pickup');
+        }
+    }
+
     // -------------------------------------------------------------------------
     // Roaming bug system
     // -------------------------------------------------------------------------
 
     /**
-     * Spawn the initial roaming bug 3 seconds after the scene loads so the
-     * player has a moment to orient before the first threat appears.
+     * Spawn the initial roaming bug 3 s after the ARIA gate opens (new players)
+     * or immediately on a 3 s timer for returning players who already completed
+     * the intro sequence.  This ensures bugs never appear in the intro room.
      */
     _initRoamingBugs(AG) {
-        this.time.delayedCall(3000, () => {
-            const pos = this._randomBugSpawnPos(5);
-            if (pos) this._spawnRoamingBug(pos.col, pos.row, AG);
-        });
+        const spawnFirst = () => {
+            this.time.delayedCall(3000, () => {
+                if (!this.scene || !this.scene.isActive('OriginNodeScene')) return;
+                const pos = this._randomBugSpawnPos(8);
+                if (pos) this._spawnRoamingBug(pos.col, pos.row, AG);
+            });
+        };
+
+        if (AG.introComplete) {
+            // Returning player — gate already open, safe to start the timer
+            spawnFirst();
+        } else {
+            // New player — wait until ARIA opens the gate after the intro panel
+            AG.events.once('aria_gate:open', spawnFirst);
+        }
     }
 
     /**
@@ -1032,6 +1107,17 @@ class OriginNodeScene extends Phaser.Scene {
         const AG  = window.ARIA_GAME;
         if (row < 0 || row >= map.length || col < 0 || col >= map[0].length) return;
         const tileId = map[row][col];
+
+        // ARIA-controlled gate — hint the player if tablet not yet collected
+        if (tileId === AG.TILE.ARIA_GATE) {
+            if (!AG.collectedPickups?.has('tablet')) {
+                AG.events.emit('aria:speak', {
+                    text: 'Pick up the tablet. It has the information you need.',
+                });
+            }
+            return;
+        }
+
         if (AG.INTERACTIVE_TILES.includes(tileId)) {
             AG.events.emit('aria:interact', { tileId, col, row });
         }
@@ -1056,8 +1142,27 @@ class OriginNodeScene extends Phaser.Scene {
             this.input.keyboard.enableGlobalCapture();
         });
 
+        // Intro panel input lock (reuses same lock as challenges)
+        AG.events.on('intro:open', () => {
+            this.inputLocked = true;
+            this._moveQueue  = [];
+            this._processingQueue = false;
+            this.input.keyboard.disableGlobalCapture();
+        });
+        AG.events.on('intro:close', () => {
+            this.inputLocked = false;
+            this.input.keyboard.enableGlobalCapture();
+        });
+
+        // ARIA gate opened — swap tile to floor
+        AG.events.on('aria_gate:open', () => {
+            const gatePos = AG.ARIA_GATE_POS;
+            if (gatePos) this.updateTile(gatePos.col, gatePos.row, TILE.FLOOR);
+        });
+
         // Roaming bug events
         AG.events.on('player:moved', ({ col, row }) => {
+            this._checkTabletPickup(col, row, AG);
             this._checkRoamingBugProximity(col, row, AG);
             this._checkChancePickup(col, row, AG);
         });
@@ -1094,7 +1199,15 @@ class OriginNodeScene extends Phaser.Scene {
         });
 
         AG.events.on('pickups:sync', ({ collected }) => {
-            (collected || []).forEach((pickupId) => this._collectChancePickup(pickupId));
+            (collected || []).forEach((pickupId) => {
+                if (pickupId === 'tablet') {
+                    // Tablet already collected on a previous visit — remove the tile
+                    const tabletPos = window.ARIA_GAME.MAPS.ORIGIN_NODE_OBJECTS?.tabletItem;
+                    if (tabletPos) this.updateTile(tabletPos.col, tabletPos.row, TILE.FLOOR);
+                } else {
+                    this._collectChancePickup(pickupId);
+                }
+            });
         });
     }
 
@@ -1170,7 +1283,7 @@ class OriginNodeScene extends Phaser.Scene {
             },
         });
 
-        const ORIGIN = { col: 3, row: 11 };   // boss chamber (end of the path)
+        const ORIGIN = { col: 36, row: 15 };   // boss chamber (end of the path)
         const tilesToRestore = [];
 
         for (let row = 0; row < map.length; row++) {
