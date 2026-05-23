@@ -25,6 +25,10 @@ class ShrineModal {
         this._titleEl   = document.getElementById('shrine-title');
         this._bodyEl    = document.getElementById('shrine-body');
         this._closeBtn  = document.getElementById('shrine-close');
+        this._rewardOverlay = document.getElementById('shrine-reward-overlay');
+        this._rewardText = document.getElementById('shrine-reward-text');
+        this._rewardCloseBtn = document.getElementById('shrine-reward-close');
+        this._rewardDownloadBtn = document.getElementById('shrine-reward-download');
 
         // ── Close handlers ──────────────────────────────────────────────────
         this._closeBtn.addEventListener('click',  () => this.close());
@@ -34,6 +38,15 @@ class ShrineModal {
                 this.close();
             }
         });
+        if (this._rewardCloseBtn) {
+            this._rewardCloseBtn.addEventListener('click', () => this._closeRewardPrompt());
+        }
+        if (this._rewardDownloadBtn) {
+            this._rewardDownloadBtn.addEventListener('click', () => {
+                this._downloadShrinePdf();
+                this._closeRewardPrompt();
+            });
+        }
 
         // ── Delegated button handlers (work on dynamically rendered content) ─
         this._bodyEl.addEventListener('click', e => {
@@ -244,8 +257,7 @@ class ShrineModal {
                 AG.events.emit('aria:speak', { text: ariaMsg });
                 AG.events.emit('shrine:complete', { shrineId: shrine.id, shrine });
             }
-            // Give the player a beat to read success, then close the shrine panel.
-            setTimeout(() => this.close(), 900);
+            this._openRewardPrompt(shrine);
         } else {
             btn.disabled    = false;
             btn.textContent = '▶ Run';
@@ -288,6 +300,69 @@ class ShrineModal {
         editor.value = decodeURIComponent(btn.dataset.solution);
         btn.textContent = '✓ Solution shown';
         btn.disabled    = true;
+    }
+
+    _openRewardPrompt(shrine) {
+        if (!this._rewardOverlay || !this._rewardText) {
+            this.close();
+            return;
+        }
+        const name = shrine?.name || 'this shrine';
+        this._rewardText.textContent =
+            `Congratulations. You completed ${name}. ARIA archived your lesson notes. Download the PDF for your study library.`;
+        this._rewardOverlay.classList.add('open');
+        this._rewardOverlay.setAttribute('aria-hidden', 'false');
+    }
+
+    _closeRewardPrompt() {
+        if (this._rewardOverlay) {
+            this._rewardOverlay.classList.remove('open');
+            this._rewardOverlay.setAttribute('aria-hidden', 'true');
+        }
+        this.close();
+    }
+
+    _downloadShrinePdf() {
+        const shrine = this._currentShrine;
+        if (!shrine) return;
+
+        const lines = [];
+        lines.push(shrine.name || 'Learning Shrine');
+        lines.push('');
+        (shrine.topics || []).forEach((topic, i) => {
+            lines.push(`${i + 1}. ${topic.title || 'Topic'}`);
+            lines.push('');
+            (topic.sections || []).forEach((s) => {
+                if (s.type === 'text' && s.content) {
+                    lines.push(this._toPlainText(s.content));
+                    lines.push('');
+                } else if (s.type === 'list' && Array.isArray(s.items)) {
+                    s.items.forEach((item) => lines.push(`- ${this._toPlainText(item)}`));
+                    lines.push('');
+                } else if ((s.type === 'code' || s.type === 'shrine_challenge') && s.content) {
+                    lines.push('Code:');
+                    lines.push(String(s.content));
+                    lines.push('');
+                }
+            });
+        });
+
+        const escaped = this._escHtml(lines.join('\n'));
+        const html = `<!doctype html><html><head><meta charset="utf-8"><title>${this._escHtml(shrine.name || 'Shrine')}</title>
+<style>body{font-family:"Courier New",monospace;padding:24px;line-height:1.45;color:#0f1720}h1{font-size:20px}pre{white-space:pre-wrap}</style>
+</head><body><h1>${this._escHtml(shrine.name || 'Learning Shrine')}</h1><pre>${escaped}</pre><script>window.onload=function(){window.print();};</script></body></html>`;
+
+        const w = window.open('', '_blank', 'width=900,height=700');
+        if (!w) return;
+        w.document.open();
+        w.document.write(html);
+        w.document.close();
+    }
+
+    _toPlainText(value) {
+        const div = document.createElement('div');
+        div.innerHTML = String(value || '');
+        return (div.textContent || div.innerText || '').trim();
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────

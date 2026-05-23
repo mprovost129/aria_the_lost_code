@@ -1579,6 +1579,61 @@
         scrollbar-color: #0d3320 #060f08;
     }
 
+    /* Post-shrine reward popup */
+    #shrine-reward-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 230;
+        background: rgba(0, 0, 0, 0.78);
+        display: none;
+        align-items: center;
+        justify-content: center;
+    }
+    #shrine-reward-overlay.open { display: flex; }
+    #shrine-reward-card {
+        width: min(520px, 92vw);
+        background: #070f09;
+        border: 1px solid #0f3a20;
+        border-radius: 10px;
+        padding: 1rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+        font-family: 'Courier New', Courier, monospace;
+    }
+    #shrine-reward-title {
+        color: #00ff88;
+        font-size: 0.95rem;
+        letter-spacing: 0.04em;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+    }
+    #shrine-reward-text {
+        color: #9bcfb0;
+        font-size: 0.8rem;
+        line-height: 1.5;
+        margin-bottom: 0.9rem;
+    }
+    #shrine-reward-actions {
+        display: flex;
+        gap: 0.6rem;
+        justify-content: flex-end;
+    }
+    .shrine-reward-btn {
+        border: 1px solid #225437;
+        background: #0a1d12;
+        color: #9be8be;
+        border-radius: 6px;
+        padding: 0.38rem 0.68rem;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.7rem;
+        letter-spacing: 0.04em;
+        cursor: pointer;
+        text-transform: uppercase;
+    }
+    .shrine-reward-btn:hover {
+        border-color: #00ff88;
+        color: #d6ffe7;
+    }
+
     /* Topic card */
     .shrine-topic {
         background: #080f09;
@@ -2165,6 +2220,17 @@
             {# Filled by ShrineModal.open() #}
         </div>
 
+    </div>
+</div>
+
+<div id="shrine-reward-overlay" aria-hidden="true">
+    <div id="shrine-reward-card" role="dialog" aria-modal="true" aria-labelledby="shrine-reward-title">
+        <div id="shrine-reward-title">ARIA Transmission</div>
+        <div id="shrine-reward-text"></div>
+        <div id="shrine-reward-actions">
+            <button id="shrine-reward-close" class="shrine-reward-btn" type="button">Continue</button>
+            <button id="shrine-reward-download" class="shrine-reward-btn" type="button">Download PDF</button>
+        </div>
     </div>
 </div>
 
