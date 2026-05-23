@@ -19,9 +19,25 @@ const AG = window.ARIA_GAME;
 
 AG.TILE_SIZE = 32;          // pixels per tile (square)
 AG.MOVE_DURATION = 120;     // ms for tile-to-tile movement tween
-AG.CAMERA_ZOOM_MIN = 0.55;  // zoomed out
-AG.CAMERA_ZOOM_MAX = 1.4;   // zoomed in
-AG.CAMERA_ZOOM_STEP = 0.1;
+AG.CAMERA_ZOOM_MIN = 0.35;  // zoomed out
+AG.CAMERA_ZOOM_MAX = 1.15;  // zoomed in
+AG.CAMERA_ZOOM_STEP = 0.05;
+AG.CAMERA_WHEEL_COOLDOWN_MS = 45;
+
+// Optional runtime override:
+// localStorage.setItem('aria_zoom_settings_v1', JSON.stringify({ min: 0.3, max: 1.1, step: 0.04 }))
+try {
+    const raw = localStorage.getItem('aria_zoom_settings_v1');
+    if (raw) {
+        const z = JSON.parse(raw);
+        const min = Number(z?.min);
+        const max = Number(z?.max);
+        const step = Number(z?.step);
+        if (Number.isFinite(min) && min > 0.05 && min < 2) AG.CAMERA_ZOOM_MIN = min;
+        if (Number.isFinite(max) && max > 0.1 && max < 3) AG.CAMERA_ZOOM_MAX = max;
+        if (Number.isFinite(step) && step > 0.005 && step < 0.5) AG.CAMERA_ZOOM_STEP = step;
+    }
+} catch (_) {}
 
 // ---------------------------------------------------------------------------
 // Tile type registry

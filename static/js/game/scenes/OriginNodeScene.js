@@ -38,6 +38,7 @@ class OriginNodeScene extends Phaser.Scene {
         this._dragPanning = false;
         this._lastPanX = 0;
         this._lastPanY = 0;
+        this._lastWheelZoomAt = 0;
     }
 
     // -------------------------------------------------------------------------
@@ -1109,10 +1110,18 @@ class OriginNodeScene extends Phaser.Scene {
         this.input.on('wheel', (pointer, _objs, _dx, dy, _dz, event) => {
             if (event && typeof event.preventDefault === 'function') event.preventDefault();
             if (this.inputLocked) return;
+            const now = Date.now();
+            const cooldown = Number.isFinite(AG.CAMERA_WHEEL_COOLDOWN_MS) ? AG.CAMERA_WHEEL_COOLDOWN_MS : 45;
+            if (now - this._lastWheelZoomAt < cooldown) return;
+            this._lastWheelZoomAt = now;
+
+            const baseStep = Number.isFinite(AG.CAMERA_ZOOM_STEP) ? AG.CAMERA_ZOOM_STEP : 0.05;
+            const magnitude = Phaser.Math.Clamp(Math.abs(dy) / 120, 0.35, 1.4);
+            const delta = baseStep * magnitude;
             if (dy > 0) {
-                this._setCameraZoom(this._cameraZoom - AG.CAMERA_ZOOM_STEP, AG);
+                this._setCameraZoom(this._cameraZoom - delta, AG);
             } else if (dy < 0) {
-                this._setCameraZoom(this._cameraZoom + AG.CAMERA_ZOOM_STEP, AG);
+                this._setCameraZoom(this._cameraZoom + delta, AG);
             }
         });
 
