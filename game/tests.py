@@ -121,7 +121,7 @@ class GameStateSyncTests(TestCase):
             self.sync_url,
             data=json.dumps({
                 'solved_challenges': ['ch1'],
-                'open_gates': ['8,8'],
+                'open_gates': ['16,19'],
                 'completed_shrines': ['shrine1'],
                 'boss_bug_defeated': False,
                 'region_restored': False,
@@ -139,7 +139,7 @@ class GameStateSyncTests(TestCase):
             self.sync_url,
             data=json.dumps({
                 'solved_challenges': ['ch8'],
-                'open_gates': ['8,8', '14,7', '23,7', '23,13', '15,14', '26,16'],
+                'open_gates': ['16,19', '32,19', '50,19', '70,19', '86,19', '108,19'],
                 'completed_shrines': ['shrine1', 'shrine2', 'shrine3', 'shrine4', 'shrine5', 'shrine6'],
                 'boss_bug_defeated': True,
                 'region_restored': True,
@@ -175,13 +175,13 @@ class GameStateSyncTests(TestCase):
         )
         self.client.post(
             self.gate_open_url,
-            data=json.dumps({'gate_key': '8,8'}),
+            data=json.dumps({'gate_key': '16,19'}),
             content_type='application/json',
         )
         self.profile.refresh_from_db()
         state = self.profile.game_state
         self.assertIn('ch2', state.get('solved_challenges', []))
-        self.assertIn('8,8', state.get('open_gates', []))
+        self.assertIn('16,19', state.get('open_gates', []))
 
     def test_progress_region_restored_marks_region_and_current_region(self):
         res = self.client.post(
@@ -240,7 +240,7 @@ class GameStateSyncTests(TestCase):
         self.profile.game_state = {
             'version': 1,
             'solved_challenges': ['ch1', 'fake_ch'],
-            'open_gates': ['8,8', '1,1'],
+            'open_gates': ['16,19', '1,1'],
             'completed_shrines': ['shrine1', 'shrineX'],
             'boss_bug_defeated': False,
             'region_restored': False,
@@ -253,7 +253,7 @@ class GameStateSyncTests(TestCase):
         self.assertEqual(res.status_code, 200)
         gs = res.json()['game_state']
         self.assertEqual(gs['solved_challenges'], ['ch1'])
-        self.assertEqual(gs['open_gates'], ['8,8'])
+        self.assertEqual(gs['open_gates'], ['16,19'])
         self.assertEqual(gs['completed_shrines'], ['shrine1'])
         self.assertEqual(gs['challenge_attempts'], {'ch1': 2})
         self.assertEqual(gs['collected_pickups'], [sorted(VALID_PICKUP_IDS)[0]])

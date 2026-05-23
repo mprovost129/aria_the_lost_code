@@ -34,6 +34,10 @@ class OriginNodeScene extends Phaser.Scene {
         this._nextBugId    = 0;
         this._bugAttacking = false;   // prevents double-trigger while panel is open
         this._cameraZoom   = 1;
+        this._freeLookMode = false;
+        this._dragPanning = false;
+        this._lastPanX = 0;
+        this._lastPanY = 0;
     }
 
     // -------------------------------------------------------------------------
@@ -951,8 +955,13 @@ class OriginNodeScene extends Phaser.Scene {
         const viewportW = this.cameras.main.width;
         const viewportH = this.cameras.main.height;
         const fitZoom = Math.min(viewportW / mapW, viewportH / mapH);
-        const zoomMin = Number.isFinite(AG.CAMERA_ZOOM_MIN) ? AG.CAMERA_ZOOM_MIN : 0.55;
+        const configuredMin = Number.isFinite(AG.CAMERA_ZOOM_MIN) ? AG.CAMERA_ZOOM_MIN : 0.55;
         const zoomMax = Number.isFinite(AG.CAMERA_ZOOM_MAX) ? AG.CAMERA_ZOOM_MAX : 1.4;
+        // Allow deeper zoom-out on large maps while respecting original floor on smaller maps.
+        const dynamicMin = Math.max(0.12, fitZoom * 0.9);
+        const zoomMin = Math.min(configuredMin, dynamicMin);
+        this._cameraZoomMin = zoomMin;
+        this._cameraZoomMax = zoomMax;
         const computedStart = Math.min(1, fitZoom * 1.08);
         const startZoom = Number.isFinite(computedStart)
             ? Phaser.Math.Clamp(computedStart, zoomMin, zoomMax)
@@ -965,6 +974,10 @@ class OriginNodeScene extends Phaser.Scene {
     // -------------------------------------------------------------------------
 
     _setupInput(AG) {
+        if (this.input.mouse && typeof this.input.mouse.disableContextMenu === 'function') {
+            this.input.mouse.disableContextMenu();
+        }
+
         // Keyboard
         this.cursors = this.input.keyboard.createCursorKeys();
         this.wasd    = this.input.keyboard.addKeys({
@@ -992,6 +1005,15 @@ class OriginNodeScene extends Phaser.Scene {
         // Click / tap to move
         this.input.on('pointerdown', (pointer) => {
             if (this.inputLocked) return;
+            const isRightClick = pointer.rightButtonDown() || pointer.button === 2;
+            if (isRightClick) {
+                this._freeLookMode = true;
+                this._dragPanning = true;
+                this._lastPanX = pointer.x;
+                this._lastPanY = pointer.y;
+                this.cameras.main.stopFollow();
+                return;
+            }
 
             // Convert screen pointer to world coordinates accounting for camera
             const worldX = pointer.worldX;
@@ -1013,6 +1035,21 @@ class OriginNodeScene extends Phaser.Scene {
             if (!this._processingQueue) {
                 this._drainMoveQueue();
             }
+        });
+
+        this.input.on('pointermove', (pointer) => {
+            if (!this._dragPanning || !this._freeLookMode) return;
+            const cam = this.cameras.main;
+            const dx = pointer.x - this._lastPanX;
+            const dy = pointer.y - this._lastPanY;
+            cam.scrollX -= dx / cam.zoom;
+            cam.scrollY -= dy / cam.zoom;
+            this._lastPanX = pointer.x;
+            this._lastPanY = pointer.y;
+        });
+
+        this.input.on('pointerup', () => {
+            this._dragPanning = false;
         });
 
         this.input.on('wheel', (pointer, _objs, _dx, dy, _dz, event) => {
@@ -1037,6 +1074,10 @@ class OriginNodeScene extends Phaser.Scene {
                 this._setCameraZoom(this._cameraZoom - AG.CAMERA_ZOOM_STEP, AG);
             } else if (key === '0') {
                 this._setCameraZoom(1, AG);
+            } else if (key === 'f') {
+                this._freeLookMode = false;
+                this._dragPanning = false;
+                this.cameras.main.startFollow(this.player, true, 0.12, 0.12);
             }
         });
     }
@@ -1155,8 +1196,12 @@ class OriginNodeScene extends Phaser.Scene {
     }
 
     _setCameraZoom(nextZoom, AG) {
-        const zoomMin = Number.isFinite(AG?.CAMERA_ZOOM_MIN) ? AG.CAMERA_ZOOM_MIN : 0.55;
-        const zoomMax = Number.isFinite(AG?.CAMERA_ZOOM_MAX) ? AG.CAMERA_ZOOM_MAX : 1.4;
+        const zoomMin = Number.isFinite(this._cameraZoomMin)
+            ? this._cameraZoomMin
+            : (Number.isFinite(AG?.CAMERA_ZOOM_MIN) ? AG.CAMERA_ZOOM_MIN : 0.55);
+        const zoomMax = Number.isFinite(this._cameraZoomMax)
+            ? this._cameraZoomMax
+            : (Number.isFinite(AG?.CAMERA_ZOOM_MAX) ? AG.CAMERA_ZOOM_MAX : 1.4);
         const zoomStep = Number.isFinite(AG?.CAMERA_ZOOM_STEP) ? AG.CAMERA_ZOOM_STEP : 0.1;
         if (!Number.isFinite(AG?.CAMERA_ZOOM_STEP)) {
             AG.CAMERA_ZOOM_STEP = zoomStep;
@@ -1326,6 +1371,12 @@ class OriginNodeScene extends Phaser.Scene {
                 }
             });
         });
+
+        AG.events.on('camera:recenter', () => {
+            this._freeLookMode = false;
+            this._dragPanning = false;
+            this.cameras.main.startFollow(this.player, true, 0.12, 0.12);
+        });
     }
 
     /** Overlay a golden "completed" glow on top of a shrine building. */
@@ -1400,7 +1451,7 @@ class OriginNodeScene extends Phaser.Scene {
             },
         });
 
-        const ORIGIN = { col: 36, row: 15 };   // boss chamber (end of the path)
+        const ORIGIN = { col: 136, row: 9 };   // boss chamber (end of the path)
         const tilesToRestore = [];
 
         for (let row = 0; row < map.length; row++) {

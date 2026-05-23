@@ -2021,6 +2021,14 @@
         </div>
 
         <div id="gm-actions">
+            <button id="gm-recenter-btn" class="gm-action-btn" type="button">
+                <span class="gm-btn-icon">◎</span>
+                <span class="gm-btn-label">Recenter Player</span>
+                <span class="gm-btn-sub">snap camera to you</span>
+            </button>
+
+            <div class="gm-divider"></div>
+
             <button id="gm-feedback-btn" class="gm-action-btn" type="button">
                 <span class="gm-btn-icon">✉</span>
                 <span class="gm-btn-label">Send Feedback</span>
@@ -2325,6 +2333,7 @@ window.ARIA_GAME.cinematicSeen = {% if profile and profile.cinematic_seen %}true
     var resumeBtn = document.getElementById('gm-resume-btn');
     var quitBtn   = document.getElementById('gm-quit-btn');
     var feedbackBtn = document.getElementById('gm-feedback-btn');
+    var recenterBtn = document.getElementById('gm-recenter-btn');
 
     if (!overlay || !openBtn) {
         console.warn('[ARIA] Game menu elements not found');
@@ -2397,6 +2406,16 @@ window.ARIA_GAME.cinematicSeen = {% if profile and profile.cinematic_seen %}true
                 'Device/browser:\n'
             );
             window.location.href = 'mailto:codewithmichael26@gmail.com?subject=' + subject + '&body=' + body;
+            closeMenu();
+        });
+    }
+
+    if (recenterBtn) {
+        recenterBtn.addEventListener('click', function () {
+            var AG = window.ARIA_GAME;
+            if (AG && AG.events && typeof AG.events.emit === 'function') {
+                AG.events.emit('camera:recenter');
+            }
             closeMenu();
         });
     }

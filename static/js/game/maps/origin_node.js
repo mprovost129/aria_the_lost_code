@@ -1,95 +1,147 @@
-/**
- * ARIA: The Lost Code - Origin Node Tile Map (Region 1)
- *
- * Strict shrine-gate-shrine-gate progression through six pockets.
- * Each pocket is walled except for the gate chokepoint that leads forward.
- *
- * Tile IDs:
- *   0 = WALL      (impassable solid boundary)
- *   1 = FLOOR     (passable interior space)
- *   2 = ROAD      (passable path, different visual)
- *   3 = SHRINE    (impassable, bumping triggers shrine modal)
- *   4 = GATE      (impassable until challenge solved)
- *   5 = BOSS_CHAMBER (impassable until boss bug defeated)
- *   6 = TERMINAL  (decorative, impassable)
- *   7 = BOSS_BUG  (triggers boss bug battle on contact)
- *   8 = SPAWN     (passable, player start tile)
- *
- * Progression:
- *   Pocket 1: Spawn → Shrine 1 (Variables)
- *   Gate 1 (Variables) → col 10, row 10
- *   Pocket 2: Shrine 2 (Strings)
- *   Gate 2 (Strings) → col 21, row 15
- *   Pocket 3: Shrine 3 (Integers/Floats)
- *   Gate 3 (Integers) → col 33, row 7
- *   Pocket 4: Shrine 4 (Booleans)
- *   Gate 4 (Booleans) → col 22, row 17
- *   Pocket 5: Shrine 5 (Type Conversion)
- *   Gate 5 (Type Conversion) → col 11, row 17
- *   Pocket 6: Shrine 6 (f-strings) + roaming bugs
- *   Gate 6 (f-strings) → col 11, row 19
- *   Boss Bug → col 33, row 19
- *   Boss Chamber → cols 36-37, rows 15-16
- */
-
 window.ARIA_GAME = window.ARIA_GAME || {};
 window.ARIA_GAME.MAPS = window.ARIA_GAME.MAPS || {};
 
-window.ARIA_GAME.MAPS.ORIGIN_NODE = [
-//   0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], //  0
-  [0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], //  1  intro room top
-  [0, 1,11, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], //  2  tablet at col 2
-  [0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], //  3
-  [0, 1, 8, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], //  4  SPAWN at col 2
-  [0, 0,12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], //  5  ARIA_GATE at col 2
-  [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], //  6  corridor tile
-  [0, 1, 1, 1, 1, 1, 1, 6, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 6, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 6, 1, 2, 2, 2, 0, 0, 0, 0, 0], //  7
-  [0, 1, 3, 3, 1, 1, 1, 1, 1, 1, 0, 0, 1, 3, 3, 1, 1, 1, 1, 1, 1, 1, 0, 1, 3, 3, 1, 1, 1, 1, 1, 1, 2, 0, 2, 0, 0, 0, 0, 0], //  8
-  [0, 1, 3, 3, 1, 1, 1, 1, 1, 1, 0, 0, 1, 3, 3, 1, 1, 1, 1, 1, 1, 1, 0, 1, 3, 3, 1, 1, 1, 1, 1, 1, 2, 0, 2, 0, 0, 0, 0, 0], //  9
-  [0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 4, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 0, 0, 0, 0, 0], // 10
-  [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 0, 6, 1, 1, 1, 1, 1, 1, 1, 1, 2, 0, 2, 0, 0, 0, 0, 0], // 11
-  [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 0, 2, 0, 0, 0, 0, 0], // 12
-  [0, 1, 1, 1, 1, 6, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 6, 2, 0, 1, 1, 1, 1, 1, 1, 1, 1, 6, 2, 0, 2, 0, 0, 0, 0, 0], // 13
-  [0, 1, 1, 1, 1, 1, 1, 1, 6, 2, 0, 0, 1, 1, 1, 6, 1, 1, 1, 1, 1, 2, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 0, 2, 1, 1, 6, 1, 0], // 14
-  [0, 6, 1, 1, 1, 1, 1, 1, 6, 2, 1, 0, 1, 1, 1, 1, 1, 1, 1, 6, 1, 2, 2, 6, 1, 1, 1, 1, 1, 1, 6, 1, 2, 0, 2, 1, 5, 5, 1, 0], // 15
-  [0, 1, 3, 3, 1, 1, 1, 1, 1, 1, 1, 0, 1, 3, 3, 1, 1, 1, 1, 1, 1, 1, 0, 1, 3, 3, 1, 1, 1, 1, 1, 1, 1, 0, 2, 1, 5, 5, 1, 0], // 16
-  [0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 4, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 4, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 0], // 17
-  [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 6, 0], // 18
-  [0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 4, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 7, 2, 2, 2, 2, 2, 0], // 19
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // 20
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // 21
-];
+(function () {
+    const W = 146;
+    const H = 34;
 
-window.ARIA_GAME.MAPS.ORIGIN_NODE_SPAWN = { col: 2, row: 4 };
+    const TILE = {
+        WALL: 0,
+        FLOOR: 1,
+        ROAD: 2,
+        SHRINE: 3,
+        GATE: 4,
+        BOSS_CHAMBER: 5,
+        TERMINAL: 6,
+        BOSS_BUG: 7,
+        SPAWN: 8,
+        TABLET: 11,
+        ARIA_GATE: 12,
+    };
 
-window.ARIA_GAME.MAPS.ORIGIN_NODE_OBJECTS = {
-    tabletItem: { col: 2, row: 2 },
-    ariaGate:   { col: 2, row: 5 },
+    const map = Array.from({ length: H }, () => Array(W).fill(TILE.WALL));
 
-    shrine1: [{ col: 2, row: 8 }, { col: 3, row: 8 }, { col: 2, row: 9 }, { col: 3, row: 9 }],
-    shrine2: [{ col: 13, row: 8 }, { col: 14, row: 8 }, { col: 13, row: 9 }, { col: 14, row: 9 }],
-    shrine3: [{ col: 24, row: 8 }, { col: 25, row: 8 }, { col: 24, row: 9 }, { col: 25, row: 9 }],
-    shrine4: [{ col: 24, row: 16 }, { col: 25, row: 16 }, { col: 24, row: 17 }, { col: 25, row: 17 }],
-    shrine5: [{ col: 13, row: 16 }, { col: 14, row: 16 }, { col: 13, row: 17 }, { col: 14, row: 17 }],
-    shrine6: [{ col: 2, row: 16 }, { col: 3, row: 16 }, { col: 2, row: 17 }, { col: 3, row: 17 }],
+    const rooms = {
+        start: { x: 2, y: 14, w: 12, h: 10 },
+        r1: { x: 18, y: 4, w: 12, h: 12 },
+        r2: { x: 34, y: 16, w: 14, h: 10 },
+        r3: { x: 52, y: 3, w: 16, h: 14 },
+        r4: { x: 72, y: 15, w: 12, h: 12 },
+        r5: { x: 88, y: 5, w: 18, h: 12 },
+        r6: { x: 110, y: 14, w: 14, h: 12 },
+        boss: { x: 128, y: 6, w: 12, h: 12 },
+    };
 
-    gate1: [{ col: 10, row: 10 }],
-    gate2: [{ col: 21, row: 15 }],
-    gate3: [{ col: 33, row: 7 }],
-    gate4: [{ col: 22, row: 17 }],
-    gate5: [{ col: 11, row: 17 }],
-    gate6: [{ col: 11, row: 19 }],
+    function carveRoom(r, tile = TILE.FLOOR) {
+        for (let y = r.y; y < r.y + r.h; y++) {
+            for (let x = r.x; x < r.x + r.w; x++) {
+                map[y][x] = tile;
+            }
+        }
+    }
 
-    bossBug:     [{ col: 33, row: 19 }],
-    bossChamber: [{ col: 36, row: 15 }, { col: 37, row: 15 }, { col: 36, row: 16 }, { col: 37, row: 16 }],
+    function carveRoad(x1, y1, x2, y2) {
+        let x = x1;
+        let y = y1;
+        while (x !== x2) {
+            map[y][x] = TILE.ROAD;
+            x += x < x2 ? 1 : -1;
+        }
+        while (y !== y2) {
+            map[y][x] = TILE.ROAD;
+            y += y < y2 ? 1 : -1;
+        }
+        map[y][x] = TILE.ROAD;
+    }
 
-    chancePickups: [
-        { id: 'heart_01', col: 6, row: 12 },
-        { id: 'heart_02', col: 18, row: 12 },
-        { id: 'heart_03', col: 29, row: 12 },
-        { id: 'heart_04', col: 29, row: 18 },
-        { id: 'heart_05', col: 18, row: 18 },
-        { id: 'heart_06', col: 5, row: 18 },
-    ],
-};
+    Object.values(rooms).forEach((r) => carveRoom(r));
+
+    const gates = [
+        { key: '16,19', x: 16, y: 19 },
+        { key: '32,19', x: 32, y: 19 },
+        { key: '50,19', x: 50, y: 19 },
+        { key: '70,19', x: 70, y: 19 },
+        { key: '86,19', x: 86, y: 19 },
+        { key: '108,19', x: 108, y: 19 },
+    ];
+
+    carveRoad(13, 19, 16, 19);
+    carveRoad(16, 19, 24, 10);
+    carveRoad(24, 10, 32, 19);
+    carveRoad(32, 19, 41, 21);
+    carveRoad(41, 21, 50, 19);
+    carveRoad(50, 19, 60, 10);
+    carveRoad(60, 10, 70, 19);
+    carveRoad(70, 19, 78, 21);
+    carveRoad(78, 21, 86, 19);
+    carveRoad(86, 19, 97, 11);
+    carveRoad(97, 11, 108, 19);
+    carveRoad(108, 19, 117, 20);
+    carveRoad(117, 20, 127, 12);
+    carveRoad(127, 12, 133, 12);
+
+    gates.forEach((g) => { map[g.y][g.x] = TILE.GATE; });
+
+    map[19][13] = TILE.ARIA_GATE;
+    map[17][5] = TILE.TABLET;
+    map[19][4] = TILE.SPAWN;
+
+    const shrines = {
+        shrine1: [{ x: 22, y: 8 }, { x: 23, y: 8 }, { x: 22, y: 9 }, { x: 23, y: 9 }],
+        shrine2: [{ x: 40, y: 20 }, { x: 41, y: 20 }, { x: 40, y: 21 }, { x: 41, y: 21 }],
+        shrine3: [{ x: 58, y: 8 }, { x: 59, y: 8 }, { x: 58, y: 9 }, { x: 59, y: 9 }],
+        shrine4: [{ x: 76, y: 20 }, { x: 77, y: 20 }, { x: 76, y: 21 }, { x: 77, y: 21 }],
+        shrine5: [{ x: 96, y: 9 }, { x: 97, y: 9 }, { x: 96, y: 10 }, { x: 97, y: 10 }],
+        shrine6: [{ x: 116, y: 19 }, { x: 117, y: 19 }, { x: 116, y: 20 }, { x: 117, y: 20 }],
+    };
+
+    Object.values(shrines).flat().forEach((p) => { map[p.y][p.x] = TILE.SHRINE; });
+
+    // Boss room landmarks
+    map[12][134] = TILE.BOSS_BUG;
+    map[9][136] = TILE.BOSS_CHAMBER;
+    map[9][137] = TILE.BOSS_CHAMBER;
+    map[10][136] = TILE.BOSS_CHAMBER;
+    map[10][137] = TILE.BOSS_CHAMBER;
+
+    // Decorative terminals sprinkled through larger rooms
+    [
+        [8, 21], [44, 22], [62, 12], [80, 24], [102, 13], [120, 23],
+    ].forEach(([x, y]) => { map[y][x] = TILE.TERMINAL; });
+
+    window.ARIA_GAME.MAPS.ORIGIN_NODE = map;
+    window.ARIA_GAME.MAPS.ORIGIN_NODE_SPAWN = { col: 4, row: 19 };
+    window.ARIA_GAME.MAPS.ORIGIN_NODE_OBJECTS = {
+        tabletItem: { col: 5, row: 17 },
+        ariaGate: { col: 13, row: 19 },
+
+        shrine1: shrines.shrine1.map((p) => ({ col: p.x, row: p.y })),
+        shrine2: shrines.shrine2.map((p) => ({ col: p.x, row: p.y })),
+        shrine3: shrines.shrine3.map((p) => ({ col: p.x, row: p.y })),
+        shrine4: shrines.shrine4.map((p) => ({ col: p.x, row: p.y })),
+        shrine5: shrines.shrine5.map((p) => ({ col: p.x, row: p.y })),
+        shrine6: shrines.shrine6.map((p) => ({ col: p.x, row: p.y })),
+
+        gate1: [{ col: 16, row: 19 }],
+        gate2: [{ col: 32, row: 19 }],
+        gate3: [{ col: 50, row: 19 }],
+        gate4: [{ col: 70, row: 19 }],
+        gate5: [{ col: 86, row: 19 }],
+        gate6: [{ col: 108, row: 19 }],
+
+        bossBug: [{ col: 134, row: 12 }],
+        bossChamber: [
+            { col: 136, row: 9 }, { col: 137, row: 9 },
+            { col: 136, row: 10 }, { col: 137, row: 10 },
+        ],
+
+        chancePickups: [
+            { id: 'heart_01', col: 10, row: 21 },
+            { id: 'heart_02', col: 27, row: 13 },
+            { id: 'heart_03', col: 45, row: 23 },
+            { id: 'heart_04', col: 66, row: 6 },
+            { id: 'heart_05', col: 100, row: 15 },
+            { id: 'heart_06', col: 121, row: 24 },
+        ],
+    };
+}());
