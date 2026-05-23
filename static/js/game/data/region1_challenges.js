@@ -507,12 +507,12 @@ print("__VALID__" if _ok else "__INVALID__: convert the stored text before addin
 // ---------------------------------------------------------------------------
 
 window.ARIA_GAME.GATE_CHALLENGES = {
-    '16,19':   ['ch1'],
-    '32,19':  ['ch2'],
-    '50,19':  ['ch3'],
-    '70,19': ['ch4'],
-    '86,19': ['ch9'],
-    '108,19': ['ch5'],
+    '42,26':   ['ch1'],
+    '64,27':  ['ch2'],
+    '88,24':  ['ch3'],
+    '106,27': ['ch4'],
+    '128,24': ['ch9'],
+    '148,27': ['ch5'],
 };
 
 // Boss Bug and Boss Chamber have their own mappings

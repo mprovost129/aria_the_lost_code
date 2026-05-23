@@ -43,6 +43,9 @@ AG.TILE = Object.freeze({
     // Intro room tiles
     TABLET_ITEM:   11,  // passable floor item - triggers intro sequence when stepped on
     ARIA_GATE:     12,  // impassable - opened by ARIA after tablet pickup, not by challenge
+    FIREWALL:      13,  // impassable - hostile network barrier
+    DATA_FLOOD:    14,  // impassable - corrupted data lake
+    CACHE_NODE:    15,  // passable - hidden reward cache marker
 });
 
 // Tiles the player cannot step on
@@ -54,6 +57,8 @@ AG.IMPASSABLE_TILES = [
     AG.TILE.TERMINAL,
     AG.TILE.BOSS_BUG,
     AG.TILE.ARIA_GATE,   // locked until ARIA opens it after tablet pickup
+    AG.TILE.FIREWALL,
+    AG.TILE.DATA_FLOOD,
 ];
 
 // Tiles that emit an 'interact' event when the player bumps them
@@ -82,6 +87,9 @@ AG.TILE_COLORS = {
     [AG.TILE.FLOOR_LIT]:     0x1a2a1e,   // slightly warm green - region is breathing
     [AG.TILE.TABLET_ITEM]:   0x1a1a2e,   // same as floor, item drawn as overlay
     [AG.TILE.ARIA_GATE]:     0x081814,   // dark teal - ARIA gate (friendly, not red)
+    [AG.TILE.FIREWALL]:      0x2a0f12,
+    [AG.TILE.DATA_FLOOD]:    0x0b132e,
+    [AG.TILE.CACHE_NODE]:    0x1b1628,
 };
 
 // Accent / border colors for each tile type
@@ -97,6 +105,9 @@ AG.TILE_BORDERS = {
     [AG.TILE.SPAWN]:         0x12122a,
     [AG.TILE.ROAD_RESTORED]: 0x00cc55,   // bright green border - signal line
     [AG.TILE.FLOOR_LIT]:     0x1e3e24,
+    [AG.TILE.FIREWALL]:      0xff6644,
+    [AG.TILE.DATA_FLOOD]:    0x4d7dff,
+    [AG.TILE.CACHE_NODE]:    0xd39cff,
 };
 
 // Human-readable labels shown in the HUD when the player bumps a tile
@@ -106,7 +117,10 @@ AG.TILE_LABELS = {
     [AG.TILE.BOSS_CHAMBER]: 'Boss Chamber',
     [AG.TILE.BOSS_BUG]:     'Bug Encountered!',
     [AG.TILE.ARIA_GATE]:    'ARIA Signal Gate',
+    [AG.TILE.FIREWALL]:     'Firewall',
+    [AG.TILE.DATA_FLOOD]:   'Data Flood',
+    [AG.TILE.CACHE_NODE]:   'Cache Node',
 };
 
 // Position of the intro room ARIA gate - used by scene and main.js
-AG.ARIA_GATE_POS = { col: 2, row: 5 };
+AG.ARIA_GATE_POS = { col: 20, row: 26 };

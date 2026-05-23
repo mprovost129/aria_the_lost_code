@@ -33,6 +33,7 @@ DEFAULT_GAME_STATE = {
     'code_shards': 0,
     'shop_purchases': {},
     'side_challenges_completed': [],
+    'player_pos': None,
 }
 
 
@@ -63,7 +64,16 @@ def _normalise_game_state(payload):
         'code_shards': max(0, min(9999, code_shards)),
         'shop_purchases': payload.get('shop_purchases') if isinstance(payload.get('shop_purchases'), dict) else {},
         'side_challenges_completed': _clean_str_list(payload.get('side_challenges_completed')),
+        'player_pos': None,
     }
+    raw_pos = payload.get('player_pos')
+    if isinstance(raw_pos, dict):
+        try:
+            col = int(raw_pos.get('col'))
+            row = int(raw_pos.get('row'))
+            state['player_pos'] = {'col': col, 'row': row}
+        except (TypeError, ValueError):
+            state['player_pos'] = None
     raw_attempts = payload.get('challenge_attempts', {})
     if isinstance(raw_attempts, dict):
         clean_attempts = {}
@@ -207,6 +217,8 @@ def sync_game_state(request):
         state['shop_purchases'] = existing.get('shop_purchases', {})
     if 'side_challenges_completed' not in data:
         state['side_challenges_completed'] = existing.get('side_challenges_completed', [])
+    if 'player_pos' not in data or state.get('player_pos') is None:
+        state['player_pos'] = existing.get('player_pos')
     _save_profile_state(profile, state, set_region_if_restored=True)
     return JsonResponse({'ok': True, 'game_state': state})
 

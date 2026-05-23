@@ -21,6 +21,7 @@ window.ARIA_GAME = window.ARIA_GAME || {};
 // 1. Event bus
 // ---------------------------------------------------------------------------
 AG.events = new Phaser.Events.EventEmitter();
+const _PLAYER_POS_STORAGE_KEY = 'aria_player_pos_v1';
 
 function _setTabletButtonVisible(visible) {
     const btn = document.getElementById('tablet-btn');
@@ -64,6 +65,7 @@ AG.rewardedChallenges = new Set();
 AG.sideChallengesCompleted = new Set();
 AG.shopPurchases = {};
 AG.introComplete = false;   // true after ARIA gate opens (tablet collected + panel dismissed)
+AG.playerPos = null;
 
 // ---------------------------------------------------------------------------
 // 3. Phaser boot
@@ -119,6 +121,17 @@ fetch('/api/player-state/')
         }
     })
     .catch(() => { /* keep default 3 */ });
+
+// Local fallback: if backend sync is delayed, keep last known position client-side.
+try {
+    const rawPos = localStorage.getItem(_PLAYER_POS_STORAGE_KEY);
+    if (rawPos) {
+        const parsed = JSON.parse(rawPos);
+        if (Number.isFinite(parsed?.col) && Number.isFinite(parsed?.row)) {
+            AG.playerPos = { col: Number(parsed.col), row: Number(parsed.row) };
+        }
+    }
+} catch (_) {}
 
 // ---------------------------------------------------------------------------
 // 7. Pyodide status indicator in the ARIA bar
@@ -220,7 +233,7 @@ function _collectGameStateSnapshot() {
     const openGates = Object.entries(AG.gateState || {})
         .filter(([, state]) => Boolean(state?.open))
         .map(([gateKey]) => gateKey);
-    return {
+    const snapshot = {
         solved_challenges: solved,
         open_gates: openGates,
         completed_shrines: Array.from(AG.completedShrines || []),
@@ -231,6 +244,10 @@ function _collectGameStateSnapshot() {
         shop_purchases: AG.shopPurchases || {},
         side_challenges_completed: Array.from(AG.sideChallengesCompleted || []),
     };
+    if (AG.playerPos && Number.isFinite(AG.playerPos.col) && Number.isFinite(AG.playerPos.row)) {
+        snapshot.player_pos = { col: AG.playerPos.col, row: AG.playerPos.row };
+    }
+    return snapshot;
 }
 
 function _persistProgressQueue() {
@@ -402,6 +419,12 @@ function _applyPersistedGameState() {
     AG.codeShards = Number.isFinite(Number(state.code_shards)) ? Math.max(0, Number(state.code_shards)) : 0;
     AG.shopPurchases = (state.shop_purchases && typeof state.shop_purchases === 'object') ? state.shop_purchases : {};
     AG.sideChallengesCompleted = new Set(Array.isArray(state.side_challenges_completed) ? state.side_challenges_completed : []);
+    const remotePos = (state.player_pos && Number.isFinite(Number(state.player_pos.col)) && Number.isFinite(Number(state.player_pos.row)))
+        ? { col: Number(state.player_pos.col), row: Number(state.player_pos.row) }
+        : null;
+    if (remotePos) {
+        AG.playerPos = remotePos;
+    }
     AG.rewardedChallenges = new Set(solvedChallenges);
     updateCodeShardsDisplay(AG.codeShards);
 
@@ -425,6 +448,9 @@ function _applyPersistedGameState() {
         if (AG.bossBugDefeated) {
             const bugPos = (AG.MAPS.ORIGIN_NODE_OBJECTS.bossBug || [])[0];
             if (bugPos) AG.events.emit('boss_bug:clear', { col: bugPos.col, row: bugPos.row });
+        }
+        if (AG.playerPos) {
+            AG.events.emit('player:restore-pos', { col: AG.playerPos.col, row: AG.playerPos.row });
         }
         AG.events.emit('pickups:sync', { collected: Array.from(AG.collectedPickups) });
     }
@@ -700,9 +726,14 @@ AG.events.on('aria:interact', ({ tileId, col, row }) => {
         if (shrine) {
             AG.shrineModal.open(shrine);
         } else {
-            AG.events.emit('aria:speak', {
-                text: 'A Learning Shrine. Study the concept here before attempting the gates.',
-            });
+            const fallback = _identifyNearestShrineByMapCoords(col, row);
+            if (fallback) {
+                AG.shrineModal.open(fallback);
+            } else {
+                AG.events.emit('aria:speak', {
+                    text: 'A Learning Shrine. Study the concept here before attempting the gates.',
+                });
+            }
         }
     }
 });
@@ -889,10 +920,45 @@ AG.introPanel = new AG.ARIAIntroPanel();
 function _identifyShrine(col, row) {
     const shrines = AG.SHRINES;
     if (!shrines) return null;
+
+    // Primary source: live map object coordinates from origin_node.js.
+    // This keeps shrine interaction working when map layout changes.
+    const mapObjs = AG.MAPS?.ORIGIN_NODE_OBJECTS || {};
+    for (const key of Object.keys(shrines)) {
+        const shrine = shrines[key];
+        const tiles = mapObjs[key];
+        if (Array.isArray(tiles) && tiles.some((p) => p.col === col && p.row === row)) {
+            return shrine;
+        }
+    }
+
+    // Fallback: legacy cols/rows arrays in shrine data.
     for (const key of Object.keys(shrines)) {
         const s = shrines[key];
-        if (s.cols.includes(col) && s.rows.includes(row)) return s;
+        if (s.cols?.includes(col) && s.rows?.includes(row)) return s;
     }
+    return null;
+}
+
+function _identifyNearestShrineByMapCoords(col, row) {
+    const shrines = AG.SHRINES;
+    const mapObjs = AG.MAPS?.ORIGIN_NODE_OBJECTS || {};
+    if (!shrines) return null;
+
+    let bestId = null;
+    let bestDist = Infinity;
+    for (const key of Object.keys(shrines)) {
+        const tiles = mapObjs[key];
+        if (!Array.isArray(tiles) || tiles.length === 0) continue;
+        for (const p of tiles) {
+            const d = Math.abs((p.col ?? -9999) - col) + Math.abs((p.row ?? -9999) - row);
+            if (d < bestDist) {
+                bestDist = d;
+                bestId = key;
+            }
+        }
+    }
+    if (bestId && bestDist <= 2) return shrines[bestId];
     return null;
 }
 
@@ -981,8 +1047,21 @@ AG.events.on('hint:shown', (data) => {
 //       b) Proximity zones → trigger ambient location-based dialogue once each.
 // ---------------------------------------------------------------------------
 let _firstMoveFired = false;
+let _lastPlayerPosSyncAt = 0;
 
 AG.events.on('player:moved', ({ col, row }) => {
+    AG.playerPos = { col, row };
+    try {
+        localStorage.setItem(_PLAYER_POS_STORAGE_KEY, JSON.stringify(AG.playerPos));
+    } catch (_) {}
+
+    // Persist movement periodically so refreshes don't reset position.
+    const now = Date.now();
+    if (now - _lastPlayerPosSyncAt > 3000) {
+        _lastPlayerPosSyncAt = now;
+        _syncGameStateNow();
+    }
+
     const D = AG.DIALOGUE;
     if (!D) return;
 

@@ -298,6 +298,45 @@ class OriginNodeScene extends Phaser.Scene {
             g.strokeRect(0, 0, S, S);
         });
 
+        tex(`tile_${AG.TILE.FIREWALL}`, (g, S) => {
+            g.fillStyle(0x1a0a0e, 1);
+            g.fillRect(0, 0, S, S);
+            g.fillStyle(0x3d1218, 1);
+            g.fillRect(2, 2, S - 4, S - 4);
+            g.lineStyle(2, 0xff5533, 0.95);
+            for (let i = 4; i < S; i += 6) {
+                g.lineBetween(i, 2, i - 4, S - 2);
+            }
+            g.lineStyle(1, 0xff8866, 0.75);
+            g.strokeRect(1, 1, S - 2, S - 2);
+        });
+
+        tex(`tile_${AG.TILE.DATA_FLOOD}`, (g, S) => {
+            g.fillStyle(0x09122a, 1);
+            g.fillRect(0, 0, S, S);
+            g.fillStyle(0x143670, 0.85);
+            g.fillRoundedRect(1, 3, S - 2, S - 6, 5);
+            g.fillStyle(0x67b3ff, 0.55);
+            g.fillEllipse(S * 0.33, S * 0.45, 8, 4);
+            g.fillEllipse(S * 0.68, S * 0.58, 10, 5);
+            g.lineStyle(1, 0x7cbfff, 0.8);
+            g.strokeRoundedRect(1, 3, S - 2, S - 6, 5);
+        });
+
+        tex(`tile_${AG.TILE.CACHE_NODE}`, (g, S) => {
+            g.fillStyle(0x1a1a2e, 1);
+            g.fillRect(0, 0, S, S);
+            g.fillStyle(0x2f1b48, 1);
+            g.fillRoundedRect(S / 2 - 8, S / 2 - 8, 16, 16, 3);
+            g.fillStyle(0xf0b0ff, 0.8);
+            g.fillCircle(S / 2, S / 2, 4);
+            g.lineStyle(1, 0xd39cff, 0.95);
+            g.strokeRoundedRect(S / 2 - 8, S / 2 - 8, 16, 16, 3);
+            g.lineStyle(1, 0x9e6ad1, 0.9);
+            g.lineBetween(S / 2 - 8, S / 2, S / 2 + 8, S / 2);
+            g.lineBetween(S / 2, S / 2 - 8, S / 2, S / 2 + 8);
+        });
+
         g.destroy();
     }
 
@@ -742,8 +781,13 @@ class OriginNodeScene extends Phaser.Scene {
 
         // ── Tweens ────────────────────────────────────────────────────────
         const bobTween = this.tweens.add({
-            targets: g, y: { from: -2, to: 2 },
-            duration: 500, ease: 'Sine.easeInOut', yoyo: true, repeat: -1,
+            targets: g,
+            scaleX: { from: 1.0, to: 1.05 },
+            scaleY: { from: 1.0, to: 1.05 },
+            duration: 650,
+            ease: 'Sine.easeInOut',
+            yoyo: true,
+            repeat: -1,
         });
 
         // Fade in, then switch to idle pulse
@@ -767,6 +811,7 @@ class OriginNodeScene extends Phaser.Scene {
             moveTween: null,
         };
         this._roamingBugs.push(bug);
+        this._updateRoamingBugVisibility();
         this._scheduleRoamingBugMove(id, AG);
         return bug;
     }
@@ -833,9 +878,18 @@ class OriginNodeScene extends Phaser.Scene {
                 bug.col = next.col;
                 bug.row = next.row;
                 bug.moveTween = null;
+                this._updateRoamingBugVisibility();
                 this._scheduleRoamingBugMove(id, AG);
             },
         });
+    }
+
+    _updateRoamingBugVisibility() {
+        const MAX_VISIBLE_DIST = 10;
+        for (const bug of this._roamingBugs) {
+            const dist = Math.abs(this.tileX - bug.col) + Math.abs(this.tileY - bug.row);
+            bug.graphics.visible = dist <= MAX_VISIBLE_DIST;
+        }
     }
 
     /**
@@ -1078,8 +1132,30 @@ class OriginNodeScene extends Phaser.Scene {
                 this._freeLookMode = false;
                 this._dragPanning = false;
                 this.cameras.main.startFollow(this.player, true, 0.12, 0.12);
+            } else if (key === 'e') {
+                this._interactNearestTile();
             }
         });
+    }
+
+    _interactNearestTile() {
+        const offsets = [
+            { dc: 0, dr: -1 },
+            { dc: 1, dr: 0 },
+            { dc: 0, dr: 1 },
+            { dc: -1, dr: 0 },
+        ];
+        for (const o of offsets) {
+            const col = this.tileX + o.dc;
+            const row = this.tileY + o.dr;
+            const map = window.ARIA_GAME.MAPS.ORIGIN_NODE;
+            if (row < 0 || row >= map.length || col < 0 || col >= map[0].length) continue;
+            const tileId = map[row][col];
+            if (window.ARIA_GAME.INTERACTIVE_TILES.includes(tileId) || tileId === window.ARIA_GAME.TILE.ARIA_GATE) {
+                this._onBump(col, row);
+                return;
+            }
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -1091,9 +1167,11 @@ class OriginNodeScene extends Phaser.Scene {
         let col = fromCol;
         let row = fromRow;
 
-        // Walk up to 30 steps max to prevent runaway paths
+        // Walk with a higher cap for large region layouts.
+        // (Old cap of 30 was too short for the expanded map.)
         let steps = 0;
-        while ((col !== toCol || row !== toRow) && steps < 30) {
+        const maxSteps = 300;
+        while ((col !== toCol || row !== toRow) && steps < maxSteps) {
             const dx = toCol > col ? 1 : toCol < col ? -1 : 0;
             const dy = toRow > row ? 1 : toRow < row ? -1 : 0;
 
@@ -1106,11 +1184,9 @@ class OriginNodeScene extends Phaser.Scene {
                 path.push({ col, row });
             } else {
                 // Path is blocked - walk to the last passable tile
-                // and try to bump the target to trigger an interaction
-                if (path.length === 0) {
-                    // Immediately adjacent blocker - emit bump
-                    this._onBump(col + dx, row + dy);
-                }
+                // and bump the blocked tile to trigger interaction.
+                // (Important for click-to-move onto shrines/gates from distance.)
+                this._onBump(col + dx, row + dy);
                 break;
             }
             steps++;
@@ -1282,7 +1358,33 @@ class OriginNodeScene extends Phaser.Scene {
 
         if (AG.INTERACTIVE_TILES.includes(tileId)) {
             AG.events.emit('aria:interact', { tileId, col, row });
+            return;
         }
+
+        // Fallback: if the bumped tile is not marked interactive but is adjacent
+        // to a shrine footprint in map objects, treat it as shrine interaction.
+        const shrineFallback = this._findAdjacentShrineTile(col, row);
+        if (shrineFallback) {
+            AG.events.emit('aria:interact', {
+                tileId: AG.TILE.SHRINE,
+                col: shrineFallback.col,
+                row: shrineFallback.row,
+            });
+        }
+    }
+
+    _findAdjacentShrineTile(col, row) {
+        const objs = window.ARIA_GAME.MAPS?.ORIGIN_NODE_OBJECTS || {};
+        const shrineKeys = Object.keys(objs).filter((k) => /^shrine[1-6]$/.test(k));
+        for (const key of shrineKeys) {
+            const tiles = objs[key];
+            if (!Array.isArray(tiles)) continue;
+            for (const t of tiles) {
+                const d = Math.abs((t.col ?? -9999) - col) + Math.abs((t.row ?? -9999) - row);
+                if (d <= 1) return t;
+            }
+        }
+        return null;
     }
 
     // -------------------------------------------------------------------------
@@ -1327,6 +1429,7 @@ class OriginNodeScene extends Phaser.Scene {
             this._checkTabletPickup(col, row, AG);
             this._checkRoamingBugProximity(col, row, AG);
             this._checkChancePickup(col, row, AG);
+            this._updateRoamingBugVisibility();
         });
         AG.events.on('roaming_bug:defeated', ({ id }) => {
             this._despawnRoamingBug(id, AG);
@@ -1370,6 +1473,34 @@ class OriginNodeScene extends Phaser.Scene {
                     this._collectChancePickup(pickupId);
                 }
             });
+        });
+
+        AG.events.on('player:restore-pos', ({ col, row }) => {
+            if (!Number.isFinite(col) || !Number.isFinite(row)) return;
+            if (!this._isPassable(col, row)) return;
+            this.tileX = col;
+            this.tileY = row;
+            const S = AG.TILE_SIZE;
+            const x = col * S + S / 2;
+            const y = row * S + S / 2;
+            if (this.player) {
+                this.player.x = x;
+                this.player.y = y;
+            }
+            if (this.playerGlow) {
+                this.playerGlow.x = x;
+                this.playerGlow.y = y;
+            }
+            if (this.playerShadow) {
+                this.playerShadow.x = x;
+                this.playerShadow.y = y + 10;
+            }
+            this._moveQueue = [];
+            this._processingQueue = false;
+            if (!this._freeLookMode) {
+                this.cameras.main.startFollow(this.player, true, 0.12, 0.12);
+            }
+            this._updateRoamingBugVisibility();
         });
 
         AG.events.on('camera:recenter', () => {
@@ -1451,7 +1582,7 @@ class OriginNodeScene extends Phaser.Scene {
             },
         });
 
-        const ORIGIN = { col: 136, row: 9 };   // boss chamber (end of the path)
+        const ORIGIN = { col: 163, row: 24 };   // boss chamber (end of the path)
         const tilesToRestore = [];
 
         for (let row = 0; row < map.length; row++) {
