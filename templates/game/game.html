@@ -2021,6 +2021,13 @@
         </div>
 
         <div id="gm-actions">
+            <button id="gm-feedback-btn" class="gm-action-btn" type="button">
+                <span class="gm-btn-icon">✉</span>
+                <span class="gm-btn-label">Send Feedback</span>
+                <span class="gm-btn-sub">opens your email app</span>
+            </button>
+
+            <div class="gm-divider"></div>
 
             <button id="gm-quit-btn" class="gm-action-btn" type="button">
                 <span class="gm-btn-icon">⌂</span>
@@ -2317,6 +2324,7 @@ window.ARIA_GAME.cinematicSeen = {% if profile and profile.cinematic_seen %}true
     var closeBtn  = document.getElementById('gm-close-btn');
     var resumeBtn = document.getElementById('gm-resume-btn');
     var quitBtn   = document.getElementById('gm-quit-btn');
+    var feedbackBtn = document.getElementById('gm-feedback-btn');
 
     if (!overlay || !openBtn) {
         console.warn('[ARIA] Game menu elements not found');
@@ -2375,6 +2383,21 @@ window.ARIA_GAME.cinematicSeen = {% if profile and profile.cinematic_seen %}true
             setTimeout(function () {
                 window.location.href = '/';
             }, 250);
+        });
+    }
+
+    // Quick playtest feedback
+    if (feedbackBtn) {
+        feedbackBtn.addEventListener('click', function () {
+            var subject = encodeURIComponent('[Playtest] ARIA feedback');
+            var body = encodeURIComponent(
+                'What I was doing:\n\n' +
+                'What happened:\n\n' +
+                'Expected behavior:\n\n' +
+                'Device/browser:\n'
+            );
+            window.location.href = 'mailto:codewithmichael26@gmail.com?subject=' + subject + '&body=' + body;
+            closeMenu();
         });
     }
 }());

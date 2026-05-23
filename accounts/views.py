@@ -2,9 +2,21 @@ from django import forms
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
+
+
+def _preferred_login_backend():
+    """
+    Pick a concrete backend for login() when multiple backends are configured.
+    Prefer Django's ModelBackend over Axes standalone backend.
+    """
+    backends = list(getattr(settings, 'AUTHENTICATION_BACKENDS', []) or [])
+    if 'django.contrib.auth.backends.ModelBackend' in backends:
+        return 'django.contrib.auth.backends.ModelBackend'
+    return backends[0] if backends else None
 
 
 # ---------------------------------------------------------------------------
@@ -89,7 +101,8 @@ def register(request):
 
     if request.method == 'POST' and form.is_valid():
         user = form.save()
-        login(request, user)
+        backend = _preferred_login_backend()
+        login(request, user, backend=backend)
         return redirect('game:character_create')
 
     return render(request, 'registration/register.html', {'form': form})

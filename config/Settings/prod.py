@@ -42,6 +42,9 @@ CACHES = {
 }
 
 # HTTPS / security
+# Trust the reverse proxy (Render) for scheme detection so secure redirects
+# and secure cookies behave correctly behind TLS termination.
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_SSL_REDIRECT = True
 SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True

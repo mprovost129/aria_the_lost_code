@@ -533,7 +533,7 @@ class OriginNodeScene extends Phaser.Scene {
         g.strokeCircle(cx + 4, cy - 2, 4.6);
         g.strokeTriangle(cx - 9, cy, cx + 9, cy, cx, cy + 10);
 
-        this.tweens.add({
+        const bobTween = this.tweens.add({
             targets: g,
             y: { from: -2, to: 2 },
             duration: 750,
@@ -541,7 +541,7 @@ class OriginNodeScene extends Phaser.Scene {
             yoyo: true,
             repeat: -1,
         });
-        this.tweens.add({
+        const pulseTween = this.tweens.add({
             targets: g,
             alpha: { from: 0.8, to: 1.0 },
             duration: 900,
@@ -550,13 +550,27 @@ class OriginNodeScene extends Phaser.Scene {
             repeat: -1,
         });
 
-        this._pickupSprites[pickupId] = g;
+        // Hidden by default: players must get close to discover it.
+        g.alpha = 0;
+        g.visible = false;
+
+        this._pickupSprites[pickupId] = {
+            graphics: g,
+            col,
+            row,
+            revealed: false,
+            tweens: [bobTween, pulseTween],
+        };
     }
 
     _collectChancePickup(pickupId) {
-        const sprite = this._pickupSprites[pickupId];
-        if (!sprite) return;
+        const entry = this._pickupSprites[pickupId];
+        if (!entry) return;
         delete this._pickupSprites[pickupId];
+        const sprite = entry.graphics;
+        (entry.tweens || []).forEach((t) => {
+            try { t.stop(); } catch (_) {}
+        });
         this.tweens.add({
             targets: sprite,
             alpha: 0,
@@ -567,7 +581,26 @@ class OriginNodeScene extends Phaser.Scene {
         });
     }
 
+    _revealNearbyChancePickups(playerCol, playerRow) {
+        const REVEAL_RADIUS = 1; // must be adjacent (or standing on it)
+        Object.values(this._pickupSprites).forEach((entry) => {
+            if (!entry || entry.revealed) return;
+            const dist = Math.abs(entry.col - playerCol) + Math.abs(entry.row - playerRow);
+            if (dist > REVEAL_RADIUS) return;
+            entry.revealed = true;
+            entry.graphics.visible = true;
+            entry.graphics.alpha = 0;
+            this.tweens.add({
+                targets: entry.graphics,
+                alpha: 1,
+                duration: 260,
+                ease: 'Sine.easeOut',
+            });
+        });
+    }
+
     _checkChancePickup(playerCol, playerRow, AG) {
+        this._revealNearbyChancePickups(playerCol, playerRow);
         const pickups = window.ARIA_GAME.MAPS.ORIGIN_NODE_OBJECTS?.chancePickups || [];
         const collected = AG.collectedPickups || new Set();
         for (const pickup of pickups) {
@@ -700,8 +733,8 @@ class OriginNodeScene extends Phaser.Scene {
         g.strokeEllipse(cx, cy - R * 0.1, R * 1.2, R * 1.0);
 
         // ── Danger-radius ring (faint, shows attack range) ────────────────
-        g.lineStyle(1, 0xff2200, 0.15);
-        g.strokeCircle(cx, cy, 3 * S);   // 3-tile attack radius hint
+        g.lineStyle(1, 0xff2200, 0.12);
+        g.strokeCircle(cx, cy, 2.2 * S);   // smaller visual hint ring
 
         // ── Tweens ────────────────────────────────────────────────────────
         const bobTween = this.tweens.add({
@@ -720,9 +753,85 @@ class OriginNodeScene extends Phaser.Scene {
             },
         });
 
-        const bug = { id, col, row, graphics: g, tweens: [bobTween] };
+        const bug = {
+            id,
+            col,
+            row,
+            graphics: g,
+            tweens: [bobTween],
+            moveTimer: null,
+            moveTween: null,
+        };
         this._roamingBugs.push(bug);
+        this._scheduleRoamingBugMove(id, AG);
         return bug;
+    }
+
+    _scheduleRoamingBugMove(id, AG) {
+        const bug = this._roamingBugs.find(b => b.id === id);
+        if (!bug) return;
+        if (bug.moveTimer) {
+            try { bug.moveTimer.destroy(); } catch (_) {}
+            bug.moveTimer = null;
+        }
+        bug.moveTimer = this.time.delayedCall(1400 + Math.floor(Math.random() * 900), () => {
+            this._attemptRoamingBugMove(id, AG);
+        });
+    }
+
+    _attemptRoamingBugMove(id, AG) {
+        const bug = this._roamingBugs.find(b => b.id === id);
+        if (!bug) return;
+        if (this._bugAttacking || this.inputLocked) {
+            this._scheduleRoamingBugMove(id, AG);
+            return;
+        }
+
+        const dirs = Phaser.Utils.Array.Shuffle([
+            { dc: 1, dr: 0 },
+            { dc: -1, dr: 0 },
+            { dc: 0, dr: 1 },
+            { dc: 0, dr: -1 },
+        ]);
+
+        let next = null;
+        for (const d of dirs) {
+            const col = bug.col + d.dc;
+            const row = bug.row + d.dr;
+            if (!this._isPassable(col, row)) continue;
+            if (Math.abs(col - this.tileX) + Math.abs(row - this.tileY) < 2) continue;
+            const occupied = this._roamingBugs.some(other => other.id !== bug.id && other.col === col && other.row === row);
+            if (occupied) continue;
+            next = { col, row };
+            break;
+        }
+
+        if (!next) {
+            this._scheduleRoamingBugMove(id, AG);
+            return;
+        }
+
+        if (bug.moveTween) {
+            try { bug.moveTween.stop(); } catch (_) {}
+            bug.moveTween = null;
+        }
+
+        const dx = (next.col - bug.col) * AG.TILE_SIZE;
+        const dy = (next.row - bug.row) * AG.TILE_SIZE;
+
+        bug.moveTween = this.tweens.add({
+            targets: bug.graphics,
+            x: bug.graphics.x + dx,
+            y: bug.graphics.y + dy,
+            duration: 360,
+            ease: 'Sine.easeInOut',
+            onComplete: () => {
+                bug.col = next.col;
+                bug.row = next.row;
+                bug.moveTween = null;
+                this._scheduleRoamingBugMove(id, AG);
+            },
+        });
     }
 
     /**
@@ -736,6 +845,14 @@ class OriginNodeScene extends Phaser.Scene {
         this._bugAttacking = false;
 
         bug.tweens.forEach(t => { try { t.stop(); } catch (_) {} });
+        if (bug.moveTimer) {
+            try { bug.moveTimer.destroy(); } catch (_) {}
+            bug.moveTimer = null;
+        }
+        if (bug.moveTween) {
+            try { bug.moveTween.stop(); } catch (_) {}
+            bug.moveTween = null;
+        }
 
         this.tweens.add({
             targets: bug.graphics, alpha: 0, duration: 400,
