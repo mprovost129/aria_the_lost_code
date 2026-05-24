@@ -32,7 +32,9 @@ class OriginNodeScene extends Phaser.Scene {
         // Roaming bug state: each entry is { id, col, row, graphics, tweens[] }
         this._roamingBugs  = [];
         this._nextBugId    = 0;
-        this._bugAttacking = false;   // prevents double-trigger while panel is open
+        this._bugAttacking    = false;  // prevents double-trigger while panel is open
+        this._gateToInteract   = null;  // { col, row } set by click-to-move gate walk
+        this._shrineToInteract = null;  // { col, row } set by click-to-move shrine walk
         this._cameraZoom   = 1;
         this._freeLookMode = false;
         this._dragPanning = false;
@@ -1018,9 +1020,17 @@ class OriginNodeScene extends Phaser.Scene {
         this._cameraZoomMin = zoomMin;
         this._cameraZoomMax = zoomMax;
         const computedStart = Math.min(1, fitZoom * 1.08);
-        const startZoom = Number.isFinite(computedStart)
+        const defaultZoom = Number.isFinite(computedStart)
             ? Phaser.Math.Clamp(computedStart, zoomMin, zoomMax)
             : 1;
+        // Restore the zoom level the player had when they last left.
+        let startZoom = defaultZoom;
+        try {
+            const saved = parseFloat(localStorage.getItem('aria_camera_zoom_v1'));
+            if (Number.isFinite(saved)) {
+                startZoom = Phaser.Math.Clamp(saved, zoomMin, zoomMax);
+            }
+        } catch (_) {}
         this._setCameraZoom(startZoom, AG);
     }
 
@@ -1075,24 +1085,71 @@ class OriginNodeScene extends Phaser.Scene {
             const worldY = pointer.worldY;
             const S      = AG.TILE_SIZE;
 
-            const targetCol = Math.floor(worldX / S);
-            const targetRow = Math.floor(worldY / S);
+            let targetCol = Math.floor(worldX / S);
+            let targetRow = Math.floor(worldY / S);
 
-            // --- Gate pre-check --------------------------------------------------
-            // The Manhattan pathfinder can wander (e.g., going north inside a room
-            // because it can't step east past a wall), so the gate scan inside
-            // _buildPath fires from the wrong row and misses the gate.
-            // Instead, scan the horizontal band between the player and the click
-            // target *before* building the path.  Any GATE tile found between
-            // fromCol and toCol, within the vertical span [fromRow..toRow] ± 1,
-            // is bumped immediately — the player doesn't need to walk there first.
+            // --- Shrine walk-to-interact -----------------------------------------
+            // If the player clicks directly on a shrine tile, redirect to the
+            // nearest passable neighbour and open the shrine modal on arrival.
+            this._shrineToInteract = null;
+            {
+                const map = window.ARIA_GAME.MAPS.ORIGIN_NODE;
+                if (
+                    targetRow >= 0 && targetRow < map.length &&
+                    targetCol >= 0 && targetCol < map[0].length &&
+                    map[targetRow][targetCol] === AG.TILE.SHRINE
+                ) {
+                    const neighbors = [
+                        { col: targetCol - 1, row: targetRow },
+                        { col: targetCol + 1, row: targetRow },
+                        { col: targetCol,     row: targetRow - 1 },
+                        { col: targetCol,     row: targetRow + 1 },
+                    ].filter(n => this._isPassable(n.col, n.row));
+
+                    if (neighbors.length > 0) {
+                        // Walk to the closest passable neighbour, open shrine on arrival
+                        neighbors.sort((a, b) =>
+                            (Math.abs(a.col - this.tileX) + Math.abs(a.row - this.tileY)) -
+                            (Math.abs(b.col - this.tileX) + Math.abs(b.row - this.tileY))
+                        );
+                        const nb = neighbors[0];
+                        if (nb.col === this.tileX && nb.row === this.tileY) {
+                            // Already adjacent — open immediately
+                            this._onBump(targetCol, targetRow);
+                        } else {
+                            this._shrineToInteract = { col: targetCol, row: targetRow };
+                            targetCol = nb.col;
+                            targetRow = nb.row;
+                        }
+                    }
+                }
+            }
+
+            // --- Gate walk-to-interact -------------------------------------------
+            // The Manhattan pathfinder can wander away from the gate corridor, so
+            // we pre-scan the horizontal band toward the click target for a GATE
+            // tile.  When found, redirect the path to the tile just before the gate
+            // (on the player's side) and flag _gateToInteract so _drainMoveQueue
+            // opens the challenge panel once the player arrives.
+            this._gateToInteract = null;  // cancel any previous pending gate walk
             if (targetCol !== this.tileX) {
                 const gate = this._scanForGateInRange(
                     this.tileX, this.tileY, targetCol, targetRow
                 );
                 if (gate) {
-                    this._onBump(gate.col, gate.row);
-                    if (this.inputLocked) return;  // challenge opened
+                    const dx     = Math.sign(gate.col - this.tileX);
+                    const adjCol = gate.col - dx;   // tile just before the gate
+                    const adjRow = gate.row;
+                    if (adjCol === this.tileX && adjRow === this.tileY) {
+                        // Already standing next to gate — open immediately
+                        this._onBump(gate.col, gate.row);
+                        if (this.inputLocked) return;
+                    } else {
+                        // Walk to the adjacent tile; challenge opens on arrival
+                        this._gateToInteract = gate;
+                        targetCol = adjCol;
+                        targetRow = adjRow;
+                    }
                 }
             }
 
@@ -1261,6 +1318,21 @@ class OriginNodeScene extends Phaser.Scene {
     _drainMoveQueue() {
         if (this._moveQueue.length === 0 || this.inputLocked) {
             this._processingQueue = false;
+            // If the player was walking toward a gate or shrine and has arrived
+            // at the adjacent tile, open the panel now.
+            if (this._moveQueue.length === 0 && !this.inputLocked) {
+                if (this._gateToInteract) {
+                    const g = this._gateToInteract;
+                    this._gateToInteract = null;
+                    const dist = Math.abs(this.tileX - g.col) + Math.abs(this.tileY - g.row);
+                    if (dist === 1) this._onBump(g.col, g.row);
+                } else if (this._shrineToInteract) {
+                    const s = this._shrineToInteract;
+                    this._shrineToInteract = null;
+                    const dist = Math.abs(this.tileX - s.col) + Math.abs(this.tileY - s.row);
+                    if (dist === 1) this._onBump(s.col, s.row);
+                }
+            }
             return;
         }
 
@@ -1348,6 +1420,7 @@ class OriginNodeScene extends Phaser.Scene {
         }
         const safeZoom = Number.isFinite(nextZoom) ? nextZoom : 1;
         const clamped = Phaser.Math.Clamp(safeZoom, zoomMin, zoomMax);
+        try { localStorage.setItem('aria_camera_zoom_v1', clamped); } catch (_) {}
 
         const cam = this.cameras.main;
 
@@ -1497,8 +1570,8 @@ class OriginNodeScene extends Phaser.Scene {
         if (dx === 0) return null;
 
         const hDist = Math.abs(toCol - fromCol);
-        const minRow = Math.min(fromRow, toRow) - 1;
-        const maxRow = Math.max(fromRow, toRow) + 1;
+        const minRow = Math.min(fromRow, toRow) - 4;
+        const maxRow = Math.max(fromRow, toRow) + 4;
 
         for (let d = 1; d <= hDist; d++) {
             const sc = fromCol + dx * d;
