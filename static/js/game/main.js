@@ -43,11 +43,14 @@ AG.dialogue = new AG.DialogueSystem(document.getElementById('aria-text'));
 // ---------------------------------------------------------------------------
 AG.gateState = {};
 
-Object.entries(AG.GATE_CHALLENGES || {}).forEach(([gateKey, challengeIds]) => {
+Object.entries(AG.GATE_CHALLENGES || {}).forEach(([gateKey, tabArrays]) => {
+    // tabArrays is [[ch1_t1, ch1_t2, ch1_t3]] — flatten to get all IDs
+    const allIds = tabArrays.flat();
     AG.gateState[gateKey] = {
-        total:  challengeIds.length,
+        total:  allIds.length,
         solved: new Set(),
         open:   false,
+        tabs:   tabArrays[0] || allIds,   // the tab challenge ID array
     };
 });
 
@@ -392,8 +395,8 @@ function _applyPersistedGameState() {
 
     const solvedChallenges = Array.isArray(state.solved_challenges) ? state.solved_challenges : [];
     solvedChallenges.forEach((challengeId) => {
-        Object.entries(AG.GATE_CHALLENGES || {}).forEach(([gateKey, challengeIds]) => {
-            if (challengeIds.includes(challengeId)) {
+        Object.entries(AG.GATE_CHALLENGES || {}).forEach(([gateKey, tabArrays]) => {
+            if (tabArrays.flat().includes(challengeId)) {
                 AG.gateState[gateKey]?.solved?.add(challengeId);
             }
         });
@@ -453,6 +456,15 @@ function _applyPersistedGameState() {
             AG.events.emit('player:restore-pos', { col: AG.playerPos.col, row: AG.playerPos.row });
         }
         AG.events.emit('pickups:sync', { collected: Array.from(AG.collectedPickups) });
+
+        // Re-draw completed-shrine overlays for returning players.
+        // AG.completedShrines is already populated above, so the shrine:complete
+        // handler in main.js will hit its early-return guard and skip all side-effects
+        // (pip advance, ARIA speech, API call). Only the scene's drawing code runs.
+        completedShrines.forEach((shrineId) => {
+            const shrine = AG.SHRINES?.[shrineId];
+            if (shrine) AG.events.emit('shrine:complete', { shrineId: shrine.id, shrine });
+        });
     }
 }
 
@@ -701,7 +713,7 @@ AG.events.on('roaming_bug:attack', ({ id }) => {
 // 7. Routing: aria:interact → correct challenge
 // ---------------------------------------------------------------------------
 AG.events.on('aria:interact', ({ tileId, col, row }) => {
-    const TILE = AG.TILE;
+    const { TILE } = AG;
 
     if (tileId === TILE.GATE) {
         _handleGateInteraction(col, row);
@@ -739,11 +751,11 @@ AG.events.on('aria:interact', ({ tileId, col, row }) => {
 });
 
 function _handleGateInteraction(col, row) {
-    const gateKey      = `${col},${row}`;
-    const state        = AG.gateState[gateKey];
-    const challengeIds = AG.GATE_CHALLENGES[gateKey];
+    const gateKey  = `${col},${row}`;
+    const state    = AG.gateState[gateKey];
+    const tabArrays = AG.GATE_CHALLENGES[gateKey];
 
-    if (!state || !challengeIds) {
+    if (!state || !tabArrays) {
         AG.events.emit('aria:speak', {
             text: 'This gate is not ready yet. Come back soon.',
         });
@@ -751,11 +763,12 @@ function _handleGateInteraction(col, row) {
     }
 
     if (state.open) {
-        // Gate already open - shouldn't be reachable but guard just in case
+        // Gate is recorded as open. Re-emit gate:open to ensure the tile is
+        // converted to road in case the visual update was missed on page load.
+        AG.events.emit('gate:open', { col, row });
         return;
     }
 
-    // Layer 9: block gate entry when chances are depleted
     if (AG.chancesEmpty) {
         AG.events.emit('aria:speak', {
             text: 'No chances remaining. Defeat the Boss Bug to restore them.',
@@ -763,14 +776,14 @@ function _handleGateInteraction(col, row) {
         return;
     }
 
-    // Find the next unsolved challenge for this gate
-    const nextId = challengeIds.find(id => !state.solved.has(id));
-    if (!nextId) return;   // all solved, gate should already be open
+    // Tab mode: open the panel with all tab challenges
+    const tabIds       = tabArrays[0] || tabArrays.flat();
+    const tabChallenges = tabIds.map(id => _resolveChallenge(id)).filter(Boolean);
 
-    const challenge = _resolveChallenge(nextId);
-    if (!challenge) return;
+    if (!tabChallenges.length) return;
 
-    AG.challengePanel.open(challenge, { col, row });
+    // Pass the set of already-solved IDs so the panel can restore state
+    AG.challengePanel.openTabs(tabChallenges, { col, row }, state.solved);
 }
 
 // ---------------------------------------------------------------------------
@@ -802,15 +815,15 @@ AG.events.on('challenge:solved', ({ challengeId, gatePos }) => {
     state.solved.add(challengeId);
 
     if (state.solved.size >= state.total) {
-        // All challenges for this gate solved → open it
+        // All tabs/challenges for this gate solved → open it
         state.open = true;
         AG.events.emit('gate:open', { col: gatePos.col, row: gatePos.row });
         _progressGateOpen(gateKey);
         AG.events.emit('aria:speak', {
-            text: 'Gate open. Signal restored on this path. Keep moving.',
+            text: 'All tabs complete. Gate open. Signal restored on this path.',
         });
     } else {
-        // More challenges remain for this gate
+        // More tabs remain for this gate
         const remaining = state.total - state.solved.size;
         AG.events.emit('aria:speak', {
             text: `Good. ${remaining} more challenge${remaining > 1 ? 's' : ''} on this gate.`,

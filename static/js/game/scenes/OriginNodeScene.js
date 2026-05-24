@@ -1078,9 +1078,34 @@ class OriginNodeScene extends Phaser.Scene {
             const targetCol = Math.floor(worldX / S);
             const targetRow = Math.floor(worldY / S);
 
+            // --- Gate pre-check --------------------------------------------------
+            // The Manhattan pathfinder can wander (e.g., going north inside a room
+            // because it can't step east past a wall), so the gate scan inside
+            // _buildPath fires from the wrong row and misses the gate.
+            // Instead, scan the horizontal band between the player and the click
+            // target *before* building the path.  Any GATE tile found between
+            // fromCol and toCol, within the vertical span [fromRow..toRow] ± 1,
+            // is bumped immediately — the player doesn't need to walk there first.
+            if (targetCol !== this.tileX) {
+                const gate = this._scanForGateInRange(
+                    this.tileX, this.tileY, targetCol, targetRow
+                );
+                if (gate) {
+                    this._onBump(gate.col, gate.row);
+                    if (this.inputLocked) return;  // challenge opened
+                }
+            }
+
             // Build a simple step-by-step path (Manhattan, no diagonal)
             const path = this._buildPath(this.tileX, this.tileY, targetCol, targetRow);
             if (path.length === 0) return;
+
+            // _buildPath may have called _onBump on a gate/shrine tile, which opens a
+            // panel and sets inputLocked + clears _moveQueue.  Don't overwrite the
+            // cleared queue with the now-stale partial path — that would leave the
+            // queue non-empty after the panel closes, permanently blocking keyboard
+            // movement (update() skips _handleKeyboardMovement while queue is non-empty).
+            if (this.inputLocked) return;
 
             // Show a brief click marker at the destination
             this._showClickMarker(targetCol, targetRow, S, AG);
@@ -1119,9 +1144,9 @@ class OriginNodeScene extends Phaser.Scene {
             const magnitude = Phaser.Math.Clamp(Math.abs(dy) / 120, 0.35, 1.4);
             const delta = baseStep * magnitude;
             if (dy > 0) {
-                this._setCameraZoom(this._cameraZoom - delta, AG);
+                this._setCameraZoom(this._cameraZoom - delta, AG, pointer);
             } else if (dy < 0) {
-                this._setCameraZoom(this._cameraZoom + delta, AG);
+                this._setCameraZoom(this._cameraZoom + delta, AG, pointer);
             }
         });
 
@@ -1194,8 +1219,38 @@ class OriginNodeScene extends Phaser.Scene {
             } else {
                 // Path is blocked - walk to the last passable tile
                 // and bump the blocked tile to trigger interaction.
-                // (Important for click-to-move onto shrines/gates from distance.)
-                this._onBump(col + dx, row + dy);
+                // When both dx and dy are non-zero and both directions are
+                // impassable, _onBump(col+dx, row+dy) would point to a
+                // diagonal wall tile instead of the actual gate/shrine.
+                // Prefer horizontal (mirrors movement priority) so clicking
+                // anywhere past a gate correctly identifies the gate tile.
+                if (dx !== 0) {
+                    this._onBump(col + dx, row);
+                } else {
+                    this._onBump(col, row + dy);
+                }
+
+                // The bump tile may be a plain wall rather than a gate —
+                // this happens when the gate is in an offset corridor (e.g.
+                // gate1 is at row 26 but room1 exits at row 27, so the path
+                // hits the east wall of room1 before it can reach the corridor).
+                // If we didn't land on an interactive tile, scan a small window
+                // ahead in the travel direction for a GATE tile and bump it.
+                if (!this.inputLocked && dx !== 0) {
+                    const map = window.ARIA_GAME.MAPS.ORIGIN_NODE;
+                    const AG  = window.ARIA_GAME;
+                    outer: for (let dist = 1; dist <= 4; dist++) {
+                        for (let ro = -3; ro <= 3; ro++) {
+                            const sc = col + dx * dist;
+                            const sr = row + ro;
+                            if (sr < 0 || sr >= map.length || sc < 0 || sc >= map[0].length) continue;
+                            if (map[sr][sc] === AG.TILE.GATE) {
+                                this._onBump(sc, sr);
+                                break outer;
+                            }
+                        }
+                    }
+                }
                 break;
             }
             steps++;
@@ -1280,7 +1335,7 @@ class OriginNodeScene extends Phaser.Scene {
         }
     }
 
-    _setCameraZoom(nextZoom, AG) {
+    _setCameraZoom(nextZoom, AG, pointer) {
         const zoomMin = Number.isFinite(this._cameraZoomMin)
             ? this._cameraZoomMin
             : (Number.isFinite(AG?.CAMERA_ZOOM_MIN) ? AG.CAMERA_ZOOM_MIN : 0.55);
@@ -1293,8 +1348,37 @@ class OriginNodeScene extends Phaser.Scene {
         }
         const safeZoom = Number.isFinite(nextZoom) ? nextZoom : 1;
         const clamped = Phaser.Math.Clamp(safeZoom, zoomMin, zoomMax);
-        this._cameraZoom = clamped;
-        this.cameras.main.setZoom(Math.max(0.001, clamped));
+
+        const cam = this.cameras.main;
+
+        // If a pointer was provided, zoom toward the mouse position
+        if (pointer) {
+            const oldZoom = cam.zoom;
+
+            // World-space coordinates currently under the mouse cursor
+            const mouseScreenX = pointer.x - cam.x;
+            const mouseScreenY = pointer.y - cam.y;
+            const worldX = cam.scrollX + mouseScreenX / oldZoom;
+            const worldY = cam.scrollY + mouseScreenY / oldZoom;
+
+            // Stop following the player so we can control scrollX/Y directly
+            if (!this._freeLookMode) {
+                this._freeLookMode = true;
+                cam.stopFollow();
+            }
+
+            // Apply the new zoom level
+            this._cameraZoom = clamped;
+            cam.setZoom(Math.max(0.001, clamped));
+
+            // Shift the scroll so the same world point sits under the mouse
+            cam.scrollX = worldX - mouseScreenX / clamped;
+            cam.scrollY = worldY - mouseScreenY / clamped;
+        } else {
+            // Keyboard zoom — no pointer, just zoom in place
+            this._cameraZoom = clamped;
+            cam.setZoom(Math.max(0.001, clamped));
+        }
     }
 
     _isPassable(col, row) {
@@ -1396,6 +1480,37 @@ class OriginNodeScene extends Phaser.Scene {
         return null;
     }
 
+    /**
+     * Scan horizontally from (fromCol, fromRow) toward toCol, checking every
+     * column between them for a GATE tile within the vertical span that covers
+     * both fromRow and toRow (plus one tile of padding on each side).
+     *
+     * This is the pre-check used by click-to-move so we detect gates regardless
+     * of which row the Manhattan pathfinder might wander to.
+     *
+     * @returns {{ col, row }|null}
+     */
+    _scanForGateInRange(fromCol, fromRow, toCol, toRow) {
+        const map = window.ARIA_GAME.MAPS.ORIGIN_NODE;
+        const AG  = window.ARIA_GAME;
+        const dx  = Math.sign(toCol - fromCol);
+        if (dx === 0) return null;
+
+        const hDist = Math.abs(toCol - fromCol);
+        const minRow = Math.min(fromRow, toRow) - 1;
+        const maxRow = Math.max(fromRow, toRow) + 1;
+
+        for (let d = 1; d <= hDist; d++) {
+            const sc = fromCol + dx * d;
+            if (sc < 0 || sc >= map[0].length) continue;
+            for (let sr = minRow; sr <= maxRow; sr++) {
+                if (sr < 0 || sr >= map.length) continue;
+                if (map[sr][sc] === AG.TILE.GATE) return { col: sc, row: sr };
+            }
+        }
+        return null;
+    }
+
     // -------------------------------------------------------------------------
     // Event bus
     // -------------------------------------------------------------------------
@@ -1467,8 +1582,13 @@ class OriginNodeScene extends Phaser.Scene {
         });
 
         AG.events.on('shrine:complete', ({ shrine }) => {
-            const col = shrine.cols[0];
-            const row = shrine.rows[0];
+            // shrine.cols/rows are abstract data-grid coords, not map tile positions.
+            // The actual tile positions live in ORIGIN_NODE_OBJECTS keyed by shrine id.
+            const tiles = window.ARIA_GAME.MAPS.ORIGIN_NODE_OBJECTS?.[shrine.id];
+            if (!tiles || tiles.length === 0) return;
+            // Use the top-left tile of the 2×2 block (same anchor _drawShrineBuilding uses)
+            const col = Math.min(...tiles.map(t => t.col));
+            const row = Math.min(...tiles.map(t => t.row));
             this._drawShrineComplete(col, row);
         });
 

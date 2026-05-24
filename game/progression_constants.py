@@ -11,7 +11,26 @@ VALID_SHRINE_IDS = {
 }
 
 VALID_CHALLENGE_IDS = {
-    'ch1', 'ch2', 'ch3', 'ch4', 'ch5', 'ch6', 'ch6_v1', 'ch6_v2', 'ch6_v3', 'ch7', 'ch8', 'ch9', 'ch10', 'ch11',
+    # Gate 1 tabs (Variables)
+    'ch1_t1', 'ch1_t2', 'ch1_t3',
+    # Gate 2 tabs (Strings)
+    'ch2_t1', 'ch2_t2', 'ch2_t3',
+    # Gate 3 tabs (Integers/Floats)
+    'ch3_t1', 'ch3_t2', 'ch3_t3',
+    # Gate 4 tabs (Booleans)
+    'ch4_t1', 'ch4_t2', 'ch4_t3',
+    # Gate 5 tabs (Type Conversion)
+    'ch5_t1', 'ch5_t2', 'ch5_t3',
+    # Gate 6 tabs (f-strings)
+    'ch6_gate_t1', 'ch6_gate_t2', 'ch6_gate_t3',
+    # Roaming bug variants
+    'ch6', 'ch6_v1', 'ch6_v2', 'ch6_v3',
+    # Boss Bug
+    'ch7',
+    # Boss Chamber
+    'ch8',
+    # Side challenges
+    'ch9', 'ch10', 'ch11',
 }
 
 VALID_GATE_KEYS = {

@@ -54,6 +54,15 @@
         line-height: 0;
         width: 100%;
         height: 100%;
+        /* Prevent pinch-to-zoom on the game canvas only.
+           Overlays (challenge panel, shrine modal) sit above this element
+           and are not affected — they remain pinch-zoomable. */
+        touch-action: pan-x pan-y;
+    }
+
+    /* The Phaser canvas itself: block pinch-zoom, allow tap and swipe */
+    #game-container canvas {
+        touch-action: none;
     }
 
     /* ── ARIA dialogue bar (bottom strip) ── */
@@ -715,6 +724,76 @@
         box-sizing: border-box;
     }
     #cp-editor:focus { border-color: #4a4a9a; }
+
+    /* ── Tab bar (gate challenges with 3 tabs) ──────────────────────────── */
+    #cp-tab-bar {
+        display: flex;
+        gap: 0;
+        border-bottom: 1px solid #1a1a3a;
+        background: #08081a;
+        padding: 0 1rem;
+        flex-shrink: 0;
+    }
+
+    .cp-tab {
+        padding: 0.55rem 1rem;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.72rem;
+        letter-spacing: 0.06em;
+        color: #3a3a6a;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        transition: color 0.15s, border-color 0.15s;
+        position: relative;
+    }
+
+    .cp-tab:hover { color: #8888cc; }
+
+    .cp-tab.active {
+        color: #c8c8ff;
+        border-bottom-color: #4a4aaa;
+    }
+
+    /* Green tick when a tab is solved */
+    .cp-tab.solved {
+        color: #00aa44;
+        border-bottom-color: #00aa44;
+    }
+
+    .cp-tab.solved::after {
+        content: ' ✓';
+        font-size: 0.65rem;
+    }
+
+    .cp-tab.active.solved {
+        color: #00cc55;
+        border-bottom-color: #00cc55;
+    }
+
+    /* Tab progress summary below the editor */
+    #cp-tab-progress {
+        margin-top: 0.5rem;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.72rem;
+        color: #4a4a7a;
+        letter-spacing: 0.04em;
+    }
+
+    #cp-tab-progress .tab-prog-item {
+        display: inline-block;
+        margin-right: 1rem;
+    }
+
+    #cp-tab-progress .tab-prog-item.solved {
+        color: #00aa44;
+    }
+
+    #cp-tab-progress .tab-prog-item.active {
+        color: #8888cc;
+    }
+
 
     /* Lesson reference */
     #cp-lesson-ref {
@@ -1395,8 +1474,8 @@
 
     /* Completed shrine cards in the library */
     .shrine-lib-card {
-        background: #0a100a;
-        border: 1px solid #1a3a1a;
+        background: #100e00;
+        border: 1px solid #3a2800;
         border-radius: 6px;
         margin-bottom: 0.65rem;
         overflow: hidden;
@@ -1406,27 +1485,27 @@
         align-items: center;
         justify-content: space-between;
         padding: 0.45rem 0.75rem;
-        background: #080e08;
-        border-bottom: 1px solid #1a3a1a;
+        background: #0c0900;
+        border-bottom: 1px solid #3a2800;
     }
     .shrine-lib-name {
         font-family: 'Courier New', Courier, monospace;
         font-size: 0.82rem;
         font-weight: bold;
-        color: #00cc55;
+        color: #ffcc44;
     }
     .shrine-lib-badge {
         font-family: 'Courier New', Courier, monospace;
         font-size: 0.62rem;
-        color: #ffcc44;
+        color: #ffaa22;
         letter-spacing: 0.06em;
     }
     .shrine-lib-body {
         padding: 0.6rem 0.75rem;
     }
-    .shrine-lib-body .lib-text  { color: #88aa88; }
-    .shrine-lib-body .lib-code  { background: #040d04; border-color: #0d2a0d; color: #aaddaa; }
-    .shrine-lib-body .lib-list  { color: #88aa88; }
+    .shrine-lib-body .lib-text  { color: #aa9966; }
+    .shrine-lib-body .lib-code  { background: #0a0800; border-color: #2a1e00; color: #ccbb88; }
+    .shrine-lib-body .lib-list  { color: #aa9966; }
 
     /* ── ARIA tab - chances ─────────────────────────────────────────────── */
     .tablet-chances-row {
@@ -2285,7 +2364,7 @@
     </div>
 </div>
 
-{# ── Challenge Panel Overlay (Layer 4) ── #}
+{# ── Challenge Panel Overlay ── #}
 <div id="challenge-overlay">
     <div id="challenge-panel" role="dialog" aria-modal="true" aria-labelledby="cp-title">
 
@@ -2293,28 +2372,31 @@
         <div id="cp-header">
             <span id="cp-title">Challenge</span>
             <span id="cp-type-badge" class="cp-badge cp-badge--fill_blank">Fill in the Blank</span>
-            <button id="cp-close" type="button" title="Close (Esc)">✕</button>
+            <button id="cp-close" type="button" title="Close (Esc)">&#x2715;</button>
         </div>
 
-        {# ARIA live speech - mirrors the ARIA bar while the panel is open #}
+        {# ARIA live speech #}
         <div id="cp-aria-banner">
-            <span class="cp-aria-banner-icon">▶ ARIA</span>
+            <span class="cp-aria-banner-icon">&#x25B6; ARIA</span>
             <span id="cp-aria-banner-text"></span>
         </div>
+
+        {# Tab bar: shown for multi-tab gate challenges, hidden for single challenges #}
+        <div id="cp-tab-bar" style="display:none;"></div>
 
         {# Scrollable body #}
         <div id="cp-body">
 
-            {# ARIA intro line #}
+            {# ARIA intro (updates per tab on switch) #}
             <div id="cp-aria-text"></div>
 
-            {# Bug-fix instruction banner (shown for bug_fix challenges) #}
+            {# Bug-fix banner #}
             <div id="cp-bugfix-banner">
-                <span class="bugfix-icon">🐛</span>
+                <span class="bugfix-icon">&#x1F41B;</span>
                 The code below contains bugs. Read every line carefully and fix them all.
             </div>
 
-            {# Code editor area #}
+            {# Editor #}
             <div id="cp-editor-label">Your Code:</div>
             <textarea
                 id="cp-editor"
@@ -2324,37 +2406,40 @@
                 autocapitalize="off"
             ></textarea>
 
-            {# Expected output preview - shown before submission for standard challenges #}
+            {# Expected output preview #}
             <div id="cp-expected-hint">
-                <span class="expect-label">▶ Your code should output:</span>
+                <span class="expect-label">&#x25B6; Your code should output:</span>
                 <span class="expect-value" id="cp-expected-value"></span>
             </div>
 
             {# Lesson reference #}
             <div id="cp-lesson-ref" style="display:none;"></div>
 
-            {# Code output - shown after submission (Layer 5: Pyodide stdout) #}
+            {# Pyodide stdout #}
             <div id="cp-output-section">
-                <div class="cp-output-label">▶ Output:</div>
+                <div class="cp-output-label">&#x25B6; Output:</div>
                 <pre id="cp-output"></pre>
             </div>
 
-            {# Result feedback #}
+            {# Result #}
             <div id="cp-result" class="cp-result"></div>
 
-            {# Hint box (hidden until requested or first wrong answer) #}
+            {# Hint box #}
             <div id="cp-hint-box">
-                <div class="hint-label">💡 Hint</div>
+                <div class="hint-label">&#x1F4A1; Hint</div>
                 <div id="cp-hint-text"></div>
             </div>
 
+            {# Tab progress summary (shown in tab mode) #}
+            <div id="cp-tab-progress" style="display:none;"></div>
+
         </div>{# /cp-body #}
 
-        {# Footer actions #}
+        {# Footer #}
         <div id="cp-footer">
             <span id="cp-shortcut-hint">Ctrl+Enter to submit</span>
-            <button id="cp-hint-btn"  class="cp-btn" type="button">💡 Hint</button>
-            <button id="cp-submit"    class="cp-btn" type="button">▶ Submit</button>
+            <button id="cp-hint-btn"  class="cp-btn" type="button">&#x1F4A1; Hint</button>
+            <button id="cp-submit"    class="cp-btn" type="button">&#x25B6; Submit</button>
         </div>
 
     </div>{# /challenge-panel #}
@@ -2486,5 +2571,31 @@ window.ARIA_GAME.cinematicSeen = {% if profile and profile.cinematic_seen %}true
         });
     }
 }());
+
+    // ── Mobile: prevent pinch-zoom on the game canvas only ──────────────────
+    // Overlays and panels sit above the canvas and handle their own touch events.
+    (function () {
+        const container = document.getElementById('game-container');
+        if (!container) return;
+
+        let lastTouchDist = 0;
+
+        container.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 2) {
+                // Store initial pinch distance — we will suppress this gesture
+                const dx = e.touches[0].clientX - e.touches[1].clientX;
+                const dy = e.touches[0].clientY - e.touches[1].clientY;
+                lastTouchDist = Math.hypot(dx, dy);
+            }
+        }, { passive: false });
+
+        container.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 2) {
+                // Two-finger gesture on game canvas — prevent browser zoom
+                e.preventDefault();
+            }
+        }, { passive: false });
+    }());
+
 </script>
 {% endblock %}
